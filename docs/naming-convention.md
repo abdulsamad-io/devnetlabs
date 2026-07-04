@@ -1,10 +1,19 @@
 # VM / Guest Naming Convention
 
-Format: **`dnl-<role>-<NN>`**
+Format: **`dnl<role><NNN>`** — lowercase, no separators.
 
-- **Node-agnostic** — the name is the guest's *identity*, the VMID encodes *placement*.
+Example: **`dnladm001`** (admin/bastion host, instance 001).
+
+- **`dnl`** — lab prefix (DevNetLabs).
+- **`<role>`** — short role code (see table below).
+- **`<NNN>`** — 3-digit instance, **global per role**: `001` for a singleton,
+  `002+` for pairs / HA members.
+- **Node-agnostic** — the name is the guest's *identity*; the VMID encodes *placement*.
   Names therefore survive cross-node PBS restore.
-- Instance `NN` is **global per role**: `01` for a singleton, `02+` for pairs/HA.
+
+> **Scheme change:** this flat `dnl<role><NNN>` form (no hyphens, 3-digit instance)
+> **supersedes** the earlier hyphenated `dnl-<role>-<NN>` convention. Existing guests
+> should be renamed to the new form as they are (re)built.
 
 ---
 
@@ -12,6 +21,7 @@ Format: **`dnl-<role>-<NN>`**
 
 | Code | Service |
 |------|---------|
+| `adm` | Admin / bastion (jump) host |
 | `nms` | LibreNMS |
 | `ipam` | NetBox |
 | `log` | rsyslog |
@@ -34,7 +44,8 @@ Format: **`dnl-<role>-<NN>`**
 
 ## Templates
 
-Format: **`tmpl-<os><ver>[-variant]`**
+Templates keep their own pattern (they encode OS/version rather than an instance
+sequence): **`tmpl-<os><ver>[-variant]`**.
 
 Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
@@ -43,6 +54,7 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 ## DNS
 
 - Internal zone: **`lab.devnetlabs.com`** (served by Pi-hole flat records).
+  A records follow the hostname, e.g. `dnladm001.lab.devnetlabs.com`.
 - Optional per-zone subdomains (e.g. `mgmt.lab.devnetlabs.com`) need custom dnsmasq
   or a real authoritative DNS.
 - Keep the **public apex `devnetlabs.com` separate** from the internal zone.
@@ -63,16 +75,17 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
 | Hostname | VMID |
 |----------|------|
-| `dnl-nms-01` | 1050 |
-| `dnl-ipam-01` | 1051 |
-| `dnl-log-01` | 1052 |
-| `dnl-dns-01` | 1053 |
-| `dnl-cftun-01` | 1054 |
-| `dnl-plex-01` | 1250 |
-| `dnl-nas-01` | 1301 |
-| `dnl-pbs-01` | 1302 |
-| `dnl-dns-02` | 2050 |
-| `dnl-log-02` | 2051 |
-| `dnl-pnet-01` | 2101 |
-| `dnl-eve-01` | 2102 |
-| `dnl-pbs-02` | 3401 |
+| `dnladm001` | 1002 |
+| `dnlnms001` | 1050 |
+| `dnlipam001` | 1051 |
+| `dnllog001` | 1052 |
+| `dnldns001` | 1053 |
+| `dnlcftun001` | 1054 |
+| `dnlplex001` | 1250 |
+| `dnlnas001` | 1301 |
+| `dnlpbs001` | 1302 |
+| `dnldns002` | 2050 |
+| `dnllog002` | 2051 |
+| `dnlpnet001` | 2101 |
+| `dnleve001` | 2102 |
+| `dnlpbs002` | 3401 |

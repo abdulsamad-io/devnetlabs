@@ -14,28 +14,31 @@ Scheme: **`NZSS`** (4 digits).
 - Apply the VMID **at create time** (override the GUI auto-suggestion) and **at
   restore time** (set the target VMID).
 - Put placement/role metadata in **Proxmox tags**, not encoded beyond the VMID.
+- Hostnames follow the flat **`dnl<role><NNN>`** scheme (see
+  [naming-convention.md](naming-convention.md)).
 
 ---
 
 ## Allocations
 
-| VMID | Guest | Type | Node | Zone (VLAN) |
-|------|-------|------|------|-------------|
-| 1050 | LibreNMS | CT | dc01 | mgmt (1000) |
-| 1051 | NetBox | CT | dc01 | mgmt (1000) |
-| 1052 | rsyslog / logserver | CT | dc01 | mgmt (1000) |
-| 1053 | Pi-hole #1 (.55) | CT | dc01 | mgmt (1000) |
-| 1054 | Cloudflare tunnel (`dnl-cftun-01`) | CT | dc01 | mgmt (1000) |
-| 1250 | Plex | CT | dc01 | media (1102) |
-| 1301 | TrueNAS | VM | dc01 | nas (1103) |
-| 1302 | PBS (local, M.2) | VM | dc01 | nas (1103) |
-| 1950 / 1951 | Debian12 / Ubuntu 24.04 templates | tmpl | dc01 | — |
-| 2050 | Pi-hole #2 (.56) | CT | dc02 | mgmt (1000) |
-| 2051 | logserver (secondary) | CT | dc02 | mgmt (1000) |
-| 2101 | PNETLAB | VM | dc02 | apps (1201) + mgmt NIC on 1000 |
-| 2102 | EVE-NG | VM | dc02 | apps (1201) |
-| 3401 | PBS (cross-node DR target) | VM | dc03 | backup (1301) |
-| 3001–3049 | reserved mgmt | — | dc03 | mgmt (1000) |
+| VMID | Hostname | Guest | Type | Node | Zone (VLAN) |
+|------|----------|-------|------|------|-------------|
+| 1002 | `dnladm001` | Admin / bastion (jump) host | VM | dc01 | mgmt (1000) |
+| 1050 | `dnlnms001` | LibreNMS | CT | dc01 | mgmt (1000) |
+| 1051 | `dnlipam001` | NetBox | CT | dc01 | mgmt (1000) |
+| 1052 | `dnllog001` | rsyslog / logserver | CT | dc01 | mgmt (1000) |
+| 1053 | `dnldns001` | Pi-hole #1 (.55) | CT | dc01 | mgmt (1000) |
+| 1054 | `dnlcftun001` | Cloudflare tunnel | CT | dc01 | mgmt (1000) |
+| 1250 | `dnlplex001` | Plex | CT | dc01 | media (1102) |
+| 1301 | `dnlnas001` | TrueNAS | VM | dc01 | nas (1103) |
+| 1302 | `dnlpbs001` | PBS (local, M.2) | VM | dc01 | nas (1103) |
+| 1950 / 1951 | — | Debian12 / Ubuntu 24.04 templates | tmpl | dc01 | — |
+| 2050 | `dnldns002` | Pi-hole #2 (.56) | CT | dc02 | mgmt (1000) |
+| 2051 | `dnllog002` | logserver (secondary) | CT | dc02 | mgmt (1000) |
+| 2101 | `dnlpnet001` | PNETLAB | VM | dc02 | apps (1201) + mgmt NIC on 1000 |
+| 2102 | `dnleve001` | EVE-NG | VM | dc02 | apps (1201) |
+| 3401 | `dnlpbs002` | PBS (cross-node DR target) | VM | dc03 | backup (1301) |
+| 3001–3049 | — | reserved mgmt | — | dc03 | mgmt (1000) |
 
 > **Notes / assumptions**
 > - Guest-vs-CT type is a sensible default, **not confirmed** for every entry.
