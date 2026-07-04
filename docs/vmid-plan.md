@@ -27,13 +27,13 @@ Scheme: **`NZSS`** (4 digits).
 | 1050 | `dnlnms001` | LibreNMS | CT | dc01 | mgmt (1000) |
 | 1051 | `dnlipam001` | NetBox | CT | dc01 | mgmt (1000) |
 | 1052 | `dnllog001` | rsyslog / logserver | CT | dc01 | mgmt (1000) |
-| 1053 | `dnldns001` | Pi-hole #1 (.55) | CT | dc01 | mgmt (1000) |
+| 1053 | `dnldns001` | Technitium DNS #1 (.55) | CT | dc01 | mgmt (1000) |
 | 1054 | `dnlcftun001` | Cloudflare tunnel | CT | dc01 | mgmt (1000) |
 | 1250 | `dnlplex001` | Plex | CT | dc01 | media (1102) |
 | 1301 | `dnlnas001` | TrueNAS | VM | dc01 | nas (1103) |
 | 1302 | `dnlpbs001` | PBS (local, M.2) | VM | dc01 | nas (1103) |
 | 1950 / 1951 | — | Debian12 / Ubuntu 24.04 templates | tmpl | dc01 | — |
-| 2050 | `dnldns002` | Pi-hole #2 (.56) | CT | dc02 | mgmt (1000) |
+| 2050 | `dnldns002` | Technitium DNS #2 (.56) | CT | dc02 | mgmt (1000) |
 | 2051 | `dnllog002` | logserver (secondary) | CT | dc02 | mgmt (1000) |
 | 2101 | `dnlpnet001` | PNETLAB | VM | dc02 | apps (1201) + mgmt NIC on 1000 |
 | 2102 | `dnleve001` | EVE-NG | VM | dc02 | apps (1201) |

@@ -25,7 +25,7 @@ Example: **`dnladm001`** (admin/bastion host, instance 001).
 | `nms` | LibreNMS |
 | `ipam` | NetBox |
 | `log` | rsyslog |
-| `dns` | Pi-hole |
+| `dns` | Technitium DNS Server |
 | `plex` | Plex |
 | `nas` | TrueNAS |
 | `pbs` | Proxmox Backup Server |
@@ -53,10 +53,14 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
 ## DNS
 
-- Internal zone: **`lab.devnetlabs.com`** (served by Pi-hole flat records).
-  A records follow the hostname, e.g. `dnladm001.lab.devnetlabs.com`.
-- Optional per-zone subdomains (e.g. `mgmt.lab.devnetlabs.com`) need custom dnsmasq
-  or a real authoritative DNS.
+- Internal zone: **`lab.devnetlabs.com`**, served by **Technitium DNS Server** as an
+  authoritative primary zone. A records follow the hostname,
+  e.g. `dnladm001.lab.devnetlabs.com`.
+- Per-zone subdomains (e.g. `mgmt.lab.devnetlabs.com`) are supported **natively** by
+  Technitium zones — no custom dnsmasq needed (unlike Pi-hole's flat records).
+- Technitium also provides recursive resolution / conditional forwarding, block
+  lists (ad/tracker filtering, replacing Pi-hole), DNSSEC, DoH/DoT, and a full HTTP
+  API + config export suitable for IaC (Ansible/Terraform).
 - Keep the **public apex `devnetlabs.com` separate** from the internal zone.
 - **Let's Encrypt wildcard `*.lab.devnetlabs.com` via DNS-01** gives publicly-trusted
   TLS on internal services (leverages Cloudflare-managed DNS).

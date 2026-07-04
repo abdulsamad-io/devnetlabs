@@ -19,7 +19,7 @@ The MikroTik provides the gateway, DHCP, and inter-VLAN routing for the entire l
 | 1301 | `dc03_pbs` | 10.130.10.0/24 | 10.130.10.1 | dc03 |
 | 1 (untagged) | `lab_lan` | 172.16.254.0/24 | 172.16.254.1 | WiFi + ether5, flat L2 |
 
-**Planned future services:** Pi-holes at `172.16.10.55` / `172.16.10.56` (DNS on VLAN 1000).
+**Planned future services:** Technitium DNS servers at `172.16.10.55` / `172.16.10.56` (DNS on VLAN 1000).
 
 ---
 
@@ -64,7 +64,7 @@ The MikroTik runs **two bridges**:
   /ip dhcp-server network set [find address=172.16.10.0/24] \
       dns-server=192.168.2.254,8.8.8.8,1.1.1.1
   ```
-  (or the Pi-holes once they exist).
+  (or the Technitium servers once they exist).
 - Look up current guest leases with:
   `/ip dhcp-server lease print where server=dhcp1`
 
