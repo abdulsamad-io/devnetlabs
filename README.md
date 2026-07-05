@@ -12,6 +12,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 
 | Doc | Purpose |
 |-----|---------|
+| [Low-Level Design (LLD)](docs/lld.md) | Consolidated topology, addressing, SDN VNets, guest inventory |
 | [Network & VLAN design](docs/network-vlan-design.md) | MikroTik core, VLANs, bridges, DHCP, port map |
 | [VMID plan](docs/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
 | [Naming convention](docs/naming-convention.md) | `dnl-<role>-<NN>` guest naming, role codes, DNS |
