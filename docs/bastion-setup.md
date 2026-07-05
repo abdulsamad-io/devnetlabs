@@ -13,17 +13,21 @@ notes.
 | VMID | 1002 (VM, dc01) |
 | OS | Ubuntu 26.04 |
 | IP | `172.16.10.2` (static, VLAN 1000 / shared_mgt) |
+| Login user | `abdoolsamad` |
+| Management networks | `172.16.10.0/24` (VLAN 1000) **and** `172.16.254.0/24` (lab_lan) |
 | Auth model | **SSH keys only** (MFA planned later) |
 | CPU type | `x86-64-v2-AES` (portable across dc01/dc02, not `host`) |
 
 **Concept in one line:** the bastion is the single guarded door to the lab. Because the
 MikroTik routes freely between VLANs, this one host on VLAN 1000 can reach every device.
+Admin access to the bastion is expected from either management network — the wired mgmt
+VLAN (`172.16.10.0/24`) or the flat `lab_lan` WiFi/wired segment (`172.16.254.0/24`).
 It becomes a real security *control* only once devices are restricted to accept SSH
 **only from `172.16.10.2`** (see "Make it a real bastion" below).
 
 ---
 
-## Part A — Generate your SSH key (on the Windows client)
+## Part A — Generate your SSH key (Windows client)
 
 > Windows 10/11 ship OpenSSH built in — no Mac/Linux needed. Run everything in
 > **PowerShell**. Keys live in `C:\Users\<you>\.ssh\`.
@@ -59,7 +63,7 @@ Get-Content "$env:USERPROFILE\.ssh\id_ed25519_devnetlabs.pub"
 
 ---
 
-## Part B — Install the public key on the bastion
+## Part B — Install the public key on the bastion (Windows)
 
 > **Windows has no `ssh-copy-id`.** Use one of these instead (both rely on password
 > login still working for this first connection).
@@ -67,7 +71,7 @@ Get-Content "$env:USERPROFILE\.ssh\id_ed25519_devnetlabs.pub"
 **Option A — PowerShell one-liner:**
 ```powershell
 $pub = Get-Content "$env:USERPROFILE\.ssh\id_ed25519_devnetlabs.pub"
-ssh sam@172.16.10.2 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo '$pub' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+ssh abdoolsamad@172.16.10.2 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo '$pub' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
 **Option B — manual (foolproof):** copy the `Get-Content` output, then on the bastion
@@ -91,7 +95,7 @@ Add:
 ```
 Host jump
     HostName 172.16.10.2
-    User sam
+    User abdoolsamad
     IdentityFile ~/.ssh/id_ed25519_devnetlabs
     IdentitiesOnly yes
 ```
@@ -108,6 +112,45 @@ Test: `ssh jump`
 
 ---
 
+## Part C (Linux / macOS) — key setup from a Linux client
+
+Equivalent of Parts A–C when your client is Linux/macOS. Keys live in `~/.ssh/`, and
+unlike Windows the standard tools (`ssh-keygen`, `ssh-copy-id`) are all present.
+
+**1. Generate the key** (bash accepts `\` line continuations and `~`):
+```bash
+ssh-keygen -t ed25519 -a 100 \
+  -f ~/.ssh/id_ed25519_devnetlabs \
+  -C "Abdulsamad Kazeem <abdulsamadayobami@gmail.com>"
+```
+Same flags as Part A. Set a passphrase when prompted. View the public key with:
+```bash
+cat ~/.ssh/id_ed25519_devnetlabs.pub
+```
+
+**2. Install the public key** — Linux *has* `ssh-copy-id`, so this is one command
+(needs password login still working for the first connection):
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519_devnetlabs.pub abdoolsamad@172.16.10.2
+```
+
+**3. Client config** — the config block is **identical to Part C**; only the file path
+differs (`~/.ssh/config`, i.e. `/home/<you>/.ssh/config`):
+```
+Host jump
+    HostName 172.16.10.2
+    User abdoolsamad
+    IdentityFile ~/.ssh/id_ed25519_devnetlabs
+    IdentitiesOnly yes
+```
+Ensure private-key permissions are tight (ssh-keygen sets these, but to be sure):
+```bash
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_ed25519_devnetlabs
+```
+Test: `ssh jump`
+
+---
+
 ## Part D — Server-side hardening (on `dnladm001`)
 
 > **Golden rule:** keep your working session (or the Proxmox console) open until a
@@ -115,10 +158,10 @@ Test: `ssh jump`
 
 **1. User + allow-list group:**
 ```bash
-sudo adduser sam
-sudo usermod -aG sudo sam
+sudo adduser abdoolsamad
+sudo usermod -aG sudo abdoolsamad
 sudo groupadd sshusers
-sudo usermod -aG sshusers sam
+sudo usermod -aG sshusers abdoolsamad
 ```
 
 **2. Harden `sshd` via a drop-in** (filename `10-` sorts *before* the cloud image's
@@ -150,12 +193,13 @@ sudo systemctl reload ssh
 ```
 Then prove a fresh `ssh jump` login works **before** closing your original session.
 
-**4. Host firewall (default deny):**
+**4. Host firewall (default deny)** — allow SSH from **both** management networks:
 ```bash
 sudo apt update && sudo apt install -y ufw
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
-sudo ufw allow from 172.16.10.0/24 to any port 22 proto tcp
+sudo ufw allow from 172.16.10.0/24 to any port 22 proto tcp     # VLAN 1000
+sudo ufw allow from 172.16.254.0/24 to any port 22 proto tcp    # lab_lan
 sudo ufw enable
 ```
 
@@ -173,14 +217,14 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 
 ## Part E — Using the jump host
 
-From the Windows client, with the `~/.ssh/config` above:
+From the client, with the `~/.ssh/config` above:
 ```
 Host dc01 dc02 dc03 mikrotik
     ProxyJump jump
-    User sam
+    User abdoolsamad
 ```
 Then `ssh dc01` hops **through** `dnladm001` automatically. Your private key stays on
-the laptop — the bastion only forwards a pipe, it never sees your key.
+the client — the bastion only forwards a pipe, it never sees your key.
 
 ---
 
@@ -190,7 +234,7 @@ Everything above secures the *door*. To make it the *only* door, restrict device
 accept SSH **only from `172.16.10.2`**:
 - **MikroTik:** address-list with the bastion IP + firewall rules allowing mgmt ports
   (22 / Winbox / `:8006` / `:8007`) into device subnets **only from that address**.
-- **Per device:** `AllowUsers sam@172.16.10.2` as defense-in-depth.
+- **Per device:** `AllowUsers abdoolsamad@172.16.10.2` as defense-in-depth.
 
 Do this on its own change and verify reachability *before and after* — it touches the
 currently open forward chain (see [OPEN-ITEMS.md](OPEN-ITEMS.md)).
