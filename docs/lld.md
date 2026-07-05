@@ -138,18 +138,18 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VMID | Hostname | Service | Type | Node | VLAN | IP |
 |------|----------|---------|------|------|------|-----|
 | 1002 | `dnladm001` | Admin / bastion (jump) | VM | dc01 | 1000 | 172.16.10.2 (STAT) |
-| 1050 | `dnlnms001` | LibreNMS | CT | dc01 | 1000 | RSV/TBD |
-| 1051 | `dnlipam001` | NetBox (IPAM source of truth) | CT | dc01 | 1000 | RSV/TBD |
-| 1052 | `dnllog001` | rsyslog / logserver | CT | dc01 | 1000 | RSV/TBD |
-| 1053 | `dnldns001` | Technitium DNS #1 | CT | dc01 | 1000 | 172.16.10.55 (RSV) |
-| 1054 | `dnlcftun001` | Cloudflare tunnel | CT | dc01 | 1000 | RSV/TBD |
-| 1250 | `dnlplex001` | Plex / media | CT | dc01 | 1102 | RSV/TBD |
+| 1001 | `dnlnms001` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
+| 1003 | `dnlipam001` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
+| 1004 | `dnllog001` | rsyslog / logserver | VM | dc01 | 1000 | RSV/TBD |
+| 1005 | `dnldns001` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.55 (RSV) |
+| 1006 | `dnlcftun001` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
+| 1201 | `dnlplex001` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
 | 1301 | `dnlnas001` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |
 | 1302 | `dnlpbs001` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
-| 1950/1951 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
-| — | *(TBD)* | **Graylog** (OpenSearch) | VM | dc01 | *(TBD)* | *(pending — open item)* |
-| 2050 | `dnldns002` | Technitium DNS #2 | CT | dc02 | 1000 | 172.16.10.56 (RSV) |
-| 2051 | `dnllog002` | logserver (secondary) | CT | dc02 | 1000 | RSV/TBD |
+| 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
+| 1007 | `dnlglog001` *(proposed)* | **Graylog** (OpenSearch) | VM | dc01 | 1000 | *(pending — open item)* |
+| 2001 | `dnldns002` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
+| 2002 | `dnllog002` | logserver (secondary) | VM | dc02 | 1000 | RSV/TBD |
 | 2101 | `dnlpnet001` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
 | 2102 | `dnleve001` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
 | 3401 | `dnlpbs002` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |
