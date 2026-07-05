@@ -5,7 +5,7 @@ Format: **`dnl<role><NNN>`** — lowercase, no separators.
 Example: **`dnladm001`** (admin/bastion host, instance 001).
 
 - **`dnl`** — lab prefix (DevNetLabs).
-- **`<role>`** — short role code (see table below).
+- **`<role>`** — role code: **exactly 3 lowercase letters** (see table below).
 - **`<NNN>`** — 3-digit instance, **global per role**: `001` for a singleton,
   `002+` for pairs / HA members.
 - **Node-agnostic** — the name is the guest's *identity*; the VMID encodes *placement*.
@@ -19,26 +19,31 @@ Example: **`dnladm001`** (admin/bastion host, instance 001).
 
 ## Role codes
 
+Every role code is **exactly 3 lowercase letters**.
+
 | Code | Service |
 |------|---------|
 | `adm` | Admin / bastion (jump) host |
 | `nms` | LibreNMS |
-| `ipam` | NetBox |
-| `log` | rsyslog |
+| `nbx` | NetBox |
+| `log` | rsyslog / logserver |
 | `dns` | Technitium DNS Server |
-| `plex` | Plex |
+| `plx` | Plex |
 | `nas` | TrueNAS |
 | `pbs` | Proxmox Backup Server |
-| `pnet` | PNETLAB |
+| `pnt` | PNETLAB |
 | `eve` | EVE-NG |
-| `cftun` | Cloudflare tunnel connector (cloudflared) |
-| `tmpl` | Template |
+| `ctl` | Cloudflare tunnel connector (cloudflared) |
+| `gry` | Graylog |
 
-**Reserved for future use:** `git`, `awx`, `vault`, `graf`, `tsdb`, `dkr`, `k8s`,
-`proxy`, `ca`, `ad`.
+**Reserved for future use (3-letter):** `git`, `awx`, `vlt` (Vault), `grf` (Grafana),
+`tsd` (time-series DB), `dkr` (Docker), `k8s` (Kubernetes), `prx` (reverse proxy),
+`pki` (internal CA), `adc` (Active Directory).
 
 > **Avoid `dc`** — it means *node* in this topology.
-> **Pending:** a code for **Graylog** (candidate `glog`/`graylog`) — see OPEN-ITEMS.
+> **Templates** use their own `tmpl-<os><ver>` pattern (see below), exempt from the
+> 3-letter role rule.
+> **Graylog** now uses `gry` — VMID/placement still pending (see OPEN-ITEMS).
 
 ---
 
@@ -81,15 +86,15 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 |----------|------|
 | `dnlnms001` | 1001 |
 | `dnladm001` | 1002 |
-| `dnlipam001` | 1003 |
+| `dnlnbx001` | 1003 |
 | `dnllog001` | 1004 |
 | `dnldns001` | 1005 |
-| `dnlcftun001` | 1006 |
-| `dnlplex001` | 1201 |
+| `dnlctl001` | 1006 |
+| `dnlplx001` | 1201 |
 | `dnlnas001` | 1301 |
 | `dnlpbs001` | 1302 |
 | `dnldns002` | 2001 |
 | `dnllog002` | 2002 |
-| `dnlpnet001` | 2101 |
+| `dnlpnt001` | 2101 |
 | `dnleve001` | 2102 |
 | `dnlpbs002` | 3401 |
