@@ -112,9 +112,9 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
-| shared_mgt (1000) | 172.16.10.0/24 | `dnladm001` (bastion), `dnlnms001` (LibreNMS), `dnlipam001` (NetBox), `dnllog001` (rsyslog/logserver), `dnldns001` (Technitium DNS #1), `dnlcftun001` (Cloudflare tunnel), **Graylog** *(pending — see open items)* |
+| shared_mgt (1000) | 172.16.10.0/24 | `dnladm001` (bastion), `dnlnms001` (LibreNMS), `dnlnbx001` (NetBox), `dnllog001` (rsyslog/logserver), `dnldns001` (Technitium DNS #1), `dnlctl001` (Cloudflare tunnel), **Graylog** *(pending — see open items)* |
 | dc01_apps (1101) | 10.110.10.0/24 | *(reserved — no services yet)* |
-| dc01_media (1102) | 10.110.20.0/24 | `dnlplex001` (Plex / media transcode) |
+| dc01_media (1102) | 10.110.20.0/24 | `dnlplx001` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas001` (TrueNAS — DC S4500 passthrough), `dnlpbs001` (local PBS, M.2) |
 
 ### 6.2 dc02 — HPE ML150 G9 (on-demand, heavy/nested-virt)
@@ -122,7 +122,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnldns002` (Technitium DNS #2), `dnllog002` (logserver secondary) |
-| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnet001` (PNETLAB — mgmt NIC also on 1000), `dnleve001` (EVE-NG) |
+| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt001` (PNETLAB — mgmt NIC also on 1000), `dnleve001` (EVE-NG) |
 
 ### 6.3 dc03 — Dell E6430 (PBS DR target)
 
@@ -139,18 +139,18 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 |------|----------|---------|------|------|------|-----|
 | 1002 | `dnladm001` | Admin / bastion (jump) | VM | dc01 | 1000 | 172.16.10.2 (STAT) |
 | 1001 | `dnlnms001` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
-| 1003 | `dnlipam001` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
+| 1003 | `dnlnbx001` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
 | 1004 | `dnllog001` | rsyslog / logserver | VM | dc01 | 1000 | RSV/TBD |
 | 1005 | `dnldns001` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.55 (RSV) |
-| 1006 | `dnlcftun001` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
-| 1201 | `dnlplex001` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
+| 1006 | `dnlctl001` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
+| 1201 | `dnlplx001` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
 | 1301 | `dnlnas001` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |
 | 1302 | `dnlpbs001` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
 | 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
-| 1007 | `dnlglog001` *(proposed)* | **Graylog** (OpenSearch) | VM | dc01 | 1000 | *(pending — open item)* |
+| 1007 | `dnlgry001` *(proposed)* | **Graylog** (OpenSearch) | VM | dc01 | 1000 | *(pending — open item)* |
 | 2001 | `dnldns002` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
 | 2002 | `dnllog002` | logserver (secondary) | VM | dc02 | 1000 | RSV/TBD |
-| 2101 | `dnlpnet001` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
+| 2101 | `dnlpnt001` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
 | 2102 | `dnleve001` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
 | 3401 | `dnlpbs002` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |
 
@@ -179,12 +179,12 @@ currency**, corrected in §6–§7 above:
 |---|----------------|-------|--------------|
 | 1 | (absent) | **Bastion `dnladm001` (172.16.10.2) missing** — built this session | Added to dc01 shared_mgt (1000) |
 | 2 | `dns server` + `logserver` repeated in **every** VNET (App/Media/NAS/shared) | DNS and log services are **centralized in mgmt (1000)**, not per-zone | Only in shared_mgt VNets |
-| 3 | Media VNET (1102): `logserver, dns server` | Wrong services for the media zone | `dnlplex001` (Plex) |
+| 3 | Media VNET (1102): `logserver, dns server` | Wrong services for the media zone | `dnlplx001` (Plex) |
 | 4 | NAS VNET (1103): `Proxmox backup server` only | **TrueNAS missing** — it's the primary NAS | `dnlnas001` (TrueNAS) **+** `dnlpbs001` (local PBS) |
 | 5 | shared VNET: `logserver … Rsyslog` | Redundant — rsyslog **is** the logserver | Single `dnllog001` |
 | 6 | `dns server` (generic) | DNS engine changed | **Technitium** (`dnldns001` / `dnldns002`) |
 | 7 | `LiberNMS` | Typo | **LibreNMS** (`dnlnms001`) |
-| 8 | (absent) | Cloudflare tunnel connector not shown | `dnlcftun001` in shared_mgt (1000) |
+| 8 | (absent) | Cloudflare tunnel connector not shown | `dnlctl001` in shared_mgt (1000) |
 | 9 | (absent) | Graylog (planned always-on) not shown | Listed as **pending** (unmapped VMID) |
 | 10 | dc02 shared VNET: `logserver, dns server` | Not labelled as the secondary instances | `dnldns002` / `dnllog002` |
 | 11 | Router `951UI` | Cosmetic | `RB951Ui-2HnD` |
