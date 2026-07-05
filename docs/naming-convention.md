@@ -79,17 +79,17 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
 | Hostname | VMID |
 |----------|------|
+| `dnlnms001` | 1001 |
 | `dnladm001` | 1002 |
-| `dnlnms001` | 1050 |
-| `dnlipam001` | 1051 |
-| `dnllog001` | 1052 |
-| `dnldns001` | 1053 |
-| `dnlcftun001` | 1054 |
-| `dnlplex001` | 1250 |
+| `dnlipam001` | 1003 |
+| `dnllog001` | 1004 |
+| `dnldns001` | 1005 |
+| `dnlcftun001` | 1006 |
+| `dnlplex001` | 1201 |
 | `dnlnas001` | 1301 |
 | `dnlpbs001` | 1302 |
-| `dnldns002` | 2050 |
-| `dnllog002` | 2051 |
+| `dnldns002` | 2001 |
+| `dnllog002` | 2002 |
 | `dnlpnet001` | 2101 |
 | `dnleve001` | 2102 |
 | `dnlpbs002` | 3401 |

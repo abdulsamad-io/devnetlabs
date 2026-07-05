@@ -10,9 +10,9 @@ outbound-only on port 7844).
 
 ## Connector
 
-`cloudflared` in an **unprivileged Debian LXC on dc01, VLAN 1000**.
+`cloudflared` in a **Debian VM on dc01, VLAN 1000**.
 
-- Suggested VMID **1054**, hostname **`dnl-cftun-01`**
+- Suggested VMID **1006**, hostname **`dnlcftun001`**
 - Sizing: 1 vCPU / 512 MB / 4 GB
 
 ### Install (apt)
@@ -34,7 +34,7 @@ sudo apt-get update && sudo apt-get install -y cloudflared
 
 1. **Create the tunnel.** Zero Trust dashboard → **Networks/Networking → Tunnels** →
    create tunnel `dnl-dc01` (Cloudflared) → run
-   `sudo cloudflared service install eyJ...<token>` in the LXC → connector shows
+   `sudo cloudflared service install eyJ...<token>` in the VM → connector shows
    **Healthy**.
 
 2. **Add the public hostname.** `pve.devnetlabs.com` → **HTTPS** → `<dc01-ip>:8006`.
