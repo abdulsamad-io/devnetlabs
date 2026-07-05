@@ -16,6 +16,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [VMID plan](docs/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
 | [Naming convention](docs/naming-convention.md) | `dnl-<role>-<NN>` guest naming, role codes, DNS |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
+| [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
 
 ## Nodes
 
