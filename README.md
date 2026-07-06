@@ -18,6 +18,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [Naming convention](docs/naming-convention.md) | `dnl-<role>-<NN>` guest naming, role codes, DNS |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
+| [TrueNAS setup](docs/truenas-setup.md) | TrueNAS VM build, disk passthrough, ZFS pool, shares |
 
 ## Nodes
 
