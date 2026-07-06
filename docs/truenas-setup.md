@@ -124,6 +124,16 @@ qm set 1301 --scsi1 /dev/disk/by-id/ata-INTEL_SSDSC2KB019T7_BTYS818300LU1P9DGN,d
 - `by-id` → never renumbers across reboots.
 - `backup=0` → vzdump won't try to snapshot 1.9 TB of NAS data (backed up separately).
 
+> **Set a unique disk serial** (avoids a pool-wizard error). Proxmox presents
+> virtual/passthrough disks without a serial, so every VM disk reads serial `None` and
+> the pool wizard fails with *"Disks have duplicate serial numbers: None (sda, sdb)"*.
+> Stop the VM and append a unique `serial=` to each disk line (edit
+> `/etc/pve/qemu-server/1301.conf`), e.g.:
+> ```
+> scsi0: local-lvm:vm-1301-disk-1,discard=on,size=32G,ssd=1,serial=BOOT001
+> scsi1: /dev/disk/by-id/ata-INTEL_SSDSC2KB019T7_BTYS818300LU1P9DGN,backup=0,discard=on,ssd=1,serial=S4500DATA01
+> ```
+
 ---
 
 ## Part F — Configure TrueNAS (web UI)
@@ -150,6 +160,62 @@ qm set 1301 --scsi1 /dev/disk/by-id/ata-INTEL_SSDSC2KB019T7_BTYS818300LU1P9DGN,d
   the purist alternative is PCIe passthrough of the whole SATA controller (only clean
   if that controller is alone in its IOMMU group).
 - Do **not** create Proxmox storage/LVM on `sda` — it's dedicated to this VM.
+
+---
+
+## Part H — As-built configuration
+
+**Pool:** `dnl_pool001` — single-disk **stripe**, ~1.75 TiB, **no redundancy**.
+
+**Datasets** (under `dnl_pool001`):
+
+| Dataset | Preset | Purpose | Shared via |
+|---------|--------|---------|------------|
+| `abdulsamad_nas` | SMB | Abdulsamad's personal files | SMB |
+| `hameedah_nas` | SMB | Hameedah's personal files | SMB |
+| `media_nas` | Multiprotocol | Plex media library | SMB + NFS |
+
+**Shares:**
+- **SMB** (service running): `abdulsamad_nas`, `hameedah_nas`, `media_nas`
+- **NFS** (service running): `/mnt/dnl_pool001/media_nas` — for Plex (`dnlplx001`);
+  restrict allowed networks to `10.110.20.0/24` (media).
+
+**Users / auth:** SMB authenticates by **account name**, not share name. Login user is
+**`abdoolsamad`** (+ `hameedah` for her share).
+> ⚠️ **Spelling gap:** shares are named `abdulsamad_nas` etc., but the TrueNAS account
+> is **`abdoolsamad`** (double-o, matching the bastion user). Always map with the
+> **account** name.
+
+**Windows client mapping:**
+```powershell
+net use \\10.110.30.50 /delete /y      # clear stale sessions first
+net use Z: \\10.110.30.50\abdulsamad_nas /user:abdoolsamad * /persistent:yes
+```
+
+---
+
+## Part I — Snapshot & replication plan
+
+- **Snapshots** (accidental-deletion / ransomware protection) — *to configure:*
+  Data Protection → **Periodic Snapshot Tasks** on `abdulsamad_nas` and `hameedah_nas`
+  (e.g. hourly, retain 2 weeks). Lighter/none on `media_nas` (large, re-downloadable).
+  *Snapshots do not protect against the disk dying.*
+- **Replication** (disk-failure protection) — *pending:* Data Protection →
+  **Replication** to an off-box target (dc03 PBS or the M.2 2242). Until this exists,
+  the NAS holds the **only** copy of important files — a real risk on a single-disk
+  pool. Blocked on the **M.2 2242 role** decision (see [OPEN-ITEMS.md](OPEN-ITEMS.md)).
+
+---
+
+## Troubleshooting notes
+
+- **Pool wizard "Error: topology — duplicate serial numbers: None".** Passthrough/virtual
+  disks have no serial in Proxmox → set a unique `serial=` per disk (see Part E).
+- **SMB map fails with System error 86 ("network password is not correct").** Usually a
+  **username mismatch** — `/user:` must be the TrueNAS **account** (`abdoolsamad`), not
+  the share name. Clear stale sessions first (`net use \\10.110.30.50 /delete /y`).
+- **Disk not visible in Proxmox at all** → BIOS: set SATA to **AHCI**, disable
+  **VMD/RST** (see Part A).
 
 ---
 
