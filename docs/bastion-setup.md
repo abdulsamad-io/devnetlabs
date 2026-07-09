@@ -1,4 +1,4 @@
-# Bastion / Jump Host Setup Runbook — `dnladm001`
+# Bastion / Jump Host Setup Runbook — `dnladm101`
 
 Practical, repeatable steps to build and harden the DevNetLabs jump host.
 For the *why* behind each choice, this runbook is deliberately terse — see the inline
@@ -8,7 +8,7 @@ notes.
 
 | Item | Value |
 |------|-------|
-| Hostname | `dnladm001` |
+| Hostname | `dnladm101` |
 | Role | Admin / bastion (jump) host (`adm`) |
 | VMID | 1002 (VM, dc01) |
 | OS | Ubuntu 26.04 |
@@ -151,7 +151,7 @@ Test: `ssh jump`
 
 ---
 
-## Part D — Server-side hardening (on `dnladm001`)
+## Part D — Server-side hardening (on `dnladm101`)
 
 > **Golden rule:** keep your working session (or the Proxmox console) open until a
 > *new* login is proven to work. A bad SSH config can lock you out.
@@ -211,7 +211,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 - `chrony` — accurate clock (logs today; MFA/certs later).
 - `fail2ban` — auto-bans repeat SSH offenders.
 
-**6. Log forwarding** (once `dnllog001` exists) — point rsyslog at the log server.
+**6. Log forwarding** (once `dnllog101` exists) — point rsyslog at the log server.
 
 ---
 
@@ -223,7 +223,7 @@ Host dc01 dc02 dc03 mikrotik
     ProxyJump jump
     User abdoolsamad
 ```
-Then `ssh dc01` hops **through** `dnladm001` automatically. Your private key stays on
+Then `ssh dc01` hops **through** `dnladm101` automatically. Your private key stays on
 the client — the bastion only forwards a pipe, it never sees your key.
 
 ---

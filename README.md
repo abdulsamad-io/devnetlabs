@@ -4,7 +4,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 
 - **Lab code:** `dnl`
 - **Public domain:** `devnetlabs.com` (Cloudflare nameservers, Full setup)
-- **Internal DNS zone:** `lab.devnetlabs.com`
+- **Internal DNS zones (per-node):** `dc01.devnetlabs.com` / `dc02.devnetlabs.com` / `dc03.devnetlabs.com`
 - **Topology:** MikroTik core router + 3 standalone Proxmox VE nodes managed under
   Proxmox Datacenter Manager (PDM) — **not** a Corosync cluster.
 
@@ -15,7 +15,8 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [Low-Level Design (LLD)](docs/lld.md) | Consolidated topology, addressing, SDN VNets, guest inventory |
 | [Network & VLAN design](docs/network-vlan-design.md) | MikroTik core, VLANs, bridges, DHCP, port map |
 | [VMID plan](docs/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
-| [Naming convention](docs/naming-convention.md) | `dnl-<role>-<NN>` guest naming, role codes, DNS |
+| [Naming convention](docs/naming-convention.md) | `dnl<role><dc><nn>` guest naming, role codes, per-node DNS |
+| [Cross-DC migration](docs/cross-dc-migration.md) | Moving a VM between nodes (VMID + hostname + DNS) |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
 | [TrueNAS setup](docs/truenas-setup.md) | TrueNAS VM build, disk passthrough, ZFS pool, shares |

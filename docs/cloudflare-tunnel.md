@@ -12,7 +12,7 @@ outbound-only on port 7844).
 
 `cloudflared` in a **Debian VM on dc01, VLAN 1000**.
 
-- Suggested VMID **1006**, hostname **`dnlctl001`**
+- Suggested VMID **1006**, hostname **`dnlctl101`**
 - Sizing: 1 vCPU / 512 MB / 4 GB
 
 ### Install (apt)
