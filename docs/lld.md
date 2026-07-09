@@ -96,10 +96,10 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | Address | Assignment | Host / use |
 |---------|-----------|------------|
 | 172.16.10.1 | STAT | Gateway (SVI `vlan_shared_mgt`) |
-| 172.16.10.2 | STAT | `dnladm001` — bastion / jump host |
+| 172.16.10.2 | STAT | `dnladm101` — bastion / jump host |
 | 172.16.10.9 / .10 | STAT | **dc01 PVE mgmt** (⚠️ `.9` vs `.10` unresolved — open item) |
-| 172.16.10.55 | RSV | `dnldns001` — Technitium DNS #1 |
-| 172.16.10.56 | RSV | `dnldns002` — Technitium DNS #2 |
+| 172.16.10.55 | RSV | `dnldns101` — Technitium DNS #1 |
+| 172.16.10.56 | RSV | `dnldns201` — Technitium DNS #2 |
 
 ---
 
@@ -112,24 +112,24 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
-| shared_mgt (1000) | 172.16.10.0/24 | `dnladm001` (bastion), `dnlnms001` (LibreNMS), `dnlnbx001` (NetBox), `dnllog001` (rsyslog/logserver), `dnldns001` (Technitium DNS #1), `dnlctl001` (Cloudflare tunnel), **Graylog** *(pending — see open items)* |
+| shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnlnms101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog/logserver), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel), **Graylog** *(pending — see open items)* |
 | dc01_apps (1101) | 10.110.10.0/24 | *(reserved — no services yet)* |
-| dc01_media (1102) | 10.110.20.0/24 | `dnlplx001` (Plex / media transcode) |
-| dc01_nas (1103) | 10.110.30.0/24 | `dnlnas001` (TrueNAS — DC S4500 passthrough), `dnlpbs001` (local PBS, M.2) |
+| dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
+| dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
 
 ### 6.2 dc02 — HPE ML150 G9 (on-demand, heavy/nested-virt)
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
-| shared_mgt (1000) | 172.16.10.0/24 | `dnldns002` (Technitium DNS #2), `dnllog002` (logserver secondary) |
-| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt001` (PNETLAB — mgmt NIC also on 1000), `dnleve001` (EVE-NG) |
+| shared_mgt (1000) | 172.16.10.0/24 | `dnldns201` (Technitium DNS #2), `dnllog201` (logserver secondary) |
+| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLAB — mgmt NIC also on 1000), `dnleve201` (EVE-NG) |
 
 ### 6.3 dc03 — Dell E6430 (PBS DR target)
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | *(reserved: VMIDs 3001–3049)* |
-| dc03_pbs (1301) | 10.130.10.0/24 | `dnlpbs002` (PBS cross-node DR target) |
+| dc03_pbs (1301) | 10.130.10.0/24 | `dnlpbs301` (PBS cross-node DR target) |
 
 ---
 
@@ -137,22 +137,22 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VMID | Hostname | Service | Type | Node | VLAN | IP |
 |------|----------|---------|------|------|------|-----|
-| 1002 | `dnladm001` | Admin / bastion (jump) | VM | dc01 | 1000 | 172.16.10.2 (STAT) |
-| 1001 | `dnlnms001` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
-| 1003 | `dnlnbx001` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
-| 1004 | `dnllog001` | rsyslog / logserver | VM | dc01 | 1000 | RSV/TBD |
-| 1005 | `dnldns001` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.55 (RSV) |
-| 1006 | `dnlctl001` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
-| 1201 | `dnlplx001` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
-| 1301 | `dnlnas001` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |
-| 1302 | `dnlpbs001` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
+| 1002 | `dnladm101` | Admin / bastion (jump) | VM | dc01 | 1000 | 172.16.10.2 (STAT) |
+| 1001 | `dnlnms101` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
+| 1003 | `dnlnbx101` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
+| 1004 | `dnllog101` | rsyslog / logserver | VM | dc01 | 1000 | RSV/TBD |
+| 1005 | `dnldns101` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.55 (RSV) |
+| 1006 | `dnlctl101` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
+| 1201 | `dnlplx101` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
+| 1301 | `dnlnas101` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |
+| 1302 | `dnlpbs101` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
 | 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
-| 1007 | `dnlgry001` *(proposed)* | **Graylog** (OpenSearch) | VM | dc01 | 1000 | *(pending — open item)* |
-| 2001 | `dnldns002` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
-| 2002 | `dnllog002` | logserver (secondary) | VM | dc02 | 1000 | RSV/TBD |
-| 2101 | `dnlpnt001` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
-| 2102 | `dnleve001` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
-| 3401 | `dnlpbs002` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |
+| 1007 | `dnlgry101` *(proposed)* | **Graylog** (OpenSearch) | VM | dc01 | 1000 | *(pending — open item)* |
+| 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
+| 2002 | `dnllog201` | logserver (secondary) | VM | dc02 | 1000 | RSV/TBD |
+| 2101 | `dnlpnt201` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
+| 2102 | `dnleve201` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
+| 3401 | `dnlpbs301` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |
 
 ---
 
@@ -161,7 +161,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 - **Inter-VLAN routing is fully open** — no forward-chain firewall rules on the
   MikroTik. Any VLAN can currently reach any other.
 - **NAT:** `srcnat masquerade out-interface=ether4_igw` (covers `lab_lan` too).
-- **Bastion intent:** `dnladm001` (172.16.10.2) is the single SSH ingress. It only
+- **Bastion intent:** `dnladm101` (172.16.10.2) is the single SSH ingress. It only
   becomes a real control once devices are restricted to accept SSH **only from the
   bastion** — that firewall tightening is still pending (see open items).
 - **OSPF:** a duplicate `ospf-instance-1` still needs cleanup (open item).
@@ -177,16 +177,16 @@ currency**, corrected in §6–§7 above:
 
 | # | In the diagram | Issue | Corrected to |
 |---|----------------|-------|--------------|
-| 1 | (absent) | **Bastion `dnladm001` (172.16.10.2) missing** — built this session | Added to dc01 shared_mgt (1000) |
+| 1 | (absent) | **Bastion `dnladm101` (172.16.10.2) missing** — built this session | Added to dc01 shared_mgt (1000) |
 | 2 | `dns server` + `logserver` repeated in **every** VNET (App/Media/NAS/shared) | DNS and log services are **centralized in mgmt (1000)**, not per-zone | Only in shared_mgt VNets |
-| 3 | Media VNET (1102): `logserver, dns server` | Wrong services for the media zone | `dnlplx001` (Plex) |
-| 4 | NAS VNET (1103): `Proxmox backup server` only | **TrueNAS missing** — it's the primary NAS | `dnlnas001` (TrueNAS) **+** `dnlpbs001` (local PBS) |
-| 5 | shared VNET: `logserver … Rsyslog` | Redundant — rsyslog **is** the logserver | Single `dnllog001` |
-| 6 | `dns server` (generic) | DNS engine changed | **Technitium** (`dnldns001` / `dnldns002`) |
-| 7 | `LiberNMS` | Typo | **LibreNMS** (`dnlnms001`) |
-| 8 | (absent) | Cloudflare tunnel connector not shown | `dnlctl001` in shared_mgt (1000) |
+| 3 | Media VNET (1102): `logserver, dns server` | Wrong services for the media zone | `dnlplx101` (Plex) |
+| 4 | NAS VNET (1103): `Proxmox backup server` only | **TrueNAS missing** — it's the primary NAS | `dnlnas101` (TrueNAS) **+** `dnlpbs101` (local PBS) |
+| 5 | shared VNET: `logserver … Rsyslog` | Redundant — rsyslog **is** the logserver | Single `dnllog101` |
+| 6 | `dns server` (generic) | DNS engine changed | **Technitium** (`dnldns101` / `dnldns201`) |
+| 7 | `LiberNMS` | Typo | **LibreNMS** (`dnlnms101`) |
+| 8 | (absent) | Cloudflare tunnel connector not shown | `dnlctl101` in shared_mgt (1000) |
 | 9 | (absent) | Graylog (planned always-on) not shown | Listed as **pending** (unmapped VMID) |
-| 10 | dc02 shared VNET: `logserver, dns server` | Not labelled as the secondary instances | `dnldns002` / `dnllog002` |
+| 10 | dc02 shared VNET: `logserver, dns server` | Not labelled as the secondary instances | `dnldns201` / `dnllog201` |
 | 11 | Router `951UI` | Cosmetic | `RB951Ui-2HnD` |
 
 **Still-open dependencies referenced above:** dc01 mgmt IP `.9` vs `.10`, M.2 2242 role

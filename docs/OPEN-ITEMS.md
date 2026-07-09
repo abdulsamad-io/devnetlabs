@@ -13,7 +13,7 @@ Unresolved questions and pending work, carried over from the working sessions.
    Decide whether local PBS stays or is replaced by vzdump + ZFS replication.
 3. **Graylog** — new always-on service (VM, OpenSearch, ~6–8GB on dc01) is **not yet
    in the VMID or naming plans**. Confirm it runs *alongside* rsyslog, and assign a
-   VMID + placement. Role code is `gry` (assigned); hostname `dnlgry001`.
+   VMID + placement. Role code is `gry` (assigned); hostname `dnlgry101`.
 4. **PNETLab placement** — VMID plan puts PNETLAB on **dc02 (2101)**, but dc01's
    always-on stack lists an on-demand **"light PNETLab VM"**. Confirm intended split.
 

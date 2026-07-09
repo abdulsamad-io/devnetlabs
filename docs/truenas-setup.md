@@ -1,4 +1,4 @@
-# TrueNAS Setup Runbook — `dnlnas001`
+# TrueNAS Setup Runbook — `dnlnas101`
 
 Build and configure the DevNetLabs TrueNAS VM on dc01, with the 1.92 TB SSD passed
 through for a ZFS data pool.
@@ -7,7 +7,7 @@ through for a ZFS data pool.
 
 | Item | Value |
 |------|-------|
-| Hostname | `dnlnas001` |
+| Hostname | `dnlnas101` |
 | Role | TrueNAS / NAS (`nas`) |
 | VMID | 1301 (VM, dc01) |
 | OS | TrueNAS Community Edition (SCALE) **25.10.4 Goldeye** |
@@ -20,7 +20,7 @@ through for a ZFS data pool.
 
 **Concept:** TrueNAS runs as a VM; the physical SSD is handed to it so ZFS owns the
 data disk. TrueNAS then exports SMB/NFS shares consumed by other guests (e.g. Plex
-`dnlplx001`). The TrueNAS OS lives on a small NVMe-backed virtual disk — **never** on
+`dnlplx101`). The TrueNAS OS lives on a small NVMe-backed virtual disk — **never** on
 the data SSD.
 
 ---
@@ -74,7 +74,7 @@ Confirm it landed: `pvesm list local --content iso`
 
 ```bash
 qm create 1301 \
-  --name dnlnas001 \
+  --name dnlnas101 \
   --machine q35 --bios ovmf \
   --cpu x86-64-v2-AES --cores 2 --sockets 1 \
   --memory 8192 --balloon 0 \
@@ -138,14 +138,14 @@ qm set 1301 --scsi1 /dev/disk/by-id/ata-INTEL_SSDSC2KB019T7_BTYS818300LU1P9DGN,d
 
 ## Part F — Configure TrueNAS (web UI)
 
-1. **Network → Global Configuration:** hostname `dnlnas001`.
+1. **Network → Global Configuration:** hostname `dnlnas101`.
 2. **Network → Interfaces:** set the NIC to **static `10.110.30.50/24`**, gateway
    `10.110.30.1`, DNS as appropriate. (Alternatively a DHCP reservation on the MikroTik.)
 3. **Storage → Disks:** the passed SSD still has NTFS partitions — select it and
    **Wipe** (Quick). *This is the destructive step (confirmed safe in Part A).*
 4. **Storage → Create Pool:** single-disk (stripe) vdev on that SSD — **no redundancy**.
 5. **Datasets → Add**, then **Shares** → SMB (Windows) and/or NFS (Unix) as needed.
-   Plex (`dnlplx001`) mounts media from here.
+   Plex (`dnlplx101`) mounts media from here.
 
 ---
 
@@ -177,7 +177,7 @@ qm set 1301 --scsi1 /dev/disk/by-id/ata-INTEL_SSDSC2KB019T7_BTYS818300LU1P9DGN,d
 
 **Shares:**
 - **SMB** (service running): `abdulsamad_nas`, `hameedah_nas`, `media_nas`
-- **NFS** (service running): `/mnt/dnl_pool001/media_nas` — for Plex (`dnlplx001`);
+- **NFS** (service running): `/mnt/dnl_pool001/media_nas` — for Plex (`dnlplx101`);
   restrict allowed networks to `10.110.20.0/24` (media).
 
 **Users / auth:** SMB authenticates by **account name**, not share name. Login user is

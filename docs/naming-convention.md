@@ -1,19 +1,24 @@
 # VM / Guest Naming Convention
 
-Format: **`dnl<role><NNN>`** — lowercase, no separators.
+Format: **`dnl<role><dc><nn>`** — lowercase, no separators.
 
-Example: **`dnladm001`** (admin/bastion host, instance 001).
+Example: **`dnladm101`** (admin/bastion host on **dc01**, instance **01**).
 
 - **`dnl`** — lab prefix (DevNetLabs).
 - **`<role>`** — role code: **exactly 3 lowercase letters** (see table below).
-- **`<NNN>`** — 3-digit instance, **global per role**: `001` for a singleton,
-  `002+` for pairs / HA members.
-- **Node-agnostic** — the name is the guest's *identity*; the VMID encodes *placement*.
-  Names therefore survive cross-node PBS restore.
+- **`<dc>`** — node digit: `1`=dc01, `2`=dc02, `3`=dc03. **Must equal the VMID's `N`
+  digit and the DNS subdomain** — node identity is encoded in all three.
+- **`<nn>`** — 2-digit instance, **per node, per role**: `01` for a singleton on that
+  node, `02+` for additional / HA instances on the same node.
+- **Placement is encoded in the name** (and in the VMID and DNS zone). This is
+  deliberate — the hostname/FQDN tells you the node at a glance. **Trade-off:** a guest
+  moved to another node must be **renamed + renumbered + its DNS record re-homed** to
+  the new zone (see [cross-dc-migration.md](cross-dc-migration.md)).
 
-> **Scheme change:** this flat `dnl<role><NNN>` form (no hyphens, 3-digit instance)
-> **supersedes** the earlier hyphenated `dnl-<role>-<NN>` convention. Existing guests
-> should be renamed to the new form as they are (re)built.
+> **Scheme change:** this node-embedded `dnl<role><dc><nn>` form **supersedes** the
+> earlier node-agnostic flat `dnl<role><NNN>` convention (which itself replaced the
+> hyphenated `dnl-<role>-<NN>` form). Existing guests should be renamed as they are
+> (re)built.
 
 ---
 
@@ -58,17 +63,20 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
 ## DNS
 
-- Internal zone: **`lab.devnetlabs.com`**, served by **Technitium DNS Server** as an
-  authoritative primary zone. A records follow the hostname,
-  e.g. `dnladm001.lab.devnetlabs.com`.
-- Per-zone subdomains (e.g. `mgmt.lab.devnetlabs.com`) are supported **natively** by
-  Technitium zones — no custom dnsmasq needed (unlike Pi-hole's flat records).
-- Technitium also provides recursive resolution / conditional forwarding, block
-  lists (ad/tracker filtering, replacing Pi-hole), DNSSEC, DoH/DoT, and a full HTTP
-  API + config export suitable for IaC (Ansible/Terraform).
-- Keep the **public apex `devnetlabs.com` separate** from the internal zone.
-- **Let's Encrypt wildcard `*.lab.devnetlabs.com` via DNS-01** gives publicly-trusted
-  TLS on internal services (leverages Cloudflare-managed DNS).
+- **Per-node internal zones**, served by **Technitium DNS Server** (authoritative):
+  **`dc01.devnetlabs.com`**, **`dc02.devnetlabs.com`**, **`dc03.devnetlabs.com`** —
+  replacing the retired flat `lab.devnetlabs.com`.
+- A host's FQDN = **`<hostname>.dc0<n>.devnetlabs.com`**, where the zone matches the
+  node encoded in the hostname. Examples: `dnladm101` → `dnladm101.dc01.devnetlabs.com`;
+  `dnldns201` → `dnldns201.dc02.devnetlabs.com`; `dnlpbs301` →
+  `dnlpbs301.dc03.devnetlabs.com`.
+- Technitium hosts the three zones natively and also provides recursive resolution /
+  conditional forwarding, block lists (ad/tracker filtering, replacing Pi-hole),
+  DNSSEC, DoH/DoT, and a full HTTP API + config export suitable for IaC.
+- Keep the **public apex `devnetlabs.com` separate** from these internal zones.
+- **Let's Encrypt via DNS-01:** one wildcard **per zone** — `*.dc01.devnetlabs.com`,
+  `*.dc02.devnetlabs.com`, `*.dc03.devnetlabs.com` (publicly-trusted TLS on internal
+  services, via Cloudflare-managed DNS).
 
 ---
 
@@ -84,17 +92,17 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
 | Hostname | VMID |
 |----------|------|
-| `dnlnms001` | 1001 |
-| `dnladm001` | 1002 |
-| `dnlnbx001` | 1003 |
-| `dnllog001` | 1004 |
-| `dnldns001` | 1005 |
-| `dnlctl001` | 1006 |
-| `dnlplx001` | 1201 |
-| `dnlnas001` | 1301 |
-| `dnlpbs001` | 1302 |
-| `dnldns002` | 2001 |
-| `dnllog002` | 2002 |
-| `dnlpnt001` | 2101 |
-| `dnleve001` | 2102 |
-| `dnlpbs002` | 3401 |
+| `dnlnms101` | 1001 |
+| `dnladm101` | 1002 |
+| `dnlnbx101` | 1003 |
+| `dnllog101` | 1004 |
+| `dnldns101` | 1005 |
+| `dnlctl101` | 1006 |
+| `dnlplx101` | 1201 |
+| `dnlnas101` | 1301 |
+| `dnlpbs101` | 1302 |
+| `dnldns201` | 2001 |
+| `dnllog201` | 2002 |
+| `dnlpnt201` | 2101 |
+| `dnleve201` | 2102 |
+| `dnlpbs301` | 3401 |
