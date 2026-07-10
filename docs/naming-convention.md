@@ -78,6 +78,33 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
   `*.dc02.devnetlabs.com`, `*.dc03.devnetlabs.com` (publicly-trusted TLS on internal
   services, via Cloudflare-managed DNS).
 
+### Split-horizon (public vs internal)
+
+`devnetlabs.com` and the internal `dcNN.devnetlabs.com` zones share one namespace but
+are **separate zones, served by different authorities to different audiences** — classic
+split-horizon (split-brain) DNS:
+
+| | `devnetlabs.com` (apex) | `dcNN.devnetlabs.com` (internal) |
+|---|---|---|
+| Level | 2nd-level (registered domain) | 3rd-level subdomain (own zone/SOA) |
+| Authoritative server | **Cloudflare** (public NS) | **Technitium** (on the LAN) |
+| Audience | Anyone on the internet | Only clients using Technitium |
+| Resolves to | Public IPs / Cloudflare proxy / the tunnel | Private IPs (172.16.x / 10.x) |
+| Published publicly? | Yes | **No** — public queries return NXDOMAIN |
+| Managed via | Cloudflare dashboard / API | Technitium API (IaC) |
+
+- The internal zones exist **only in the internal view**. Cloudflare holds **no
+  delegation or records** for `dcNN.devnetlabs.com`, so internal hostnames, IPs, and
+  topology never leave the lab.
+- Publish only deliberately-public names on the apex (currently just the Cloudflare
+  tunnel hostname, e.g. `pve.devnetlabs.com`).
+- **Independent failure domains:** internal resolution keeps working even if the WAN or
+  Cloudflare is down, because Technitium is local. Internal edits are instant and
+  LAN-only; apex edits are outward-facing (TTL / caching / exposure).
+- **Apex constraint:** `devnetlabs.com` can't be a CNAME (RFC — Cloudflare uses CNAME
+  flattening) and must carry SOA/NS/MX; a subdomain like `dcNN.devnetlabs.com` has no
+  such limit.
+
 ---
 
 ## Proxmox integration
