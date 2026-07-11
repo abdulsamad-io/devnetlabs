@@ -1,0 +1,70 @@
+---
+# DNS zones.
+#  - PRIMARY (dnldns101): create primary zones + import records from ansible/zones/*.zone
+#  - SECONDARY (dnldns201): create secondary zones that transfer from the primary
+# So records are maintained in ONE place (the .zone files → primary); the secondary
+# receives them via AXFR/IXFR. Bump the SOA serial in the .zone file on every change.
+#
+# NOTE: verify endpoint/param names against your Technitium version's API docs.
+
+# ---------------- PRIMARY ----------------
+- name: Create primary zones
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/zones/create"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      zone: "{{ item.name }}"
+      type: Primary
+    return_content: true
+  loop: "{{ zones }}"
+  loop_control: { label: "{{ item.name }}" }
+  register: _mkzone
+  # idempotent: ignore "already exists"
+  failed_when:
+    - _mkzone.json.status is defined
+    - _mkzone.json.status != 'ok'
+    - "'already exists' not in (_mkzone.json.errorMessage | default(''))"
+  changed_when: _mkzone.json.status | default('') == 'ok'
+  when: technitium_role == 'primary'
+
+- name: Import zone records (overwrite) from BIND zone files
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/zones/import"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      zone: "{{ item.name }}"
+      importRecords: "{{ lookup('file', playbook_dir + '/zones/' + item.name + '.zone') }}"
+      overwrite: "true"
+    return_content: true
+  loop: "{{ zones }}"
+  loop_control: { label: "{{ item.name }}" }
+  register: _import
+  failed_when: _import.json.status is defined and _import.json.status != 'ok'
+  changed_when: false        # import overwrites → declarative
+  when: technitium_role == 'primary'
+
+# ---------------- SECONDARY ----------------
+- name: Create secondary zones (transfer from primary)
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/zones/create"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      zone: "{{ item.name }}"
+      type: Secondary
+      primaryNameServerAddresses: "{{ technitium_primary_ns }}"
+    return_content: true
+  loop: "{{ zones }}"
+  loop_control: { label: "{{ item.name }}" }
+  register: _mksec
+  failed_when:
+    - _mksec.json.status is defined
+    - _mksec.json.status != 'ok'
+    - "'already exists' not in (_mksec.json.errorMessage | default(''))"
+  changed_when: _mksec.json.status | default('') == 'ok'
+  when: technitium_role == 'secondary'

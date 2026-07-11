@@ -1,0 +1,12 @@
+---
+# Configure both Technitium servers (DNS zones + DHCP scopes + server settings)
+# from a single source of truth. Run:
+#   ansible-playbook site.yml -e @secrets.yml         # or --ask-vault-pass
+#
+# Useful tags:  --tags settings | dns | dhcp
+#   Limit to one host:  --limit dnldns101
+- name: Configure Technitium DNS + DHCP
+  hosts: technitium
+  gather_facts: false
+  roles:
+    - technitium

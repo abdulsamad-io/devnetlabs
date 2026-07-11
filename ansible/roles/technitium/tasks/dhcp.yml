@@ -1,0 +1,47 @@
+---
+# DHCP scopes pushed to BOTH servers (DHCP does NOT replicate via zone transfer).
+# Ranges come from host_vars dhcp_range_overrides so the two servers never hand out
+# the same address (split-range HA). A scope is only applied on a host that has a
+# range override for it.
+#
+# NOTE: verify endpoint/param names against your Technitium version's API docs.
+
+- name: Define / update DHCP scopes (per-host range)
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/dhcp/scopes/set"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      name: "{{ item.name }}"
+      startingAddress: "{{ dhcp_range_overrides[item.name].start }}"
+      endingAddress: "{{ dhcp_range_overrides[item.name].end }}"
+      subnetMask: "{{ item.mask }}"
+      routerAddress: "{{ item.router }}"
+      dnsServers: "{{ item.dns }}"
+      domainName: "{{ item.domain }}"
+      leaseTimeDays: "0"
+      leaseTimeHours: "{{ item.lease_hours | default(12) }}"
+    return_content: true
+  loop: "{{ dhcp_scopes }}"
+  loop_control: { label: "{{ item.name }} ({{ inventory_hostname }})" }
+  register: _scope
+  failed_when: _scope.json.status is defined and _scope.json.status != 'ok'
+  changed_when: false        # /set is declarative
+  when: item.name in dhcp_range_overrides
+
+- name: Enable DHCP scopes
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/dhcp/scopes/enable"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      name: "{{ item.name }}"
+    return_content: true
+  loop: "{{ dhcp_scopes }}"
+  loop_control: { label: "{{ item.name }} ({{ inventory_hostname }})" }
+  register: _scope_en
+  failed_when: _scope_en.json.status is defined and _scope_en.json.status != 'ok'
+  changed_when: false
+  when: item.name in dhcp_range_overrides

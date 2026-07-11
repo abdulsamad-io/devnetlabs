@@ -1,0 +1,46 @@
+---
+# Shared configuration applied to BOTH Technitium servers.
+# Per-host differences (primary/secondary role, DHCP range split) live in host_vars/.
+
+# Tasks hit the HTTP API from the control node — no SSH to the DNS boxes.
+ansible_connection: local
+technitium_api_url: "http://{{ ansible_host }}:5380"
+
+# API token — DO NOT commit in plaintext. Provide via ansible-vault
+# (group_vars/technitium/vault.yml) or `-e technitium_api_token=...`.
+# technitium_api_token: "{{ vault_technitium_api_token }}"
+
+# --- Server settings (pushed to both) ---
+technitium_forwarders:
+  - 192.168.2.254        # home router / upstream
+  - 1.1.1.1
+technitium_blocklist_urls:
+  - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+
+# --- DNS zones (single source of truth) ---
+# Records live in ansible/zones/<name>.zone (BIND format), imported to the PRIMARY;
+# the SECONDARY receives them via zone transfer.
+zones:
+  - name: dc01.devnetlabs.com
+  - name: dc02.devnetlabs.com
+  - name: dc03.devnetlabs.com
+  - name: 10.16.172.in-addr.arpa      # reverse for 172.16.10.0/24 (mgmt)
+
+# --- DHCP scopes (shared definition; RANGES come from host_vars, split to avoid
+#     two hot servers on one subnet). Only scopes with a host_vars range override
+#     are applied on that host. ---
+dhcp_scopes:
+  - name: vlan1000-mgmt
+    subnet: 172.16.10.0
+    mask: 255.255.255.0
+    router: 172.16.10.1
+    dns: "172.16.10.53,172.16.10.56"
+    domain: dc01.devnetlabs.com
+    lease_hours: 12
+  - name: lab_lan
+    subnet: 172.16.254.0
+    mask: 255.255.255.0
+    router: 172.16.254.1
+    dns: "172.16.10.53,172.16.10.56"
+    domain: dc01.devnetlabs.com
+    lease_hours: 12

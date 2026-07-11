@@ -1,0 +1,9 @@
+---
+# Defaults for the technitium role (override in group_vars/host_vars).
+technitium_role: primary            # primary | secondary
+technitium_forwarders: []
+technitium_blocklist_urls: []
+zones: []
+dhcp_scopes: []
+dhcp_range_overrides: {}
+# technitium_api_token: provided via vault / -e (never committed in plaintext)

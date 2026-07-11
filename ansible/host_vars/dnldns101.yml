@@ -1,0 +1,9 @@
+---
+# dnldns101 — PRIMARY (dc01, 172.16.10.53)
+technitium_role: primary
+
+# DHCP: primary serves the LOWER part of each shared range
+# (split ranges so the two servers never hand out the same address).
+dhcp_range_overrides:
+  vlan1000-mgmt: { start: 172.16.10.100, end: 172.16.10.179 }
+  lab_lan:       { start: 172.16.254.20, end: 172.16.254.179 }
