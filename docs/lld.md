@@ -98,7 +98,7 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 172.16.10.1 | STAT | Gateway (SVI `vlan_shared_mgt`) |
 | 172.16.10.2 | STAT | `dnladm101` — bastion / jump host |
 | 172.16.10.9 / .10 | STAT | **dc01 PVE mgmt** (⚠️ `.9` vs `.10` unresolved — open item) |
-| 172.16.10.55 | RSV | `dnldns101` — Technitium DNS #1 |
+| 172.16.10.53 | STAT | `dnldns101` — Technitium DNS #1 (live) |
 | 172.16.10.56 | RSV | `dnldns201` — Technitium DNS #2 |
 
 ---
@@ -141,7 +141,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1001 | `dnlnms101` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
 | 1003 | `dnlnbx101` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
 | 1004 | `dnllog101` | rsyslog / logserver | VM | dc01 | 1000 | RSV/TBD |
-| 1005 | `dnldns101` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.55 (RSV) |
+| 1005 | `dnldns101` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.53 (STAT) |
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
 | 1201 | `dnlplx101` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
 | 1301 | `dnlnas101` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |

@@ -36,7 +36,7 @@ Scheme: **`NZSS`** (4 digits).
 | 1002 | `dnladm101` | Admin / bastion (jump) host | VM | mgmt (1000) |
 | 1003 | `dnlnbx101` | NetBox | VM | mgmt (1000) |
 | 1004 | `dnllog101` | rsyslog / logserver | VM | mgmt (1000) |
-| 1005 | `dnldns101` | Technitium DNS #1 (.55) | VM | mgmt (1000) |
+| 1005 | `dnldns101` | Technitium DNS #1 (.53) | VM | mgmt (1000) |
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | mgmt (1000) |
 | 1007 | `dnlgry101` *(proposed)* | Graylog (OpenSearch) | VM | mgmt (1000) — *pending, see OPEN-ITEMS* |
 | 11xx | — | *reserved — apps zone, no services yet* | — | apps (1101) |
