@@ -1,0 +1,5 @@
+# Never commit secrets in plaintext
+secrets.yml
+*.plain.yml
+vault-password.txt
+*.retry

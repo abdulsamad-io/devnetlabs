@@ -31,10 +31,16 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | **dc02** | HPE ML150 G9 (Xeon E5 v3/v4) | Heavy / nested-virt, **powered on on demand** |
 | **dc03** | Dell E6430 | PBS cross-node DR target |
 
+## Infrastructure as Code
+
+| Path | Purpose |
+|------|---------|
+| [`ansible/`](ansible/README.md) | Technitium DNS + DHCP across `dnldns101`/`dnldns201` from one source |
+
+More to come (e.g. Terraform for the Cloudflare tunnel).
+
 ## Open items
 
 See [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) for unresolved questions and next steps.
 
-> These docs capture **current state as of the working sessions**. IaC (Terraform for
-> Cloudflare, Ansible for Proxmox/MikroTik) will be added under `terraform/` and
-> `ansible/` in later tasks.
+> These docs capture **current state as of the working sessions**.

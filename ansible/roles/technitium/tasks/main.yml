@@ -1,0 +1,17 @@
+---
+- name: Fail early if the API token is not set
+  ansible.builtin.assert:
+    that: technitium_api_token is defined and technitium_api_token | length > 0
+    fail_msg: >-
+      technitium_api_token is not set. Provide it via ansible-vault or
+      `-e technitium_api_token=...` (see ansible/README.md).
+  run_once: true
+
+- import_tasks: settings.yml
+  tags: [settings]
+
+- import_tasks: zones.yml
+  tags: [dns, zones]
+
+- import_tasks: dhcp.yml
+  tags: [dhcp]

@@ -1,0 +1,9 @@
+---
+# dnldns201 — SECONDARY (dc02, 172.16.10.56)
+technitium_role: secondary
+technitium_primary_ns: 172.16.10.53      # transfers zones from dnldns101
+
+# DHCP: secondary serves the UPPER part of each shared range (no overlap with primary).
+dhcp_range_overrides:
+  vlan1000-mgmt: { start: 172.16.10.180, end: 172.16.10.199 }
+  lab_lan:       { start: 172.16.254.180, end: 172.16.254.199 }

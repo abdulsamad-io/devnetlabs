@@ -1,0 +1,32 @@
+---
+# Server settings pushed to BOTH servers (settings don't replicate via zone transfer).
+# NOTE: verify endpoint/param names against your Technitium version's API docs
+# (browse http://<host>:5380/api on the running server).
+
+- name: Set DNS forwarders
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/settings/set"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      forwarders: "{{ technitium_forwarders | join(',') }}"
+      forwarderProtocol: Udp
+    return_content: true
+  register: _set_fwd
+  failed_when: _set_fwd.json.status is defined and _set_fwd.json.status != 'ok'
+  changed_when: false        # /set is declarative; treat as converge, not change
+
+- name: Configure block lists
+  ansible.builtin.uri:
+    url: "{{ technitium_api_url }}/api/settings/set"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      token: "{{ technitium_api_token }}"
+      blockListUrls: "{{ technitium_blocklist_urls | join(',') }}"
+    return_content: true
+  register: _set_bl
+  failed_when: _set_bl.json.status is defined and _set_bl.json.status != 'ok'
+  changed_when: false
+  when: technitium_blocklist_urls | length > 0
