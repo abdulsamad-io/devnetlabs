@@ -1,0 +1,27 @@
+# Copy to terraform.tfvars (gitignored) or pass -var-file. The API token should come
+# from the environment: export TF_VAR_api_token="..."  (never commit it).
+
+zones = [
+  "dc01.devnetlabs.com",
+  "dc02.devnetlabs.com",
+  "dc03.devnetlabs.com",
+  "10.16.172.in-addr.arpa",
+]
+
+forwarders     = ["192.168.2.254", "1.1.1.1"]
+blocklist_urls = ["https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"]
+
+dhcp_scopes = [
+  { name = "vlan1000-mgmt", mask = "255.255.255.0", router = "172.16.10.1", dns = "172.16.10.53,172.16.10.56", domain = "dc01.devnetlabs.com", lease_hours = 12 },
+  { name = "lab_lan", mask = "255.255.255.0", router = "172.16.254.1", dns = "172.16.10.53,172.16.10.56", domain = "dc01.devnetlabs.com", lease_hours = 12 },
+]
+
+# Split ranges so the two servers never overlap
+primary_dhcp_ranges = {
+  "vlan1000-mgmt" = { start = "172.16.10.100", end = "172.16.10.179" }
+  "lab_lan"       = { start = "172.16.254.20", end = "172.16.254.179" }
+}
+secondary_dhcp_ranges = {
+  "vlan1000-mgmt" = { start = "172.16.10.180", end = "172.16.10.199" }
+  "lab_lan"       = { start = "172.16.254.180", end = "172.16.254.199" }
+}

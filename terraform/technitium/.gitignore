@@ -1,0 +1,8 @@
+# State contains the API token (it's embedded in request URLs) — never commit it.
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+# tfvars may hold secrets
+terraform.tfvars
+*.auto.tfvars
