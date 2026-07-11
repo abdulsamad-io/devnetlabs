@@ -35,7 +35,8 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 
 | Path | Purpose |
 |------|---------|
-| [`ansible/`](ansible/README.md) | Technitium DNS + DHCP across `dnldns101`/`dnldns201` from one source |
+| [`ansible/`](ansible/README.md) | Technitium DNS + DHCP across `dnldns101`/`dnldns201` from one source (**preferred**) |
+| [`terraform/technitium/`](terraform/technitium/README.md) | Terraform equivalent of the Technitium setup (via `terracurl`) |
 
 More to come (e.g. Terraform for the Cloudflare tunnel).
 
