@@ -17,6 +17,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [VMID plan](docs/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
 | [Naming convention](docs/naming-convention.md) | `dnl<role><dc><nn>` guest naming, role codes, per-node DNS |
 | [Cross-DC migration](docs/cross-dc-migration.md) | Moving a VM between nodes (VMID + hostname + DNS) |
+| [DHCP migration](docs/dhcp-migration.md) | Move DHCP MikroTik→Technitium (relay, scopes, break-glass) |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
 | [TrueNAS setup](docs/truenas-setup.md) | TrueNAS VM build, disk passthrough, ZFS pool, shares |
