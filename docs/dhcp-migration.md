@@ -66,12 +66,12 @@ VLAN 1000 needs **no** relay (Technitium is directly attached). For every other 
 add a relay pointing at Technitium, with `local-address` = that subnet's SVI:
 
 ```
-/ip dhcp-relay add name=relay_lab_lan interface=bridge_lab_lan    dhcp-server=172.16.10.53 local-address=172.16.254.1
-/ip dhcp-relay add name=relay_1101    interface=vlan_dc01_apps    dhcp-server=172.16.10.53 local-address=10.110.10.1
-/ip dhcp-relay add name=relay_1102    interface=vlan_dc01_plex    dhcp-server=172.16.10.53 local-address=10.110.20.1
-/ip dhcp-relay add name=relay_1103    interface=vlan_dc01_truenas dhcp-server=172.16.10.53 local-address=10.110.30.1
-/ip dhcp-relay add name=relay_1201    interface=vlan_dc02_apps    dhcp-server=172.16.10.53 local-address=10.120.10.1
-/ip dhcp-relay add name=relay_1301    interface=vlan_dc03_pbs     dhcp-server=172.16.10.53 local-address=10.130.10.1
+/ip dhcp-relay add name=relay_lab_lan interface=bridge_lab_lan    dhcp-server=172.16.10.53 local-address=172.16.254.1 disabled=no
+/ip dhcp-relay add name=relay_1101    interface=vlan_dc01_apps    dhcp-server=172.16.10.53 local-address=10.110.10.1 disabled=no
+/ip dhcp-relay add name=relay_1102    interface=vlan_dc01_plex    dhcp-server=172.16.10.53 local-address=10.110.20.1 disabled=no
+/ip dhcp-relay add name=relay_1103    interface=vlan_dc01_truenas dhcp-server=172.16.10.53 local-address=10.110.30.1 disabled=no
+/ip dhcp-relay add name=relay_1201    interface=vlan_dc02_apps    dhcp-server=172.16.10.53 local-address=10.120.10.1 disabled=no
+/ip dhcp-relay add name=relay_1301    interface=vlan_dc03_pbs     dhcp-server=172.16.10.53 local-address=10.130.10.1 disabled=no
 ```
 
 *(Only add relays for the subnets you're cutting over in this pass.)*
@@ -129,14 +129,16 @@ VLANs 1101/1102/1103/1201/1301 — disable local server **and** add a relay each
 /ip dhcp-server disable [find interface=vlan_dc02_apps]
 /ip dhcp-server disable [find interface=vlan_dc03_pbs]
 
-/ip dhcp-relay add name=relay_1101 interface=vlan_dc01_apps    dhcp-server=172.16.10.53 local-address=10.110.10.1
-/ip dhcp-relay add name=relay_1102 interface=vlan_dc01_plex    dhcp-server=172.16.10.53 local-address=10.110.20.1
-/ip dhcp-relay add name=relay_1103 interface=vlan_dc01_truenas dhcp-server=172.16.10.53 local-address=10.110.30.1
-/ip dhcp-relay add name=relay_1201 interface=vlan_dc02_apps    dhcp-server=172.16.10.53 local-address=10.120.10.1
-/ip dhcp-relay add name=relay_1301 interface=vlan_dc03_pbs     dhcp-server=172.16.10.53 local-address=10.130.10.1
+/ip dhcp-relay add name=relay_1101 interface=vlan_dc01_apps    dhcp-server=172.16.10.53 local-address=10.110.10.1 disabled=no
+/ip dhcp-relay add name=relay_1102 interface=vlan_dc01_plex    dhcp-server=172.16.10.53 local-address=10.110.20.1 disabled=no
+/ip dhcp-relay add name=relay_1103 interface=vlan_dc01_truenas dhcp-server=172.16.10.53 local-address=10.110.30.1 disabled=no
+/ip dhcp-relay add name=relay_1201 interface=vlan_dc02_apps    dhcp-server=172.16.10.53 local-address=10.120.10.1 disabled=no
+/ip dhcp-relay add name=relay_1301 interface=vlan_dc03_pbs     dhcp-server=172.16.10.53 local-address=10.130.10.1 disabled=no
 ```
 `local-address` = the SVI IP = the `giaddr` Technitium matches to the scope's subnet.
 An interface can't run a DHCP server and relay at once — disable the server first.
+**Include `disabled=no`** — a relay added without it can come up disabled, leaving the
+VLAN with no DHCP (server off *and* relay off).
 
 ---
 
@@ -184,7 +186,7 @@ is instant and lossless.
   MikroTik servers for these are **disabled/standby**; relays point at `172.16.10.53`.
 - ⬜ **Pending — lab_lan** (needs a Technitium scope, then relay + disable):
   ```
-  /ip dhcp-relay add name=relay_lablan interface=bridge_lab_lan dhcp-server=172.16.10.53 local-address=172.16.254.1
+  /ip dhcp-relay add name=relay_lablan interface=bridge_lab_lan dhcp-server=172.16.10.53 local-address=172.16.254.1 disabled=no
   /ip dhcp-server disable [find interface=bridge_lab_lan]
   ```
 - ⬜ **Prereq still recommended:** stand up **`dnldns201`** so DNS+DHCP isn't
