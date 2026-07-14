@@ -17,12 +17,12 @@ DHCP is broadcast-based, so Technitium (on VLAN 1000) can **directly** serve onl
 gateway), which unicasts requests to `172.16.10.53` and stamps `giaddr` so Technitium
 picks the right scope.
 
-| Subnet | Serve method |
-|--------|--------------|
-| VLAN 1000 (172.16.10.0/24) | **Direct** (Technitium is attached here) |
-| lab_lan (172.16.254.0/24) | Relay |
-| dc01_apps 1101 / media 1102 / nas 1103 | Relay |
-| dc02_apps 1201, dc03_pbs 1301 | Relay |
+| Subnet | Serve method | Status |
+|--------|--------------|--------|
+| VLAN 1000 (172.16.10.0/24) | **Direct** (Technitium is attached here) | ✅ done |
+| dc01_apps 1101 / media 1102 / nas 1103 | Relay | ✅ done |
+| dc02_apps 1201, dc03_pbs 1301 | Relay | ✅ done |
+| lab_lan (172.16.254.0/24) | Relay | ⬜ pending |
 
 ---
 
@@ -107,6 +107,39 @@ Confirm:
 
 ---
 
+## Cutover as executed (VLAN 1000 + 1101/1102/1103/1201/1301)
+
+**Technitium scopes** on `dnldns101`: `vlan1000-shared_mgt` (`172.16.10.100–.199`,
+direct), and `vlan1101-dc01_apps` / `vlan1102-dc01_media` / `vlan1103-dc01_nas` /
+`vlan1201-dc02_apps` / `vlan1301-dc03_pbs` (each `.50–.150`, **relay-only** — they show
+Interface `0.0.0.0` in Technitium; matched by `giaddr`).
+
+**On the MikroTik (Safe Mode):**
+
+VLAN 1000 — direct, just disable the local server:
+```
+/ip dhcp-server disable [find interface=vlan_shared_mgt]
+```
+
+VLANs 1101/1102/1103/1201/1301 — disable local server **and** add a relay each:
+```
+/ip dhcp-server disable [find interface=vlan_dc01_apps]
+/ip dhcp-server disable [find interface=vlan_dc01_plex]
+/ip dhcp-server disable [find interface=vlan_dc01_truenas]
+/ip dhcp-server disable [find interface=vlan_dc02_apps]
+/ip dhcp-server disable [find interface=vlan_dc03_pbs]
+
+/ip dhcp-relay add name=relay_1101 interface=vlan_dc01_apps    dhcp-server=172.16.10.53 local-address=10.110.10.1
+/ip dhcp-relay add name=relay_1102 interface=vlan_dc01_plex    dhcp-server=172.16.10.53 local-address=10.110.20.1
+/ip dhcp-relay add name=relay_1103 interface=vlan_dc01_truenas dhcp-server=172.16.10.53 local-address=10.110.30.1
+/ip dhcp-relay add name=relay_1201 interface=vlan_dc02_apps    dhcp-server=172.16.10.53 local-address=10.120.10.1
+/ip dhcp-relay add name=relay_1301 interface=vlan_dc03_pbs     dhcp-server=172.16.10.53 local-address=10.130.10.1
+```
+`local-address` = the SVI IP = the `giaddr` Technitium matches to the scope's subnet.
+An interface can't run a DHCP server and relay at once — disable the server first.
+
+---
+
 ## Break-glass — MikroTik standby
 
 If Technitium fails, fail back to the MikroTik in seconds:
@@ -117,6 +150,18 @@ If Technitium fails, fail back to the MikroTik in seconds:
 ```
 Clients pick up MikroTik leases on next renewal (keep lease times short-ish so failback
 is quick).
+
+**Per-VLAN failback (as-built):**
+```
+# Relayed VLANs (1101/1102/1103/1201/1301) — drop the relay, re-enable the local server:
+/ip dhcp-relay  disable [find interface=vlan_dc01_apps]
+/ip dhcp-server enable  [find interface=vlan_dc01_apps]      # repeat per interface
+
+# VLAN 1000 (direct) — just re-enable the local server:
+/ip dhcp-server enable  [find interface=vlan_shared_mgt]
+```
+> The MikroTik standby scopes for VLAN 1000 hand out `192.168.2.254, 1.1.1.1` and the
+> routed VLANs already did — so name resolution survives a Technitium outage on failback.
 
 > ⚠️ **Make the standby DNS resilient.** Because Technitium is currently your *only* DNS,
 > an outage kills name resolution too. The MikroTik break-glass scopes must hand out a
@@ -133,14 +178,17 @@ is instant and lossless.
 
 ---
 
-## Recommended phasing
+## Status & remaining
 
-1. **Prereq (strongly recommended):** stand up **`dnldns201`** so DNS+DHCP isn't
-   single-homed once consolidated.
-2. **Phase 1:** migrate **VLAN 1000 + lab_lan** (most hosts; biggest auto-registration
-   payoff).
-3. **Phase 2:** migrate per-node VLANs via relay as they gain hosts.
-4. Keep MikroTik servers **disabled/standby** throughout as break-glass.
+- ✅ **Done:** VLAN 1000 (direct) + `1101` / `1102` / `1103` / `1201` / `1301` (relay).
+  MikroTik servers for these are **disabled/standby**; relays point at `172.16.10.53`.
+- ⬜ **Pending — lab_lan** (needs a Technitium scope, then relay + disable):
+  ```
+  /ip dhcp-relay add name=relay_lablan interface=bridge_lab_lan dhcp-server=172.16.10.53 local-address=172.16.254.1
+  /ip dhcp-server disable [find interface=bridge_lab_lan]
+  ```
+- ⬜ **Prereq still recommended:** stand up **`dnldns201`** so DNS+DHCP isn't
+  single-homed on `dnldns101` now that both run there.
 
 ---
 
