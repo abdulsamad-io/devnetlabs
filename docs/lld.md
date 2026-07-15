@@ -98,6 +98,7 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 172.16.10.1 | STAT | Gateway (SVI `vlan_shared_mgt`) |
 | 172.16.10.2 | STAT | `dnladm101` — bastion / jump host |
 | 172.16.10.9 / .10 | STAT | **dc01 PVE mgmt** (⚠️ `.9` vs `.10` unresolved — open item) |
+| 172.16.10.50 | STAT | **syslog VIP** (keepalived; `dnllog101`/`dnllog201`) |
 | 172.16.10.53 | STAT | `dnldns101` — Technitium DNS #1 (live) |
 | 172.16.10.56 | RSV | `dnldns201` — Technitium DNS #2 |
 
@@ -112,7 +113,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
-| shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnlnms101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog/logserver), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel), **Graylog** *(pending — see open items)* |
+| shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnlnms101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog, HA active), `dnllok101` (Loki), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel) |
 | dc01_apps (1101) | 10.110.10.0/24 | *(reserved — no services yet)* |
 | dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
@@ -121,7 +122,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
-| shared_mgt (1000) | 172.16.10.0/24 | `dnldns201` (Technitium DNS #2), `dnllog201` (logserver secondary) |
+| shared_mgt (1000) | 172.16.10.0/24 | `dnldns201` (Technitium DNS #2), `dnllog201` (rsyslog, HA standby), `dnlgry201` (Graylog, on-demand) |
 | dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLAB — mgmt NIC also on 1000), `dnleve201` (EVE-NG) |
 
 ### 6.3 dc03 — Dell E6430 (PBS DR target)
@@ -140,16 +141,17 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1002 | `dnladm101` | Admin / bastion (jump) | VM | dc01 | 1000 | 172.16.10.2 (STAT) |
 | 1001 | `dnlnms101` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
 | 1003 | `dnlnbx101` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
-| 1004 | `dnllog101` | rsyslog / logserver | VM | dc01 | 1000 | RSV/TBD |
+| 1004 | `dnllog101` | rsyslog collector (HA active) | VM | dc01 | 1000 | RSV/TBD |
 | 1005 | `dnldns101` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.53 (STAT) |
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
 | 1201 | `dnlplx101` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
 | 1301 | `dnlnas101` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
 | 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
-| 1007 | `dnlgry101` *(proposed)* | **Graylog** (OpenSearch) | VM | dc01 | 1000 | *(pending — open item)* |
+| 1007 | `dnllok101` | Loki (log store) | VM | dc01 | 1000 | RSV/TBD |
 | 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
-| 2002 | `dnllog201` | logserver (secondary) | VM | dc02 | 1000 | RSV/TBD |
+| 2002 | `dnllog201` | rsyslog collector (HA standby) | VM | dc02 | 1000 | RSV/TBD |
+| 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | dc02 | 1000 | RSV/TBD |
 | 2101 | `dnlpnt201` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
 | 2102 | `dnleve201` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
 | 3401 | `dnlpbs301` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |

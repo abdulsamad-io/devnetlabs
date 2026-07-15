@@ -35,10 +35,10 @@ Scheme: **`NZSS`** (4 digits).
 | 1001 | `dnlnms101` | LibreNMS | VM | mgmt (1000) |
 | 1002 | `dnladm101` | Admin / bastion (jump) host | VM | mgmt (1000) |
 | 1003 | `dnlnbx101` | NetBox | VM | mgmt (1000) |
-| 1004 | `dnllog101` | rsyslog / logserver | VM | mgmt (1000) |
+| 1004 | `dnllog101` | rsyslog collector (HA active) | VM | mgmt (1000) |
 | 1005 | `dnldns101` | Technitium DNS #1 (.53) | VM | mgmt (1000) |
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | mgmt (1000) |
-| 1007 | `dnlgry101` *(proposed)* | Graylog (OpenSearch) | VM | mgmt (1000) — *pending, see OPEN-ITEMS* |
+| 1007 | `dnllok101` | Loki (log store) | VM | mgmt (1000) |
 | 11xx | — | *reserved — apps zone, no services yet* | — | apps (1101) |
 | 1201 | `dnlplx101` | Plex / media | VM | media (1102) |
 | 1301 | `dnlnas101` | TrueNAS | VM | nas (1103) |
@@ -51,7 +51,8 @@ Scheme: **`NZSS`** (4 digits).
 | VMID | Hostname | Guest | Type | Zone (VLAN) |
 |------|----------|-------|------|-------------|
 | 2001 | `dnldns201` | Technitium DNS #2 (.56) | VM | mgmt (1000) |
-| 2002 | `dnllog201` | logserver (secondary) | VM | mgmt (1000) |
+| 2002 | `dnllog201` | rsyslog collector (HA standby) | VM | mgmt (1000) |
+| 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | mgmt (1000) |
 | 2101 | `dnlpnt201` | PNETLAB (+ mgmt NIC on 1000) | VM | apps (1201) |
 | 2102 | `dnleve201` | EVE-NG | VM | apps (1201) |
 
@@ -66,7 +67,8 @@ Scheme: **`NZSS`** (4 digits).
 > - **All guests are VMs for now** (the CT range `50–98` is reserved for later).
 > - **Two PBS instances**: dc01 local, M.2 (`1302`) + dc03 DR (`3401`). If PBS on dc03
 >   is bare-metal, it has no VMID.
+> - **Logging:** rsyslog HA pair (`dnllog101`/`dnllog201`) cross-feeds **Loki**
+>   (`dnllok101`, dc01) + **Graylog** (`dnlgry201`, dc02) — see
+>   [logging-design.md](logging-design.md).
 > - **Unmapped / pending (see OPEN-ITEMS):**
->   - **Graylog** — VMID `1007` and hostname `dnlgry101` are *proposed*; role code and
->     "alongside rsyslog?" still to confirm.
 >   - **M.2 2242 role** — local PBS (`1302`) vs vzdump + TrueNAS replication target.
