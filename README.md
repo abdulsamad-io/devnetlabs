@@ -19,6 +19,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [Cross-DC migration](docs/cross-dc-migration.md) | Moving a VM between nodes (VMID + hostname + DNS) |
 | [DHCP migration](docs/dhcp-migration.md) | Move DHCP MikroTik→Technitium (relay, scopes, break-glass) |
 | [Logging design](docs/logging-design.md) | rsyslog HA → cross-feed Loki (dc01) + Graylog (dc02) |
+| [rsyslog setup](docs/rsyslog-setup.md) | Central collector: vendor/category tree, classification, rotation, forwarding |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
 | [TrueNAS setup](docs/truenas-setup.md) | TrueNAS VM build, disk passthrough, ZFS pool, shares |
