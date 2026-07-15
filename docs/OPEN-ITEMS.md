@@ -1,41 +1,62 @@
 # Open Items & Next Steps
 
-Unresolved questions and pending work, carried over from the working sessions.
+Tracked as GitHub issues **#17–#31** (assigned to @abdulsamad-io). This file is the
+human-readable index; the issues hold the working detail.
 
 ## Unresolved decisions
 
-1. **dc01 management IP: `172.16.10.9` vs `172.16.10.10`**
-   PDM reported `.9`; the host `/etc/network/interfaces` shows `.10`. Confirm which
-   is live (the one browsed on `:8006`) and reconcile everywhere.
-2. **M.2 2242 SATA role on dc01** — two conflicting plans:
-   - *Original:* **local PBS** (VMID 1302, `dnl-pbs-01`).
-   - *Later:* **Proxmox vzdump backups + TrueNAS snapshot replication target.**
-   Decide whether local PBS stays or is replaced by vzdump + ZFS replication.
-3. ~~**Graylog** placement~~ — **RESOLVED.** Logging design set: rsyslog HA pair
-   (`dnllog101`/`dnllog201`) cross-feeds **Loki** (`dnllok101`, dc01) + **Graylog**
-   (`dnlgry201`, dc02, on-demand). See [logging-design.md](logging-design.md).
-4. **PNETLab placement** — VMID plan puts PNETLAB on **dc02 (2101)**, but dc01's
-   always-on stack lists an on-demand **"light PNETLab VM"**. Confirm intended split.
+| # | Decision | Issue |
+|---|----------|-------|
+| 1 | **dc01 management IP** `172.16.10.9` vs `172.16.10.10` — confirm the live one (browsed on `:8006`) and reconcile across docs | [#17] |
+| 2 | **M.2 2242 role on dc01** — local PBS (`dnlpbs101`) vs vzdump + TrueNAS ZFS replication target | [#18] |
+| 3 | **PNETLab placement** — dc02 (`dnlpnt201`) vs a light on-demand dc01 (`dnlpnt101`) | [#19] |
+| 4 | **Shared mgmt-VLAN DNS zone** — `mgmt.devnetlabs.com` (node-neutral) vs per-node for VLAN 1000; per-node zones stay for the per-node VLANs | [#28] |
 
 ## Pending work
 
-- [ ] **VLAN 1000 DHCP has no DNS** — add DNS servers (see network doc).
-- [ ] **Duplicate OSPF instance name** `ospf-instance-1` on the MikroTik — fix.
-- [ ] **Retry VM 202 migration** after ejecting both ISOs
-      (`local:iso/windows-11-23h2.iso`, `local:iso/virtio-win-0.1.248.iso`);
-      verify correct target node/direction and CPU baseline (offline, or set a
-      common CPU type like `x86-64-v2-AES` instead of `host` — Raptor Lake vs
-      Haswell/Broadwell cannot live-migrate with `host`).
-- [ ] **Build the Cloudflare tunnel** (dc01 first, prove console, then extend).
-- [ ] **Stand up NetBox** and load VMID/naming/IP data as the source of truth.
-- [ ] **Confirm MikroTik config backups** `v4` (post `lab_lan`) and `v5`
-      (post `vlan-filtering`) were exported.
-- [ ] Implement via **Terraform (Cloudflare)** and **Ansible (Proxmox/MikroTik)**.
+- [ ] **OSPF** — fix the duplicate `ospf-instance-1` on the MikroTik — [#20]
+- [ ] **VM 202 migration** — eject ISOs, verify target/direction, common CPU baseline (`x86-64-v2-AES`) or offline — [#21]
+- [ ] **lab_lan DHCP → Technitium** — scope + relay + disable local server — [#26]
+- [ ] **`dnldns201`** — second Technitium (de-SPOF DNS + DHCP; secondary zones + split DHCP) — [#27]
+- [ ] **Build the logging tier** — keepalived VIP + rsyslog collector + Loki (dc01) + Graylog (dc02) — [#30]
+- [ ] **Rename deployed guests** to `dnl<role><dc><nn>` (e.g. `netbox`→`dnlnbx101`) + align live hostnames/configs — [#29]
+- [ ] **Cloudflare tunnel** — `dnlctl101`, publish `pve.devnetlabs.com` (dc01 first) — [#22]
+- [ ] **NetBox** — stand up `dnlnbx101`, load VMID/naming/IP data as source of truth — [#23]
+- [ ] **Internal-CA TLS** — replace the public Let's Encrypt wildcard with an internal CA (`pki` role) — [#31]
+- [ ] **MikroTik backups** — confirm `my_config_backup_v4`/`v5` were exported — [#24]
+- [ ] **IaC** — Terraform (Cloudflare) + Ansible (Proxmox/MikroTik), beyond the existing Technitium `ansible/`+`terraform/` — [#25]
+
+## Recently resolved
+
+- ✅ **Graylog placement** — Loki (dc01) + Graylog (dc02, on-demand), fed by an rsyslog HA
+  pair — see [logging-design.md](logging-design.md).
+- ✅ **VLAN 1000 DHCP had no DNS** — resolved by the DNS cutover to Technitium
+  (`172.16.10.53` / `.56`).
+- ✅ **DHCP migration** — VLAN 1000 (direct) + `1101/1102/1103/1201/1301` (relay) moved to
+  Technitium; MikroTik servers disabled as break-glass — see [dhcp-migration.md](dhcp-migration.md).
+- ✅ **dnldns101 IP** — corrected to `172.16.10.53` (was documented `.55`).
 
 ## dc01 hardware — current state
 
 - CPU: i9-13900HK · **RAM: 64GB DDR4-3200** (2× Crucial CT32G4SFD832A, installed)
 - **DC S4500 1.92TB SATA installed** (2.5" bay) → TrueNAS single-drive ZFS pool
 - NVMe 1TB Gen4 (PVE OS + VM/LXC disks + OpenSearch indices + transcode temp)
-- M.2 2242 SATA slot **open** (role pending — see decision #2)
+- M.2 2242 SATA slot **open** (role pending — see [#18])
 - Stock 2× 16GB SK Hynix SO-DIMMs now **spare** (keep/resell)
+
+<!-- issue links -->
+[#17]: https://github.com/abdulsamad-io/devnetlabs/issues/17
+[#18]: https://github.com/abdulsamad-io/devnetlabs/issues/18
+[#19]: https://github.com/abdulsamad-io/devnetlabs/issues/19
+[#20]: https://github.com/abdulsamad-io/devnetlabs/issues/20
+[#21]: https://github.com/abdulsamad-io/devnetlabs/issues/21
+[#22]: https://github.com/abdulsamad-io/devnetlabs/issues/22
+[#23]: https://github.com/abdulsamad-io/devnetlabs/issues/23
+[#24]: https://github.com/abdulsamad-io/devnetlabs/issues/24
+[#25]: https://github.com/abdulsamad-io/devnetlabs/issues/25
+[#26]: https://github.com/abdulsamad-io/devnetlabs/issues/26
+[#27]: https://github.com/abdulsamad-io/devnetlabs/issues/27
+[#28]: https://github.com/abdulsamad-io/devnetlabs/issues/28
+[#29]: https://github.com/abdulsamad-io/devnetlabs/issues/29
+[#30]: https://github.com/abdulsamad-io/devnetlabs/issues/30
+[#31]: https://github.com/abdulsamad-io/devnetlabs/issues/31
