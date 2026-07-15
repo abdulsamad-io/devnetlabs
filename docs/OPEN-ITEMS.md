@@ -22,6 +22,7 @@ human-readable index; the issues hold the working detail.
 - [ ] **Rename deployed guests** to `dnl<role><dc><nn>` (e.g. `netbox`→`dnlnbx101`) + align live hostnames/configs — [#29]
 - [ ] **Cloudflare tunnel** — `dnlctl101`, publish `pve.devnetlabs.com` (dc01 first) — [#22]
 - [ ] **NetBox** — stand up `dnlnbx101`, load VMID/naming/IP data as source of truth — [#23]
+- [ ] **rsyslog `sources.json` from NetBox** — generate the IP→category/vendor classification from NetBox (SoT) + `SIGHUP` reload; Ansible-templating deferred; depends on [#23] — [#33]
 - [ ] **Internal-CA TLS** — replace the public Let's Encrypt wildcard with an internal CA (`pki` role) — [#31]
 - [ ] **MikroTik backups** — confirm `my_config_backup_v4`/`v5` were exported — [#24]
 - [ ] **IaC** — Terraform (Cloudflare) + Ansible (Proxmox/MikroTik), beyond the existing Technitium `ansible/`+`terraform/` — [#25]
@@ -60,3 +61,4 @@ human-readable index; the issues hold the working detail.
 [#29]: https://github.com/abdulsamad-io/devnetlabs/issues/29
 [#30]: https://github.com/abdulsamad-io/devnetlabs/issues/30
 [#31]: https://github.com/abdulsamad-io/devnetlabs/issues/31
+[#33]: https://github.com/abdulsamad-io/devnetlabs/issues/33
