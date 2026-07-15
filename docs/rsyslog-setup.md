@@ -171,7 +171,8 @@ Windows Event Log → syslog and send to the VIP (classified as `compute/windows
 ## Part 8 — HA behaviour & verify
 
 - Config is **identical on both collectors**; only the **VIP holder** receives, writes,
-  and forwards → each event lands once. (keepalived setup: see logging-design.md.)
+  and forwards → each event lands once. (keepalived setup: see
+  [keepalived-setup.md](keepalived-setup.md).)
 - The Graylog disk-queue lives on the active collector; a failover starts a fresh buffer
   on the standby.
 
