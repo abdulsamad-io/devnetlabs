@@ -31,7 +31,8 @@ Every role code is **exactly 3 lowercase letters**.
 | `adm` | Admin / bastion (jump) host |
 | `nms` | LibreNMS |
 | `nbx` | NetBox |
-| `log` | rsyslog / logserver |
+| `log` | rsyslog collector |
+| `lok` | Loki (log store) |
 | `dns` | Technitium DNS Server |
 | `plx` | Plex |
 | `nas` | TrueNAS |

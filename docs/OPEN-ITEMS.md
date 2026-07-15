@@ -11,9 +11,9 @@ Unresolved questions and pending work, carried over from the working sessions.
    - *Original:* **local PBS** (VMID 1302, `dnl-pbs-01`).
    - *Later:* **Proxmox vzdump backups + TrueNAS snapshot replication target.**
    Decide whether local PBS stays or is replaced by vzdump + ZFS replication.
-3. **Graylog** — new always-on service (VM, OpenSearch, ~6–8GB on dc01) is **not yet
-   in the VMID or naming plans**. Confirm it runs *alongside* rsyslog, and assign a
-   VMID + placement. Role code is `gry` (assigned); hostname `dnlgry101`.
+3. ~~**Graylog** placement~~ — **RESOLVED.** Logging design set: rsyslog HA pair
+   (`dnllog101`/`dnllog201`) cross-feeds **Loki** (`dnllok101`, dc01) + **Graylog**
+   (`dnlgry201`, dc02, on-demand). See [logging-design.md](logging-design.md).
 4. **PNETLab placement** — VMID plan puts PNETLAB on **dc02 (2101)**, but dc01's
    always-on stack lists an on-demand **"light PNETLab VM"**. Confirm intended split.
 
