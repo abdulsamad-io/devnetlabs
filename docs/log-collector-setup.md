@@ -47,8 +47,17 @@ whenever dc02 is powered on.
 
 ## Part B — Install Ubuntu + static IP
 
-Console → install **Ubuntu Server (minimal)**, target the 16 GB `scsi0` disk, create your
-admin user. After install, eject the ISO:
+Console → install **Ubuntu Server (minimal)**. At the **"Guided storage configuration"**
+step, select the **16 GB disk** (`scsi0`, usually `/dev/sda`) as the install target —
+**not** the 50 GB log disk. Before continuing, confirm the storage summary shows the ESP,
+`/boot`, and root LVM all landing on the **16 GB** device.
+
+> ⚠️ Installing onto the 50 GB disk is the easiest mistake here: the OS ends up on the
+> disk meant for logs and the 16 GB disk sits empty. If `lsblk` after install shows
+> `/boot`/`/` on the 50 GB disk, you targeted the wrong one — reinstall onto the 16 GB
+> disk before going any further (Part D would otherwise `mkfs` your root disk).
+
+Create your admin user. After install, eject the ISO:
 ```bash
 qm set 1004 --ide2 none,media=cdrom && qm set 1004 --boot order='scsi0' && qm reboot 1004
 ```
@@ -99,12 +108,24 @@ sudo ufw enable
 
 ## Part D — Mount the log data disk
 
+Identify the **empty 50 GB** disk first — the one that is `TYPE disk` with **no child
+partitions and no mountpoint**. The OS disk shows `part`/`lvm` children and is mounted at
+`/`. Device letters are **not** guaranteed (`scsi0`≠always `sda`), so never blindly
+`mkfs /dev/sdb` — formatting the OS disk destroys the install.
+
 ```bash
-lsblk                                                # find the 50G disk (e.g. /dev/sdb)
-sudo mkfs.ext4 -L devnetlabs_logs /dev/sdb
-echo 'LABEL=devnetlabs_logs /var/log/devnetlabs_logs ext4 defaults,noatime 0 2' | sudo tee -a /etc/fstab
-sudo mkdir -p /var/log/devnetlabs_logs && sudo mount -a
-sudo install -d -m 0750 -o syslog -g adm /var/log/devnetlabs_logs
+lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS   # log disk = 50G, TYPE disk, NO children, NO mountpoint
+LOGDISK=/dev/sdb                             # <-- set to the empty 50G disk you just confirmed
+
+# Guard: refuse to format anything that has partitions or is mounted (that's the OS disk)
+if [ -n "$(lsblk -no NAME "$LOGDISK" | tail -n +2)" ] || lsblk -no MOUNTPOINTS "$LOGDISK" | grep -q .; then
+  echo "REFUSING: $LOGDISK has partitions or a mountpoint — that's the OS disk, not the log disk."
+else
+  sudo mkfs.ext4 -L devnetlabs_logs "$LOGDISK"
+  echo 'LABEL=devnetlabs_logs /var/log/devnetlabs_logs ext4 defaults,noatime 0 2' | sudo tee -a /etc/fstab
+  sudo mkdir -p /var/log/devnetlabs_logs && sudo mount -a
+  sudo install -d -m 0750 -o syslog -g adm /var/log/devnetlabs_logs
+fi
 ```
 (Mount by **LABEL** so a device-letter change doesn't break `fstab`.)
 
