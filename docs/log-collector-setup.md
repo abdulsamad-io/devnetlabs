@@ -90,9 +90,17 @@ create your user, install your public key, then the `10-hardening.conf` sshd dro
 ```bash
 sudo apt update && sudo apt install -y chrony unattended-upgrades ufw
 sudo dpkg-reconfigure -plow unattended-upgrades
+sudo timedatectl set-timezone Europe/Amsterdam   # match the fleet (CET/CEST); Ubuntu defaults to UTC
 ```
 > `chrony` matters here specifically: log **filenames** use the collector's date
 > (`%$now%`) and rotation keys off it — a wrong clock mis-buckets logs.
+> **Timezone matters for the same reason:** `%$now%` and the RFC3339 line timestamps
+> follow the collector's *local* time, so set it to `Europe/Amsterdam` to match the PVE
+> nodes (Ubuntu installs default to `Etc/UTC`). Restart rsyslog after any later change
+> (`sudo systemctl restart rsyslog`) so the daemon picks up the new zone. Trade-off:
+> local time means the daily file boundary shifts at the autumn DST rollback (a repeated
+> 02:00–03:00 hour) — harmless with the today+yesterday-uncompressed scheme, but the
+> reason some shops keep collectors on UTC.
 
 **Firewall (default deny):**
 ```bash
