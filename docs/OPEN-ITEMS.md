@@ -19,6 +19,7 @@ human-readable index; the issues hold the working detail.
 - [ ] **lab_lan DHCP → Technitium** — scope + relay + disable local server — [#26]
 - [ ] **`dnldns201`** — second Technitium (de-SPOF DNS + DHCP; secondary zones + split DHCP) — [#27]
 - [ ] **Build the logging tier** — keepalived VIP + rsyslog collector + Loki (dc01) + Graylog (dc02) — [#30]
+- [ ] **nxlog on Windows hosts** — Event Log → syslog to the VIP (`compute/windows`); depends on [#30] — [#38]
 - [ ] **Rename deployed guests** to `dnl<role><dc><nn>` (e.g. `netbox`→`dnlnbx101`) + align live hostnames/configs — [#29]
 - [ ] **Cloudflare tunnel** — `dnlctl101`, publish `pve.devnetlabs.com` (dc01 first) — [#22]
 - [ ] **NetBox** — stand up `dnlnbx101`, load VMID/naming/IP data as source of truth — [#23]
@@ -62,3 +63,4 @@ human-readable index; the issues hold the working detail.
 [#30]: https://github.com/abdulsamad-io/devnetlabs/issues/30
 [#31]: https://github.com/abdulsamad-io/devnetlabs/issues/31
 [#33]: https://github.com/abdulsamad-io/devnetlabs/issues/33
+[#38]: https://github.com/abdulsamad-io/devnetlabs/issues/38
