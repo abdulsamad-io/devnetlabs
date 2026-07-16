@@ -9,7 +9,7 @@ the floating VIP in [keepalived-setup.md](keepalived-setup.md).
 | Item | `dnllog101` | `dnllog201` |
 |------|-------------|-------------|
 | Node | dc01 (always-on) | dc02 (on-demand) |
-| VMID | **1004** | **2002** |
+| VMID | **1004** | **2004** |
 | IP | **172.16.10.51/24** | **172.16.10.52/24** |
 | HA role | active (VIP holder) | standby |
 
@@ -38,9 +38,9 @@ qm set 1004 --boot order='ide2;scsi0'
 qm start 1004
 ```
 
-**dc02 — `dnllog201` (VMID 2002):** identical, on the dc02 node shell, with
-`--name dnllog201` and VMID `2002`. (Use the nas-zone… no — same VLAN 1000 NIC:
-`--net0 virtio,bridge=vmbr0,tag=1000`.) `--onboot 1` so it comes up as the standby
+**dc02 — `dnllog201` (VMID 2004):** identical, on the dc02 node shell, with
+`--name dnllog201`, VMID `2004`, and the same VLAN 1000 NIC
+(`--net0 virtio,bridge=vmbr0,tag=1000`). `--onboot 1` so it comes up as the standby
 whenever dc02 is powered on.
 
 > Swap `vmbr0,tag=1000` for your **SDN mgmt VNet** name if that's how the node is set up.
