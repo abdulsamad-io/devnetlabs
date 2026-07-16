@@ -21,6 +21,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [Logging design](docs/logging-design.md) | rsyslog HA → cross-feed Loki (dc01) + Graylog (dc02) |
 | [rsyslog setup](docs/rsyslog-setup.md) | Central collector: vendor/category tree, classification, rotation, forwarding |
 | [keepalived VIP](docs/keepalived-setup.md) | Floating VIP 172.16.10.50 across the log collectors (HA) |
+| [Log collector VMs](docs/log-collector-setup.md) | Build the dnllog101/dnllog201 Ubuntu collector VMs |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
 | [TrueNAS setup](docs/truenas-setup.md) | TrueNAS VM build, disk passthrough, ZFS pool, shares |
