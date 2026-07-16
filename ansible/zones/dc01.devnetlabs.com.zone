@@ -1,23 +1,17 @@
 $ORIGIN dc01.devnetlabs.com.
 $TTL 3600
-@   IN SOA dnldns101.dc01.devnetlabs.com. hostmaster.devnetlabs.com. (
-        2026071201  ; serial (bump on every change: YYYYMMDDnn)
+@   IN SOA dnldns101.mgmt.devnetlabs.com. hostmaster.devnetlabs.com. (
+        2026071601  ; serial (bump on every change: YYYYMMDDnn)
         3600        ; refresh
         900         ; retry
         604800      ; expire
         3600 )      ; minimum
-@   IN NS  dnldns101.dc01.devnetlabs.com.
-@   IN NS  dnldns201.dc02.devnetlabs.com.
+@   IN NS  dnldns101.mgmt.devnetlabs.com.
+@   IN NS  dnldns201.mgmt.devnetlabs.com.
 
-; --- dc01 hosts (all dc01 guests, regardless of their VLAN) ---
-dnladm101   IN A 172.16.10.2       ; bastion (mgmt 1000)
-dnldns101   IN A 172.16.10.53      ; Technitium DNS #1 (mgmt 1000)
+; dc01 PER-NODE-VLAN hosts only (apps/media/nas). Mgmt-VLAN hosts (bastion, DNS,
+; logging, NetBox, Loki, Cloudflare…) live in mgmt.devnetlabs.com, not here.
 dnlnas101   IN A 10.110.30.50      ; TrueNAS (nas 1103)
 ; --- TBD (fill IPs as built) ---
-;dnlnms101  IN A 172.16.10.__      ; LibreNMS (mgmt 1000)
-;dnlnbx101  IN A 172.16.10.__      ; NetBox (mgmt 1000)
-;dnllog101  IN A 172.16.10.__      ; rsyslog (mgmt 1000)
-;dnlctl101  IN A 172.16.10.__      ; Cloudflare tunnel (mgmt 1000)
-;dnlgry101  IN A 172.16.10.__      ; Graylog (mgmt 1000) — pending
 ;dnlplx101  IN A 10.110.20.__      ; Plex (media 1102)
 ;dnlpbs101  IN A 10.110.30.__      ; local PBS (nas 1103)
