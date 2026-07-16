@@ -95,7 +95,7 @@ iface vmbr0 inet manual
 
 auto vmbr0.1000
 iface vmbr0.1000 inet static
-    address 172.16.10.10/24      # NOTE: confirm .9 vs .10 (see OPEN-ITEMS)
+    address 172.16.10.9/24       # dc01 PVE mgmt (dc02 = .10; confirmed via :8006, #17)
     gateway 172.16.10.1
 ```
 
