@@ -1,12 +1,16 @@
 $ORIGIN 10.16.172.in-addr.arpa.
 $TTL 3600
-@   IN SOA dnldns101.dc01.devnetlabs.com. hostmaster.devnetlabs.com. (
-        2026071201  ; serial (bump on every change: YYYYMMDDnn)
+@   IN SOA dnldns101.mgmt.devnetlabs.com. hostmaster.devnetlabs.com. (
+        2026071601  ; serial (bump on every change: YYYYMMDDnn)
         3600 900 604800 3600 )
-@   IN NS  dnldns101.dc01.devnetlabs.com.
-@   IN NS  dnldns201.dc02.devnetlabs.com.
+@   IN NS  dnldns101.mgmt.devnetlabs.com.
+@   IN NS  dnldns201.mgmt.devnetlabs.com.
 
-; PTR records for 172.16.10.0/24 (mgmt VLAN 1000) — last octet as the label
-2   IN PTR dnladm101.dc01.devnetlabs.com.
-53  IN PTR dnldns101.dc01.devnetlabs.com.
-54  IN PTR dnldns201.dc02.devnetlabs.com.
+; PTR records for 172.16.10.0/24 (mgmt VLAN 1000) — last octet as the label.
+; Targets are the mgmt.* names (shared VLAN → node-neutral zone).
+2   IN PTR dnladm101.mgmt.devnetlabs.com.
+53  IN PTR dnldns101.mgmt.devnetlabs.com.
+54  IN PTR dnldns201.mgmt.devnetlabs.com.
+70  IN PTR syslog.mgmt.devnetlabs.com.
+71  IN PTR dnllog101.mgmt.devnetlabs.com.
+72  IN PTR dnllog201.mgmt.devnetlabs.com.

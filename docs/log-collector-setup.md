@@ -52,8 +52,8 @@ admin user. After install, eject the ISO:
 ```bash
 qm set 1004 --ide2 none,media=cdrom && qm set 1004 --boot order='scsi0' && qm reboot 1004
 ```
-Set hostname + static IP. `/etc/netplan/01-mgmt.yaml` (dnllog101 shown; use `.72` +
-`dc02.devnetlabs.com` for dnllog201):
+Set hostname + static IP. `/etc/netplan/01-mgmt.yaml` (dnllog101 shown; use `.72` for
+dnllog201 — both are mgmt-VLAN hosts, so identical DNS/search):
 ```yaml
 network:
   version: 2
@@ -61,14 +61,15 @@ network:
     ens18:                                   # confirm with: ip -br a
       addresses: [172.16.10.71/24]
       routes: [{ to: default, via: 172.16.10.1 }]
-      nameservers: { addresses: [172.16.10.53], search: [dc01.devnetlabs.com] }
+      nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [mgmt.devnetlabs.com] }
 ```
 ```bash
 sudo hostnamectl set-hostname dnllog101      # dnllog201 on the other
 sudo netplan apply
 ```
-> Search-domain zoning for mgmt hosts is pending the shared-VLAN DNS decision (#28) —
-> `dc01`/`dc02` shown for now.
+> Both collectors sit on the shared mgmt VLAN 1000, so their search domain is
+> `mgmt.devnetlabs.com` (node-neutral zone — #28 resolved). Both DNS servers
+> (`.53`/`.54`) are listed for resolver redundancy.
 
 ## Part C — Base config
 

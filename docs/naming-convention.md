@@ -6,8 +6,10 @@ Example: **`dnladm101`** (admin/bastion host on **dc01**, instance **01**).
 
 - **`dnl`** — lab prefix (DevNetLabs).
 - **`<role>`** — role code: **exactly 3 lowercase letters** (see table below).
-- **`<dc>`** — node digit: `1`=dc01, `2`=dc02, `3`=dc03. **Must equal the VMID's `N`
-  digit and the DNS subdomain** — node identity is encoded in all three.
+- **`<dc>`** — node digit: `1`=dc01, `2`=dc02, `3`=dc03 (the node the host runs on).
+  **Must equal the VMID's `N` digit.** The DNS *zone*, however, follows the host's
+  **VLAN**, not the node digit: per-node VLANs → `dcNN.devnetlabs.com`; the shared mgmt
+  VLAN 1000 → node-neutral `mgmt.devnetlabs.com` (see DNS below).
 - **`<nn>`** — 2-digit instance, **per node, per role**: `01` for a singleton on that
   node, `02+` for additional / HA instances on the same node.
 - **Placement is encoded in the name** (and in the VMID and DNS zone). This is
@@ -64,20 +66,26 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
 
 ## DNS
 
-- **Per-node internal zones**, served by **Technitium DNS Server** (authoritative):
-  **`dc01.devnetlabs.com`**, **`dc02.devnetlabs.com`**, **`dc03.devnetlabs.com`** —
-  replacing the retired flat `lab.devnetlabs.com`.
-- A host's FQDN = **`<hostname>.dc0<n>.devnetlabs.com`**, where the zone matches the
-  node encoded in the hostname. Examples: `dnladm101` → `dnladm101.dc01.devnetlabs.com`;
-  `dnldns201` → `dnldns201.dc02.devnetlabs.com`; `dnlpbs301` →
-  `dnlpbs301.dc03.devnetlabs.com`.
-- Technitium hosts the three zones natively and also provides recursive resolution /
-  conditional forwarding, block lists (ad/tracker filtering, replacing Pi-hole),
-  DNSSEC, DoH/DoT, and a full HTTP API + config export suitable for IaC.
+- **Internal zones**, served by **Technitium** (authoritative), replacing the retired
+  flat `lab.devnetlabs.com`:
+  - **`mgmt.devnetlabs.com`** — the **shared mgmt VLAN 1000** (node-neutral). *Every*
+    VLAN-1000 host lives here regardless of node: bastion, DNS, rsyslog, NetBox, Loki,
+    Cloudflare, Graylog…
+  - **`dc01/dc02/dc03.devnetlabs.com`** — the **per-node VLANs** (apps/media/nas/pbs),
+    where a host's VLAN genuinely implies its node.
+- **FQDN follows the VLAN, not the hostname's dc digit:**
+  - mgmt-VLAN host → `<hostname>.mgmt.devnetlabs.com` — e.g. `dnladm101` →
+    `dnladm101.mgmt.devnetlabs.com`; `dnldns201` → `dnldns201.mgmt.devnetlabs.com`.
+  - per-node-VLAN host → `<hostname>.dc0<n>.devnetlabs.com` — e.g. `dnlnas101` →
+    `dnlnas101.dc01.devnetlabs.com`; `dnlpbs301` → `dnlpbs301.dc03.devnetlabs.com`.
+  - *Why:* VLAN 1000 spans all nodes, so tying it to one node's zone would mislabel the
+    dc02/dc03 hosts on it. The hostname's `dc` digit still names the node; the **zone
+    follows the VLAN**.
+- Technitium hosts the zones natively and provides recursive resolution / conditional
+  forwarding, block lists, DNSSEC, DoH/DoT, and a full HTTP API for IaC.
 - Keep the **public apex `devnetlabs.com` separate** from these internal zones.
-- **Let's Encrypt via DNS-01:** one wildcard **per zone** — `*.dc01.devnetlabs.com`,
-  `*.dc02.devnetlabs.com`, `*.dc03.devnetlabs.com` (publicly-trusted TLS on internal
-  services, via Cloudflare-managed DNS).
+- **TLS via DNS-01:** one wildcard **per zone** — `*.mgmt`, `*.dc01`, `*.dc02`,
+  `*.dc03`.devnetlabs.com (internal CA planned — see [OPEN-ITEMS.md](OPEN-ITEMS.md) #31).
 
 ### Split-horizon (public vs internal)
 
