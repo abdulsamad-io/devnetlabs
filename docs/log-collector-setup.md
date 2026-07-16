@@ -10,10 +10,10 @@ the floating VIP in [keepalived-setup.md](keepalived-setup.md).
 |------|-------------|-------------|
 | Node | dc01 (always-on) | dc02 (on-demand) |
 | VMID | **1004** | **2004** |
-| IP | **172.16.10.51/24** | **172.16.10.52/24** |
+| IP | **172.16.10.71/24** | **172.16.10.72/24** |
 | HA role | active (VIP holder) | standby |
 
-**Shared:** VIP **`172.16.10.50`** · VLAN 1000 · gateway `172.16.10.1` · DNS `172.16.10.53`
+**Shared:** VIP **`172.16.10.70`** · VLAN 1000 · gateway `172.16.10.1` · DNS `172.16.10.53`
 · OS **Ubuntu Server 26.04 LTS** (matches the fleet) · **2 vCPU** `x86-64-v2-AES` · **2 GB**
 RAM · **16 GB** OS disk + **80 GB** log data disk. Build **both identically**.
 
@@ -52,14 +52,14 @@ admin user. After install, eject the ISO:
 ```bash
 qm set 1004 --ide2 none,media=cdrom && qm set 1004 --boot order='scsi0' && qm reboot 1004
 ```
-Set hostname + static IP. `/etc/netplan/01-mgmt.yaml` (dnllog101 shown; use `.52` +
+Set hostname + static IP. `/etc/netplan/01-mgmt.yaml` (dnllog101 shown; use `.72` +
 `dc02.devnetlabs.com` for dnllog201):
 ```yaml
 network:
   version: 2
   ethernets:
     ens18:                                   # confirm with: ip -br a
-      addresses: [172.16.10.51/24]
+      addresses: [172.16.10.71/24]
       routes: [{ to: default, via: 172.16.10.1 }]
       nameservers: { addresses: [172.16.10.53], search: [dc01.devnetlabs.com] }
 ```
@@ -92,7 +92,7 @@ sudo ufw allow from 172.16.10.0/24  to any port 22 proto tcp     # SSH (mgmt)
 sudo ufw allow from 172.16.254.0/24 to any port 22 proto tcp     # SSH (lab_lan)
 sudo ufw allow proto udp to any port 514                          # syslog in
 sudo ufw allow proto tcp to any port 514
-sudo ufw allow from 172.16.10.52                                  # VRRP peer (on log101; use .51 on log201)
+sudo ufw allow from 172.16.10.72                                  # VRRP peer (on log101; use .71 on log201)
 sudo ufw enable
 ```
 
@@ -111,14 +111,14 @@ sudo install -d -m 0750 -o syslog -g adm /var/log/devnetlabs_logs
 
 1. **rsyslog collector** — listeners, `sources.json` classification, dynafile tree,
    rotation, Loki/Graylog fan-out: follow [rsyslog-setup.md](rsyslog-setup.md).
-2. **keepalived VIP `172.16.10.50`** — MASTER on `dnllog101`, BACKUP on `dnllog201`,
+2. **keepalived VIP `172.16.10.70`** — MASTER on `dnllog101`, BACKUP on `dnllog201`,
    `chk_rsyslog` failover: follow [keepalived-setup.md](keepalived-setup.md).
 
 ## Part F — Verify
 
 ```bash
 hostnamectl                                  # dnllog101 / dnllog201
-ip -br a                                      # .51 / .52 on ens18
+ip -br a                                      # .71 / .72 on ens18
 df -h /var/log/devnetlabs_logs                # the 80G disk is mounted
 timedatectl                                   # clock synced (chrony)
 ```

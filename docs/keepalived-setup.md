@@ -1,6 +1,6 @@
 # keepalived VIP Setup — syslog collectors `dnllog101` / `dnllog201`
 
-A floating **VIP `172.16.10.50`** across the two rsyslog collectors so that **only the
+A floating **VIP `172.16.10.70`** across the two rsyslog collectors so that **only the
 active node receives syslog and fans out** to Loki/Graylog — no double-ingest — with
 automatic failover. Context: [logging-design.md](logging-design.md),
 [rsyslog-setup.md](rsyslog-setup.md).
@@ -9,7 +9,7 @@ automatic failover. Context: [logging-design.md](logging-design.md),
 
 | Item | Value |
 |------|-------|
-| VIP | **`172.16.10.50/24`** (VLAN 1000; reserved, outside DHCP pool) |
+| VIP | **`172.16.10.70/24`** (VLAN 1000; reserved, outside DHCP pool) |
 | MASTER | `dnllog101` (dc01) — priority 150 |
 | BACKUP | `dnllog201` (dc02) — priority 100 |
 | VRID | `51` (must match both; unique on VLAN 1000) |
@@ -24,7 +24,7 @@ takes the VIP.
 ## Prerequisites
 
 - Both collectors on **VLAN 1000**, with static mgmt IPs (`<log101-ip>` / `<log201-ip>`).
-- `172.16.10.50` reserved (not in the DHCP pool).
+- `172.16.10.70` reserved (not in the DHCP pool).
 - rsyslog listening on **all addresses** (`0.0.0.0:514`) — the default — so it answers on
   the VIP whenever the host holds it. (No `ip_nonlocal_bind` needed unless a service binds
   the VIP specifically.)
@@ -71,7 +71,7 @@ vrrp_instance VI_SYSLOG {
     unicast_src_ip <log101-ip>      # this host
     unicast_peer   { <log201-ip> }  # the other host
     authentication { auth_type PASS; auth_pass <shared-secret> }
-    virtual_ipaddress { 172.16.10.50/24 dev ens18 }
+    virtual_ipaddress { 172.16.10.70/24 dev ens18 }
     track_script { chk_rsyslog }
 }
 ```
@@ -105,13 +105,13 @@ For multicast VRRP instead of unicast, also allow `224.0.0.18`.)*
 ```bash
 sudo systemctl enable --now keepalived
 ```
-- **On MASTER:** `ip addr show ens18` → shows `172.16.10.50` as a second address.
+- **On MASTER:** `ip addr show ens18` → shows `172.16.10.70` as a second address.
 - **On BACKUP:** no VIP.
 - **Failover test:** on the master, `sudo systemctl stop keepalived` (or `sudo pkill rsyslogd`)
   → within ~1–3 s the VIP appears on the backup (gratuitous ARP updates the switch).
   Restart it and (default preempt) the master reclaims the VIP.
 - **State log:** `journalctl -u keepalived -f` shows `Entering MASTER/BACKUP STATE`.
-- **End-to-end:** `logger -n 172.16.10.50 -P 514 -d "vip test"` lands on the active
+- **End-to-end:** `logger -n 172.16.10.70 -P 514 -d "vip test"` lands on the active
   collector both before and after a failover.
 
 ## Notes & gotchas
