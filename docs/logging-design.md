@@ -21,7 +21,7 @@ full-text SIEM-style store (Graylog) on the *same* log sources.
 ## Data flow (cross-feed via an HA collector)
 
 ```
-   devices / hosts ──syslog──▶  VIP 172.16.10.50  (keepalived / VRRP, VLAN 1000)
+   devices / hosts ──syslog──▶  VIP 172.16.10.70  (keepalived / VRRP, VLAN 1000)
                                       │  (held by whichever collector is ACTIVE)
                         ┌─────────────┴──────────────┐
                   dnllog101 (MASTER)           dnllog201 (BACKUP)
@@ -39,7 +39,7 @@ stores everything) — acceptable and instructive in a lab.
 Two collectors that both hold the same data would **double-ingest** each backend if both
 forwarded — neither Loki nor Graylog de-duplicates identical syslog events. So:
 
-- Sources point at **one VIP** (`172.16.10.50`), held by the **active** collector via
+- Sources point at **one VIP** (`172.16.10.70`), held by the **active** collector via
   **keepalived/VRRP**. Only the VIP-holder receives and fans out → **each event reaches
   each backend exactly once.**
 - The standby takes the VIP (gratuitous ARP) on failure of the host or the rsyslog
@@ -85,7 +85,7 @@ action(type="omhttp" server="dnllok101" ... queue.type="linkedList"
 
 ## Address / naming notes
 
-- Reserve **`172.16.10.50`** (syslog VIP) outside the DHCP pool.
+- Reserve **`172.16.10.70`** (syslog VIP) outside the DHCP pool.
 - rsyslog = `log` (two instances, HA pair); Loki = `lok`; Graylog = `gry` — see
   [naming-convention.md](naming-convention.md) and [vmid-plan.md](vmid-plan.md).
 

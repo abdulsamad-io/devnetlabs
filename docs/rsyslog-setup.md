@@ -10,7 +10,7 @@ fan-out).
 | Item | Value |
 |------|-------|
 | Collectors | `dnllog101` (dc01, HA active) + `dnllog201` (dc02, HA standby) — identical config |
-| Ingress VIP | `172.16.10.50` (keepalived) — sources point here |
+| Ingress VIP | `172.16.10.70` (keepalived) — sources point here |
 | Log root | **`/var/log/devnetlabs_logs/`** |
 | Backends | Loki (`dnllok101`, dc01) + Graylog (`dnlgry201`, dc02, on-demand) |
 
@@ -164,7 +164,7 @@ Fortinet, Checkpoint).
 > FTD, PAN-OS, FortiGate, Check Point, Windows, Linux, TrueNAS): see
 > [log-source-onboarding.md](log-source-onboarding.md).
 
-1. **Point the device's syslog** at the VIP `172.16.10.50` (UDP/TCP 514).
+1. **Point the device's syslog** at the VIP `172.16.10.70` (UDP/TCP 514).
 2. **Add its IP** to `devnetlabs-sources.json` (`"value":"network/cisco"` etc.).
 3. **Reload** (no restart): `sudo pkill -HUP rsyslogd` (or `systemctl kill -s HUP rsyslog`).
 4. Verify a file appears under the expected vendor folder.
@@ -182,7 +182,7 @@ Windows Event Log → syslog and send to the VIP (classified as `compute/windows
 
 **Verify:**
 ```bash
-logger -n 172.16.10.50 -P 514 -d "test from $(hostname)"     # send a test event
+logger -n 172.16.10.70 -P 514 -d "test from $(hostname)"     # send a test event
 ls -R /var/log/devnetlabs_logs/                              # file appears in the right branch
 sudo tail -f /var/log/devnetlabs_logs/others/others-*.log    # unmatched sources land here
 ```

@@ -20,7 +20,7 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | [DHCP migration](docs/dhcp-migration.md) | Move DHCP MikroTik→Technitium (relay, scopes, break-glass) |
 | [Logging design](docs/logging-design.md) | rsyslog HA → cross-feed Loki (dc01) + Graylog (dc02) |
 | [rsyslog setup](docs/rsyslog-setup.md) | Central collector: vendor/category tree, classification, rotation, forwarding |
-| [keepalived VIP](docs/keepalived-setup.md) | Floating VIP 172.16.10.50 across the log collectors (HA) |
+| [keepalived VIP](docs/keepalived-setup.md) | Floating VIP 172.16.10.70 across the log collectors (HA) |
 | [Log collector VMs](docs/log-collector-setup.md) | Build the dnllog101/dnllog201 Ubuntu collector VMs |
 | [Log source onboarding](docs/log-source-onboarding.md) | Per-device syslog client config (Cisco/Juniper/ASA/PAN-OS/FortiGate/Windows/…) |
 | [rsyslog install script](docs/rsyslog-install-script.md) | Copy-paste collector config, line-by-line explained |
