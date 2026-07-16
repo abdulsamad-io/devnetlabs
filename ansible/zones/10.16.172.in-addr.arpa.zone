@@ -9,4 +9,4 @@ $TTL 3600
 ; PTR records for 172.16.10.0/24 (mgmt VLAN 1000) — last octet as the label
 2   IN PTR dnladm101.dc01.devnetlabs.com.
 53  IN PTR dnldns101.dc01.devnetlabs.com.
-56  IN PTR dnldns201.dc02.devnetlabs.com.
+54  IN PTR dnldns201.dc02.devnetlabs.com.

@@ -9,4 +9,4 @@ all:
         dnldns101:      # primary  (dc01)
           ansible_host: 172.16.10.53
         dnldns201:      # secondary (dc02)
-          ansible_host: 172.16.10.56
+          ansible_host: 172.16.10.54

@@ -19,7 +19,7 @@ The MikroTik provides the gateway, DHCP, and inter-VLAN routing for the entire l
 | 1301 | `dc03_pbs` | 10.130.10.0/24 | 10.130.10.1 | dc03 |
 | 1 (untagged) | `lab_lan` | 172.16.254.0/24 | 172.16.254.1 | WiFi + ether5, flat L2 |
 
-**Technitium DNS servers** at `172.16.10.53` (dnldns101, live) / `172.16.10.56` (dnldns201, planned) on VLAN 1000.
+**Technitium DNS servers** at `172.16.10.53` (dnldns101, live) / `172.16.10.54` (dnldns201, planned) on VLAN 1000.
 
 ---
 
