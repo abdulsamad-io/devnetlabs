@@ -113,7 +113,7 @@ Apply: `sudo rsyslogd -N1 && sudo systemctl restart rsyslog` (validate config fi
 
 Date-stamped files rotate themselves. Goal: **today and yesterday stay uncompressed
 (`<vendor>-YYYY-MM-DD.log`); every day older than yesterday is gzipped; compressed logs
-are deleted after 90 days.** Compress by **filename date** (not `mtime`, which truncates
+are deleted after 60 days.** Compress by **filename date** (not `mtime`, which truncates
 and is write-time-fuzzy):
 ```sh
 #!/bin/sh
@@ -122,12 +122,12 @@ yday=$(date -d yesterday +%F)     # e.g. 2026-07-15   (keep uncompressed)
 # compress every .log EXCEPT today's and yesterday's
 find /var/log/devnetlabs_logs -type f -name '*.log' \
      ! -name "*-$today.log" ! -name "*-$yday.log" -exec gzip {} \;
-# delete compressed logs older than 90 days (gzip preserves the log's original mtime)
-find /var/log/devnetlabs_logs -type f -name '*.log.gz' -mtime +90 -delete
+# delete compressed logs older than 60 days (gzip preserves the log's original mtime)
+find /var/log/devnetlabs_logs -type f -name '*.log.gz' -mtime +60 -delete
 find /var/log/devnetlabs_logs -type d -empty -delete
 ```
 `chmod +x`. Depth-agnostic; `date -d yesterday` needs GNU date (Ubuntu ✓). Run daily
-(systemd timer or `cron.daily`); each collector rotates its own tree. Tune `+90` to taste.
+(systemd timer or `cron.daily`); each collector rotates its own tree. Tune `+60` to taste.
 
 ## Part 6 — Forwarding to Loki (Grafana Alloy tails the tree)
 

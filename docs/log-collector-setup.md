@@ -15,9 +15,9 @@ the floating VIP in [keepalived-setup.md](keepalived-setup.md).
 
 **Shared:** VIP **`172.16.10.70`** · VLAN 1000 · gateway `172.16.10.1` · DNS `172.16.10.53`
 · OS **Ubuntu Server 26.04 LTS** (matches the fleet) · **2 vCPU** `x86-64-v2-AES` · **2 GB**
-RAM · **16 GB** OS disk + **80 GB** log data disk. Build **both identically**.
+RAM · **16 GB** OS disk + **50 GB** log data disk. Build **both identically**.
 
-> Why a separate 80 GB disk: the `/var/log/devnetlabs_logs/` archive (90-day retention)
+> Why a separate 50 GB disk: the `/var/log/devnetlabs_logs/` archive (60-day retention)
 > is the only real capacity driver — keep it off root so logs can't fill `/`.
 
 ---
@@ -32,7 +32,7 @@ qm create 1004 --name dnllog101 --machine q35 --bios ovmf \
   --net0 virtio,bridge=vmbr0,tag=1000
 qm set 1004 --efidisk0 local-lvm:1,efitype=4m,pre-enrolled-keys=0
 qm set 1004 --scsi0 local-lvm:16,discard=on,ssd=1      # OS disk
-qm set 1004 --scsi1 local-lvm:80,discard=on,ssd=1      # -> /var/log/devnetlabs_logs
+qm set 1004 --scsi1 local-lvm:50,discard=on,ssd=1      # -> /var/log/devnetlabs_logs
 qm set 1004 --ide2 local:iso/ubuntu-26.04-live-server-amd64.iso,media=cdrom
 qm set 1004 --boot order='ide2;scsi0'
 qm start 1004
@@ -99,7 +99,7 @@ sudo ufw enable
 ## Part D — Mount the log data disk
 
 ```bash
-lsblk                                                # find the 80G disk (e.g. /dev/sdb)
+lsblk                                                # find the 50G disk (e.g. /dev/sdb)
 sudo mkfs.ext4 -L devnetlabs_logs /dev/sdb
 echo 'LABEL=devnetlabs_logs /var/log/devnetlabs_logs ext4 defaults,noatime 0 2' | sudo tee -a /etc/fstab
 sudo mkdir -p /var/log/devnetlabs_logs && sudo mount -a
@@ -119,7 +119,7 @@ sudo install -d -m 0750 -o syslog -g adm /var/log/devnetlabs_logs
 ```bash
 hostnamectl                                  # dnllog101 / dnllog201
 ip -br a                                      # .71 / .72 on ens18
-df -h /var/log/devnetlabs_logs                # the 80G disk is mounted
+df -h /var/log/devnetlabs_logs                # the 50G disk is mounted
 timedatectl                                   # clock synced (chrony)
 ```
 Then the VIP + syslog end-to-end checks from the keepalived/rsyslog runbooks.

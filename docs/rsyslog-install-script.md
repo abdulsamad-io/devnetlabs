@@ -5,7 +5,7 @@ Executable companion to [rsyslog-setup.md](rsyslog-setup.md). Run **on each coll
 ([log-collector-setup.md](log-collector-setup.md)). Each step is copy-paste; the bullets
 explain what every line does.
 
-> **Preconditions:** Ubuntu, run as a sudo user; the **80 GB log disk is mounted at
+> **Preconditions:** Ubuntu, run as a sudo user; the **50 GB log disk is mounted at
 > `/var/log/devnetlabs_logs`** (Part D of the VM runbook). Config is identical on both
 > collectors.
 
@@ -104,7 +104,7 @@ today=$(date +%F)
 yday=$(date -d yesterday +%F)
 find /var/log/devnetlabs_logs -type f -name '*.log' \
      ! -name "*-$today.log" ! -name "*-$yday.log" -exec gzip {} \;
-find /var/log/devnetlabs_logs -type f -name '*.log.gz' -mtime +90 -delete
+find /var/log/devnetlabs_logs -type f -name '*.log.gz' -mtime +60 -delete
 find /var/log/devnetlabs_logs -type d -empty -delete
 EOF
 sudo chmod +x /etc/cron.daily/devnetlabs-logs
@@ -113,7 +113,7 @@ sudo chmod +x /etc/cron.daily/devnetlabs-logs
 - `find … ! -name "*-$today.log" ! -name "*-$yday.log" -exec gzip` — compress every
   `.log` except today's and yesterday's (matched by the date in the filename — precise,
   unlike `-mtime`).
-- `find … '*.log.gz' -mtime +90 -delete` — delete compressed logs older than 90 days
+- `find … '*.log.gz' -mtime +60 -delete` — delete compressed logs older than 60 days
   (gzip preserves the log's original mtime, so the count is honest).
 - `find … -type d -empty -delete` — tidy empty vendor folders.
 - `chmod +x` — make it run as a daily job.
