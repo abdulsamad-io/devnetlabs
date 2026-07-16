@@ -34,13 +34,13 @@ dhcp_scopes:
     subnet: 172.16.10.0
     mask: 255.255.255.0
     router: 172.16.10.1
-    dns: "172.16.10.53,172.16.10.56"
+    dns: "172.16.10.53,172.16.10.54"
     domain: dc01.devnetlabs.com
     lease_hours: 12
   - name: lab_lan
     subnet: 172.16.254.0
     mask: 255.255.255.0
     router: 172.16.254.1
-    dns: "172.16.10.53,172.16.10.56"
+    dns: "172.16.10.53,172.16.10.54"
     domain: dc01.devnetlabs.com
     lease_hours: 12

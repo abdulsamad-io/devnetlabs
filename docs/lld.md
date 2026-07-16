@@ -102,7 +102,7 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 172.16.10.71 | STAT | `dnllog101` — rsyslog collector (dc01, HA active) |
 | 172.16.10.72 | STAT | `dnllog201` — rsyslog collector (dc02, HA standby) |
 | 172.16.10.53 | STAT | `dnldns101` — Technitium DNS #1 (live) |
-| 172.16.10.56 | RSV | `dnldns201` — Technitium DNS #2 |
+| 172.16.10.54 | RSV | `dnldns201` — Technitium DNS #2 |
 
 ---
 
@@ -151,7 +151,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
 | 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
 | 1007 | `dnllok101` | Loki (log store) | VM | dc01 | 1000 | RSV/TBD |
-| 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
+| 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.54 (RSV) |
 | 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | dc02 | 1000 | 172.16.10.72 (STAT) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | dc02 | 1000 | RSV/TBD |
 | 2101 | `dnlpnt201` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |

@@ -1,5 +1,5 @@
 ---
-# dnldns201 — SECONDARY (dc02, 172.16.10.56)
+# dnldns201 — SECONDARY (dc02, 172.16.10.54)
 technitium_role: secondary
 technitium_primary_ns: 172.16.10.53      # transfers zones from dnldns101
 

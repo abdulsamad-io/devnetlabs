@@ -7,7 +7,7 @@ $TTL 3600
 @   IN NS  dnldns201.dc02.devnetlabs.com.
 
 ; --- dc02 hosts ---
-dnldns201   IN A 172.16.10.56      ; Technitium DNS #2 (mgmt 1000)
+dnldns201   IN A 172.16.10.54      ; Technitium DNS #2 (mgmt 1000)
 ; --- TBD (fill IPs as built) ---
 ;dnllog201  IN A 172.16.10.__      ; logserver secondary (mgmt 1000)
 ;dnlpnt201  IN A 10.120.10.__      ; PNETLAB (apps 1201)

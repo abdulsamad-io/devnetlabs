@@ -7,7 +7,7 @@ variable "primary_url" {
 variable "secondary_url" {
   description = "dnldns201 (secondary) API base URL"
   type        = string
-  default     = "http://172.16.10.56:5380"
+  default     = "http://172.16.10.54:5380"
 }
 
 variable "api_token" {
