@@ -62,7 +62,7 @@ template(name="line_ip" type="string"
 
 ruleset(name="devnetlabs_collect") {
     set $.path = lookup("srcmap", $fromhost-ip);
-    set $.leaf = re_extract($.path, "([^/]+)$", 0, 1, "others");
+    set $.leaf = re_extract($.path, "([^/]+)\$", 0, 1, "others");
 
     action(type="omfile" dynaFile="devnetlabs_dynafile" template="line_ip"
            dirCreateMode="0750" fileCreateMode="0640" dynaFileCacheSize="200")
@@ -84,8 +84,11 @@ EOF
   tag, message (source IP keeps same-named PNETLab clones distinguishable).
 - `set $.path = lookup("srcmap", $fromhost-ip)` — classify by sender IP → e.g.
   `security/asa` (or `others`).
-- `set $.leaf = re_extract(…"([^/]+)$"…)` — pull the **last path segment** (the vendor,
-  e.g. `asa`) for the filename; falls back to `others`.
+- `set $.leaf = re_extract(…"([^/]+)\$"…)` — pull the **last path segment** (the vendor,
+  e.g. `asa`) for the filename; falls back to `others`. The `$` end-anchor **must be
+  escaped as `\$`** — in RainerScript a bare `$` inside a double-quoted string is read as
+  a variable sigil and fails config validation. (Safe inside the `<<'EOF'` quoted
+  heredoc: the shell won't touch the backslash.)
 - **action 1 (`omfile`)** — write to the vendor tree via the dynafile template;
   auto-create dirs `0750`, files `0640`; `dynaFileCacheSize=200` keeps ~200 open file
   handles (plenty for the vendor×day set).

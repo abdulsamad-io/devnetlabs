@@ -86,7 +86,7 @@ template(name="line_ip" type="string"
 
 ruleset(name="devnetlabs_collect") {
     set $.path = lookup("srcmap", $fromhost-ip);              # "security/asa" | "others"
-    set $.leaf = re_extract($.path, "([^/]+)$", 0, 1, "others");   # "asa" | "others"
+    set $.leaf = re_extract($.path, "([^/]+)\$", 0, 1, "others");  # "asa" | "others"  (\$ = escaped end-anchor)
 
     # (1) ARCHIVE — write to the vendor tree
     action(type="omfile" dynaFile="devnetlabs_dynafile" template="line_ip"
