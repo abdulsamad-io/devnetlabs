@@ -160,6 +160,10 @@ Fortinet, Checkpoint).
 
 ## Part 7 — Onboarding a source
 
+> **Per-device syslog config** (Cisco IOS/XE/XR/NXOS, Juniper, Arista, MikroTik, ASA,
+> FTD, PAN-OS, FortiGate, Check Point, Windows, Linux, TrueNAS): see
+> [log-source-onboarding.md](log-source-onboarding.md).
+
 1. **Point the device's syslog** at the VIP `172.16.10.50` (UDP/TCP 514).
 2. **Add its IP** to `devnetlabs-sources.json` (`"value":"network/cisco"` etc.).
 3. **Reload** (no restart): `sudo pkill -HUP rsyslogd` (or `systemctl kill -s HUP rsyslog`).
