@@ -130,7 +130,7 @@ split-horizon (split-brain) DNS:
 | `dnlnas101` | 1301 |
 | `dnlpbs101` | 1302 |
 | `dnldns201` | 2001 |
-| `dnllog201` | 2002 |
+| `dnllog201` | 2004 |
 | `dnlpnt201` | 2101 |
 | `dnleve201` | 2102 |
 | `dnlpbs301` | 3401 |

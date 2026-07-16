@@ -9,7 +9,7 @@ full-text SIEM-style store (Graylog) on the *same* log sources.
 | Role | Code | Host | VMID | Node | Notes |
 |------|------|------|------|------|-------|
 | rsyslog collector (active) | `log` | `dnllog101` | 1004 | dc01 | HA pair with dnllog201 |
-| rsyslog collector (standby) | `log` | `dnllog201` | 2002 | dc02 | HA pair with dnllog101 |
+| rsyslog collector (standby) | `log` | `dnllog201` | 2004 | dc02 | HA pair with dnllog101 |
 | Loki (light, always-on) | `lok` | `dnllok101` | 1007 | dc01 | label-indexed; UI via Grafana |
 | Graylog (heavy, on-demand) | `gry` | `dnlgry201` | 2003 | dc02 | OpenSearch, 6–8 GB; own web UI |
 

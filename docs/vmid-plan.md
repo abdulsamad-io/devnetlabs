@@ -51,7 +51,7 @@ Scheme: **`NZSS`** (4 digits).
 | VMID | Hostname | Guest | Type | Zone (VLAN) |
 |------|----------|-------|------|-------------|
 | 2001 | `dnldns201` | Technitium DNS #2 (.56) | VM | mgmt (1000) |
-| 2002 | `dnllog201` | rsyslog collector (HA standby) | VM | mgmt (1000) |
+| 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | mgmt (1000) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | mgmt (1000) |
 | 2101 | `dnlpnt201` | PNETLAB (+ mgmt NIC on 1000) | VM | apps (1201) |
 | 2102 | `dnleve201` | EVE-NG | VM | apps (1201) |

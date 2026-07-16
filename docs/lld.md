@@ -152,7 +152,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
 | 1007 | `dnllok101` | Loki (log store) | VM | dc01 | 1000 | RSV/TBD |
 | 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.56 (RSV) |
-| 2002 | `dnllog201` | rsyslog collector (HA standby) | VM | dc02 | 1000 | 172.16.10.52 (STAT) |
+| 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | dc02 | 1000 | 172.16.10.52 (STAT) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | dc02 | 1000 | RSV/TBD |
 | 2101 | `dnlpnt201` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
 | 2102 | `dnleve201` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
