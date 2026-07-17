@@ -131,5 +131,24 @@ sudo systemctl enable --now keepalived
 
 ---
 
+## Verification & success criteria
+
+Run the tests in **Step 5**; the pair is healthy when:
+
+**✅ Success criteria:**
+- [ ] Exactly **one** host shows `172.16.10.70` (the MASTER); the BACKUP shows none.
+- [ ] Stopping rsyslog (or keepalived) on the master moves the VIP to the backup within ~1–3 s.
+- [ ] `logger -n 172.16.10.70 -P 514 -d` lands on the current holder **before and after** failover.
+- [ ] `journalctl -u keepalived` shows clean `Entering MASTER/BACKUP STATE`, no flapping.
+- [ ] After the master returns, the VIP behaves per your preempt choice (reclaims by default).
+
+**⚠️ Watch out for** (see Notes & gotchas for detail):
+- **Split-brain** — VRRP can't pass → *both* claim the VIP → duplication. Verify only one holder; check the ufw peer-allow + `unicast_peer`.
+- **Weight math** — the drop must take the master *below* the backup (150−60=90 < 100) or it never fails over.
+- **Wrong `interface`** — must be the VLAN-1000 NIC (`ip -br a`) or the VIP silently never appears.
+- **`dc02` off** — no standby present; the master stays up alone (expected, not a fault).
+
+---
+
 See also: [logging-design.md](logging-design.md) · [rsyslog-setup.md](rsyslog-setup.md) ·
 [lld.md](lld.md)

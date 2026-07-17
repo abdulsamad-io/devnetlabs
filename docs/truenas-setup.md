@@ -114,6 +114,10 @@ Open the VM **Console**:
    qm reboot 1301
    ```
 
+> **Check:** after reboot the console reaches the TrueNAS login/URL banner, and
+> `qm config 1301 | grep -E 'boot|scsi'` shows `boot: order=scsi0` (booting the 32 GB
+> disk, not the CD/data disk).
+
 ---
 
 ## Part E — Attach the 1.92 TB data SSD (now safe)
@@ -216,6 +220,34 @@ net use Z: \\10.110.30.50\abdulsamad_nas /user:abdoolsamad * /persistent:yes
   the share name. Clear stale sessions first (`net use \\10.110.30.50 /delete /y`).
 - **Disk not visible in Proxmox at all** → BIOS: set SATA to **AHCI**, disable
   **VMD/RST** (see Part A).
+
+---
+
+## Verification & success criteria
+
+**✅ Success criteria — the NAS is serving when:**
+- [ ] TrueNAS boots from the **32 GB** virtual disk (never the 1.92 TB SSD).
+- [ ] The data SSD is a healthy ZFS pool (`dnl_pool001`, **ONLINE**) on the passed-through disk.
+- [ ] Static IP `10.110.30.50` reachable; web UI loads; hostname `dnlnas101`.
+- [ ] SMB/NFS shares mount from a client using the **account** name (`abdoolsamad`).
+
+**🧪 Tests:**
+```bash
+# on dc01 — confirm passthrough + unique serials:
+grep -E 'scsi[01]:' /etc/pve/qemu-server/1301.conf     # each line has a unique serial=
+# in TrueNAS (shell or UI):
+zpool status dnl_pool001                               # state: ONLINE, no errors
+# from a Windows client:
+net use Z: \\10.110.30.50\abdulsamad_nas /user:abdoolsamad * /persistent:yes   # maps OK
+```
+Expected: pool **ONLINE**, share maps without error, files read/write.
+
+**⚠️ Watch out for:**
+- **Installed onto the 1.9 TB SSD** — attach the data disk **after** install (Part E); target the 32 GB disk in the installer.
+- **Pool wizard "duplicate serial numbers: None"** — Proxmox gives passthrough disks no serial; set a unique `serial=` per disk (Part E).
+- **SMB error 86** — username mismatch: use the TrueNAS **account** `abdoolsamad` (double-o), not the share name; clear stale sessions first (`net use \\10.110.30.50 /delete /y`).
+- **Disk absent in Proxmox** — BIOS: set SATA to **AHCI**, disable **VMD/RST** (Part A).
+- **Single-disk pool = no redundancy** — snapshots ≠ backups; replication/PBS still pending (#18).
 
 ---
 
