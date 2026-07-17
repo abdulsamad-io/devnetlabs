@@ -13,6 +13,8 @@ $TTL 3600
 ; logging, NetBox, Cloudflare…) live in mgmt.devnetlabs.com, not here.
 ; (Loki is an apps-VLAN host — it lives here, not in mgmt.)
 dnllok101   IN A 10.110.10.70      ; Loki log store (lok 1104, apps 1101)
+dnlgrf101   IN A 10.110.10.71      ; Grafana (grf 1105, apps 1101)
+dnlprm101   IN A 10.110.10.72      ; Prometheus + snmp_exporter (prm 1106, apps 1101)
 dnlnas101   IN A 10.110.30.50      ; TrueNAS (nas 1103)
 ; --- TBD (fill IPs as built) ---
 ;dnlplx101  IN A 10.110.20.__      ; Plex (media 1102)
