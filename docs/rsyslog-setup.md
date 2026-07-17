@@ -151,6 +151,9 @@ Let the **path become the labels** — low-cardinality `category` + `vendor` onl
 stay *in the line* (filter with LogQL `|=`), not as labels (avoids cardinality blowups
 from churny PNETLab devices).
 
+This is Alloy's **config file `/etc/alloy/config.alloy`** (River syntax — a config file,
+**not** shell commands; deploy it with the steps below):
+
 ```alloy
 local.file_match "devnetlabs" {
   path_targets = [{ __path__ = "/var/log/devnetlabs_logs/**/*.log" }]
@@ -169,6 +172,38 @@ loki.source.file "devnetlabs" {
 }
 loki.write "default" { endpoint { url = "http://dnllok101:3100/loki/api/v1/push" } }
 ```
+
+### Install & deploy (on **both** collectors)
+
+Alloy isn't installed by default. Run on each collector:
+```bash
+# 1. Grafana apt repo + install
+sudo apt install -y gpg
+sudo mkdir -p /etc/apt/keyrings
+wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg >/dev/null
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" \
+  | sudo tee /etc/apt/sources.list.d/grafana.list
+sudo apt update && sudo apt install -y alloy
+
+# 2. Save the config above to /etc/alloy/config.alloy (the package's default path)
+
+# 3. Let Alloy READ the tree: it runs as user 'alloy', but the tree is syslog:adm 0750
+sudo usermod -aG adm alloy
+
+# 4. Enable + start (restart after any config edit or the group change)
+sudo systemctl enable --now alloy
+sudo systemctl restart alloy
+
+# 5. Verify
+alloy fmt /etc/alloy/config.alloy      # syntax check (non-zero exit = bad config)
+systemctl status alloy
+curl -s localhost:12345/-/ready        # Alloy health -> "ready"
+journalctl -u alloy -f                 # watch file-tail + push activity/errors
+```
+> **`dnllok101` (Loki) isn't built yet (#30)** — Alloy starts fine but logs push-retry
+> errors against the endpoint until Loki is up, then ships what it has tailed (within
+> Loki's ingestion window). The `adm` group membership only takes effect on service
+> (re)start — hence the explicit `restart` in step 4.
 
 **Graylog** (Part 4 action #2) ingests via a **Syslog TCP** input on `dnlgry201:1514`;
 route to streams by source and apply vendor content packs/extractors (ASA, PAN-OS,
