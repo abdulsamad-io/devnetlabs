@@ -97,7 +97,8 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 |---------|-----------|------------|
 | 172.16.10.1 | STAT | Gateway (SVI `vlan_shared_mgt`) |
 | 172.16.10.2 | STAT | `dnladm101` — bastion / jump host |
-| 172.16.10.9 / .10 | STAT | **dc01 PVE mgmt** (⚠️ `.9` vs `.10` unresolved — open item) |
+| 172.16.10.9 | STAT | **dc01 PVE mgmt** (node `dc01`) |
+| 172.16.10.10 | STAT | **dc02 PVE mgmt** (node currently named `abdulsamad` — rename pending) |
 | 172.16.10.70 | STAT | **syslog VIP** (keepalived; `dnllog101`/`dnllog201`) |
 | 172.16.10.71 | STAT | `dnllog101` — rsyslog collector (dc01, HA active) |
 | 172.16.10.72 | STAT | `dnllog201` — rsyslog collector (dc02, HA standby) |
@@ -193,6 +194,6 @@ currency**, corrected in §6–§7 above:
 | 10 | dc02 shared VNET: `logserver, dns server` | Not labelled as the secondary instances | `dnldns201` / `dnllog201` |
 | 11 | Router `951UI` | Cosmetic | `RB951Ui-2HnD` |
 
-**Still-open dependencies referenced above:** dc01 mgmt IP `.9` vs `.10`, M.2 2242 role
-(local PBS vs vzdump), Graylog mapping, PNETLab placement — all tracked in
-[OPEN-ITEMS.md](OPEN-ITEMS.md).
+**Still-open dependencies referenced above:** M.2 2242 role (local PBS vs vzdump),
+Graylog mapping, PNETLab placement — all tracked in [OPEN-ITEMS.md](OPEN-ITEMS.md).
+(PVE mgmt IPs resolved: **dc01 = .9, dc02 = .10** — #17.)

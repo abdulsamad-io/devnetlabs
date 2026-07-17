@@ -7,10 +7,14 @@ human-readable index; the issues hold the working detail.
 
 | # | Decision | Issue |
 |---|----------|-------|
-| 1 | **dc01 management IP** `172.16.10.9` vs `172.16.10.10` — confirm the live one (browsed on `:8006`) and reconcile across docs | [#17] |
-| 2 | **M.2 2242 role on dc01** — local PBS (`dnlpbs101`) vs vzdump + TrueNAS ZFS replication target | [#18] |
-| 3 | **PNETLab placement** — dc02 (`dnlpnt201`) vs a light on-demand dc01 (`dnlpnt101`) | [#19] |
-| 4 | **Shared mgmt-VLAN DNS zone** — `mgmt.devnetlabs.com` (node-neutral) vs per-node for VLAN 1000; per-node zones stay for the per-node VLANs | [#28] |
+| 1 | **M.2 2242 role on dc01** — local PBS (`dnlpbs101`) vs vzdump + TrueNAS ZFS replication target | [#18] |
+| 2 | **PNETLab placement** — dc02 (`dnlpnt201`) vs a light on-demand dc01 (`dnlpnt101`) | [#19] |
+
+> **Resolved:**
+> - dc01/dc02 PVE mgmt IPs — **dc01 = `172.16.10.9`, dc02 = `172.16.10.10`** (node `.10`
+>   still named `abdulsamad`, rename pending). Confirmed via `:8006` — #17.
+> - Shared mgmt-VLAN DNS zone — **`mgmt.devnetlabs.com`** (node-neutral) for VLAN 1000;
+>   per-node zones stay for the per-node VLANs — #28.
 
 ## Pending work
 
