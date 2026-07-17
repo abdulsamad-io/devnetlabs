@@ -178,6 +178,17 @@ ip -br a; timedatectl                         # .71/.72 on ens18; CEST; NTP sync
 - **UTC filenames** — set the timezone (Part C) or log dates bucket in UTC.
 - **VRRP-peer ufw line** — `.72` on log101, `.71` on log201 (reversed per host).
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| After install, `/boot`/`/` on the **50 GB** disk | installer targeted the wrong disk | reinstall onto the **16 GB** disk (Part B); leave the 50 GB bare |
+| Part D refuses to `mkfs` | guard hit — target has partitions or a mountpoint (the OS disk) | re-check `lsblk`; set `LOGDISK` to the empty 50 GB disk |
+| `/var/log/devnetlabs_logs` not mounted after reboot | fstab `LABEL` mismatch | `findmnt /var/log/devnetlabs_logs`; `sudo e2label /dev/sdX devnetlabs_logs`; `sudo mount -a` |
+| Log filenames show the wrong date | timezone still `Etc/UTC` | `sudo timedatectl set-timezone Europe/Amsterdam`; `systemctl restart rsyslog` |
+| VRRP peer traffic blocked | ufw peer line uses the wrong octet | `.72` on log101, `.71` on log201 (reversed per host) |
+| No syslog received | rsyslog not listening / firewall | `ss -lntu \| grep :514`; `sudo ufw status`; see [rsyslog-setup.md](rsyslog-setup.md) |
+
 ---
 
 See also: [rsyslog-setup.md](rsyslog-setup.md) · [keepalived-setup.md](keepalived-setup.md) ·

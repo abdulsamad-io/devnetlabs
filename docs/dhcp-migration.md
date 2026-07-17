@@ -192,6 +192,40 @@ is instant and lossless.
 - ⬜ **Prereq still recommended:** stand up **`dnldns201`** so DNS+DHCP isn't
   single-homed on `dnldns101` now that both run there.
 
+## Verification & success criteria
+
+**✅ Success criteria — a subnet is migrated when:**
+- [ ] A client `release`/`renew` gets its lease from **Technitium**, not the MikroTik.
+- [ ] The client receives the correct **gateway** + **DNS `172.16.10.53`**.
+- [ ] An **A + PTR** record auto-registered in the matching zone.
+- [ ] The MikroTik server for that subnet is **disabled** (break-glass); for relayed subnets the relay is **enabled** (`disabled=no`).
+- [ ] Exactly **one** DHCP authority answers on the subnet (never two hot).
+
+**🧪 Test (per migrated subnet):**
+```
+# client:  ipconfig /release && ipconfig /renew   (Linux: sudo dhclient -r && sudo dhclient)
+# Technitium -> DHCP -> Leases : the client appears here
+/ip dhcp-server print where disabled=no      # migrated subnet's server NOT listed
+/ip dhcp-relay  print where disabled=no       # relay present for non-1000 subnets
+```
+
+**⚠️ Watch out for:**
+- **Two hot servers on one subnet** — disable the MikroTik server as the Technitium scope/relay goes live.
+- **Relay added disabled** — include `disabled=no` or the VLAN gets no DHCP at all.
+- **DNS single-homed** — break-glass scopes must hand out a **non-Technitium** DNS or clients get an IP but can't resolve.
+
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| Client gets **no** IP after cutover | relay disabled, or server *and* relay both off | `/ip dhcp-relay print` (expect `disabled=no`); `/ip dhcp-server print` |
+| Client gets an IP but **can't resolve** | scope DNS wrong, or Technitium (sole DNS) down | scope DNS = `172.16.10.53`; break-glass DNS must be non-Technitium |
+| Lease still comes from the MikroTik | local server not disabled | `/ip dhcp-server disable [find interface=<svi>]` |
+| Conflicting / duplicate leases | two hot servers raced | disable the MikroTik server; `release`/`renew` |
+| Relayed subnet gets nothing (VLAN 1000 fine) | wrong `local-address` (giaddr) or relay on wrong interface | `local-address` must equal that subnet's SVI IP |
+| No **A/PTR** auto-registered | scope Domain isn't an authoritative Technitium zone | set the scope **Domain Name** to the matching zone |
+| Need it working *now* | — | **break-glass**: `/ip dhcp-relay disable …` + `/ip dhcp-server enable …` (see Break-glass/Rollback) |
+
 ---
 
 See also: [network-vlan-design.md](network-vlan-design.md) · [lld.md](lld.md) ·

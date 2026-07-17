@@ -186,6 +186,18 @@ Expected: `-N1` clean, both listeners present, a fresh `*-YYYY-MM-DD.log` writte
 - **Graylog push errors** — expected while `dnlgry201` (dc02) is off; the disk-queue buffers and replays. Not a failure.
 - **Timezone** — filenames follow local time; confirm `timedatectl` is `Europe/Amsterdam` or dates bucket in UTC.
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| `rsyslogd -N1` errors on the regex | bare `$` in `re_extract` | escape it: `"([^/]+)\$"` (safe inside the `<<'EOF'` heredoc) |
+| Vendor tree owned `syslog:syslog` | `omfile` missing `fileGroup="adm"` (Step 4) | add `fileGroup`/`dirGroup="adm"`; `sudo chgrp -R adm /var/log/devnetlabs_logs`; restart |
+| Log dir root-owned / rsyslog can't write | log root not `syslog:adm` | `sudo install -d -m 0750 -o syslog -g adm /var/log/devnetlabs_logs` (Step 1) |
+| No listeners on 514 | inputs not loaded | `ss -lntu \| grep :514`; re-check `10-inputs.conf` |
+| Test line only in `/var/log/syslog` | local socket → default ruleset | send over the network: `logger -n <ip> -P 514 …` |
+| Graylog forward errors | dc02/Graylog off | expected; the disk-queue replays on return |
+| `sources.json` edit breaks reload | invalid JSON | `jq empty …sources.json` before `sudo pkill -HUP rsyslogd` |
+
 ---
 
 See also: [rsyslog-setup.md](rsyslog-setup.md) · [log-source-onboarding.md](log-source-onboarding.md) ·
