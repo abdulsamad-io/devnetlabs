@@ -154,5 +154,32 @@ Then configure the device itself per [log-source-onboarding.md](log-source-onboa
 
 ---
 
+## Verification & success criteria
+
+**✅ Success criteria — the collector is working when:**
+- [ ] `sudo rsyslogd -N1` returns **clean** (no parse errors).
+- [ ] `ss -lntu | grep :514` shows rsyslog on **both udp and tcp 514**.
+- [ ] A `logger` test writes a dated file under `/var/log/devnetlabs_logs/…`, owned **`syslog:adm`**.
+- [ ] Mapped sources land in `category/vendor`; unmapped fall to `others/`.
+- [ ] `/etc/cron.daily/devnetlabs-logs` is **executable** and rotates correctly (rsyslog-setup Part 5 test).
+
+**🧪 End-to-end test:**
+```bash
+sudo rsyslogd -N1                                           # clean
+ss -lntu | grep ':514'                                      # udp + tcp listeners present
+logger -n 172.16.10.70 -P 514 -T -d "collector self-test"   # -T = TCP, via the VIP
+ls -lR /var/log/devnetlabs_logs/                            # dated file appears (syslog:adm 0640)
+```
+Expected: `-N1` clean, both listeners present, a fresh `*-YYYY-MM-DD.log` written as `syslog:adm`.
+
+**⚠️ Watch out for:**
+- **`$` in the `re_extract` regex** — must be escaped `"([^/]+)\$"`; a bare `$` fails validation (safe inside the `<<'EOF'` heredoc).
+- **Files owned by `root`** — the log root must be `syslog:adm 0750` (Step 1), or rsyslog can't write / Alloy can't read.
+- **Only `/var/log/syslog`, nothing in the tree** — a *local* `logger` uses the default ruleset; test over the **network** (`logger -n …`) to hit `devnetlabs_collect`.
+- **Graylog push errors** — expected while `dnlgry201` (dc02) is off; the disk-queue buffers and replays. Not a failure.
+- **Timezone** — filenames follow local time; confirm `timedatectl` is `Europe/Amsterdam` or dates bucket in UTC.
+
+---
+
 See also: [rsyslog-setup.md](rsyslog-setup.md) · [log-source-onboarding.md](log-source-onboarding.md) ·
 [keepalived-setup.md](keepalived-setup.md)

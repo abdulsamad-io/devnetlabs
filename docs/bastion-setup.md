@@ -83,6 +83,9 @@ chmod 600 ~/.ssh/authorized_keys
 ```
 > The `700`/`600` permissions matter: SSH refuses key files other users can read.
 
+> **Check:** `ssh abdoolsamad@172.16.10.2 'grep -c devnetlabs ~/.ssh/authorized_keys'` → `1`
+> (the key is installed). A key-only `ssh jump` login is proven in Part D.
+
 ---
 
 ## Part C — SSH client config (Windows)
@@ -238,6 +241,32 @@ accept SSH **only from `172.16.10.2`**:
 
 Do this on its own change and verify reachability *before and after* — it touches the
 currently open forward chain (see [OPEN-ITEMS.md](OPEN-ITEMS.md)).
+
+---
+
+## Verification & success criteria
+
+**✅ Success criteria — the bastion is ready when:**
+- [ ] `ssh jump` logs in **with the key only** (no password prompt).
+- [ ] Password auth and root login are both **refused**.
+- [ ] SSH is reachable from both mgmt networks (`172.16.10.0/24`, `172.16.254.0/24`) and nowhere else.
+- [ ] `ssh dc01` (ProxyJump) hops **through** the bastion without exposing your private key.
+
+**🧪 End-to-end tests:**
+```bash
+ssh -v jump true 2>&1 | grep -i authenticated        # "Authenticated ... using publickey"
+ssh -o PreferredAuthentications=password jump        # MUST fail: "Permission denied (publickey)"
+sudo sshd -T | grep -Ei 'permitrootlogin|passwordauthentication|allowgroups'   # no / no / sshusers
+sudo ufw status verbose                              # default deny in; 22 from the two /24s only
+ssh dc01 hostname                                    # ProxyJump works -> prints dc01's hostname
+```
+
+**⚠️ Watch out for:**
+- **Locking yourself out** — keep the Proxmox console (or current session) open until a *fresh* `ssh jump` succeeds; a bad `sshd_config` only bites the *next* login.
+- **Drop-in ordering** — `10-hardening.conf` must sort before `50-cloud-init.conf`; sshd uses the **first** value per setting. Confirm with `sudo sshd -T`, not by reading the file.
+- **`AllowGroups sshusers`** — your user must be in `sshusers` or *every* login is denied (`id abdoolsamad`).
+- **Key perms** — `~/.ssh` `700`, `authorized_keys` `600`; SSH silently ignores group/other-readable key files.
+- **`IdentitiesOnly yes`** — without it the client may offer other keys first and burn `MaxAuthTries` before the lab key.
 
 ---
 

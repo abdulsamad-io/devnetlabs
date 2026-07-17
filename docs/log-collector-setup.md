@@ -156,5 +156,29 @@ Then the VIP + syslog end-to-end checks from the keepalived/rsyslog runbooks.
 
 ---
 
+## Verification & success criteria
+
+**✅ Success criteria — the VM base is ready when:**
+- [ ] `lsblk` shows `/boot` + `/` (LVM) on the **16 GB** disk; the **50 GB** disk is a bare `disk`.
+- [ ] `/var/log/devnetlabs_logs` is mounted from the 50 GB disk (by **LABEL**), owned `syslog:adm`.
+- [ ] `ip -br a` shows `.71`/`.72` on `ens18`; DNS resolves via `.53`/`.54`; search `mgmt.devnetlabs.com`.
+- [ ] `timedatectl` synced + timezone `Europe/Amsterdam`; key-only SSH; ufw default-deny with 514 open.
+
+**🧪 Test (Part F):**
+```bash
+lsblk                                        # OS on 16G; 50G log disk separate
+df -h /var/log/devnetlabs_logs               # mounted from the 50G disk
+findmnt /var/log/devnetlabs_logs             # source shows LABEL=devnetlabs_logs
+ip -br a; timedatectl                         # .71/.72 on ens18; CEST; NTP synced
+```
+
+**⚠️ Watch out for:**
+- **OS installed on the 50 GB disk** — the #1 mistake; if `lsblk` shows `/` on the 50 GB disk, reinstall onto the 16 GB disk (Part B).
+- **`mkfs` the wrong disk** — Part D's guard refuses a disk with partitions/mountpoint; still eyeball `lsblk` and set `LOGDISK` deliberately.
+- **UTC filenames** — set the timezone (Part C) or log dates bucket in UTC.
+- **VRRP-peer ufw line** — `.72` on log101, `.71` on log201 (reversed per host).
+
+---
+
 See also: [rsyslog-setup.md](rsyslog-setup.md) · [keepalived-setup.md](keepalived-setup.md) ·
 [logging-design.md](logging-design.md) · [lld.md](lld.md)

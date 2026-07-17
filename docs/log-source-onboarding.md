@@ -18,6 +18,9 @@ How to point each device/OS at the central collector. Expands **Part 7** of
 in `/etc/rsyslog.d/devnetlabs-sources.json`, then reload: `sudo pkill -HUP rsyslogd`.
 (Eventually generated from NetBox — issue #33.) Unmatched IPs land in `others/`.
 
+> **Check (collector side):** after editing, `jq . /etc/rsyslog.d/devnetlabs-sources.json`
+> parses cleanly and lists the new IP, then `sudo pkill -HUP rsyslogd` returns no error.
+
 | Device | Classification (`sources.json` value) |
 |--------|----------------------------------------|
 | Cisco IOS/IOS-XE/IOS-XR/NX-OS | `network/cisco` |
@@ -177,6 +180,34 @@ transport TCP/UDP, and set the Syslog Level. (Classify `storage/truenas`.)
 Same pattern: point the device's syslog at `172.16.10.70:514` (TCP preferred, pinned
 source IP), then map its IP in `sources.json`. Until mapped, its logs appear in
 `others/` — the signal to add it.
+
+---
+
+## Verification & success criteria
+
+Per onboarded device — check on the **active** collector:
+
+**✅ Success criteria — a source is onboarded when:**
+- [ ] Its mgmt IP is mapped in `devnetlabs-sources.json` and the map reloaded (`sudo pkill -HUP rsyslogd`).
+- [ ] Its logs land in the **expected `category/vendor`** file — **not** `others/`.
+- [ ] Each line carries the device's **source IP** and a sane RFC3339 timestamp.
+- [ ] The device targets the **VIP `172.16.10.70`**, not a single collector's IP.
+
+**🧪 Test:**
+```bash
+# configure the device, generate/await an event, then on the active collector:
+ls -t /var/log/devnetlabs_logs/<category>/<vendor>/                 # today's file exists & grows
+sudo tail -f /var/log/devnetlabs_logs/<category>/<vendor>/<vendor>-$(date +%F).log
+sudo tail -f /var/log/devnetlabs_logs/others/others-$(date +%F).log # still here = not classified
+```
+Expected: the event appears under `<category>/<vendor>/` with the device's source IP in the line.
+
+**⚠️ Watch out for:**
+- **Landed in `others/`** — the source IP isn't mapped, or the device sends from a *different* interface IP than you mapped. Pin the device's syslog **source-interface / source-address** to its mgmt IP.
+- **Nothing arrives** — an ACL/firewall between device and VIP, a transport mismatch, or the device pointing at a collector IP instead of the VIP.
+- **UDP silently drops** — no delivery guarantee; prefer TCP for chatty gear and confirm with a manual event.
+- **Forgot the HUP reload** — a new mapping doesn't take effect until `sudo pkill -HUP rsyslogd`.
+- **Device clock skew** — events bucket into the wrong day's file; enable NTP + high-res timestamps.
 
 ---
 

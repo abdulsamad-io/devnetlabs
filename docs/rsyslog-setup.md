@@ -240,5 +240,31 @@ sudo tail -f /var/log/devnetlabs_logs/others/others-*.log    # unmatched sources
 
 ---
 
+## Verification & success criteria
+
+**✅ Success criteria — the collector pipeline works when:**
+- [ ] `sudo rsyslogd -N1` is clean; rsyslog listens on **udp+tcp 514**.
+- [ ] A test event via the **VIP** writes to the correct `category/vendor` file (`syslog:adm 0640`); unmapped → `others/`.
+- [ ] Rotation keeps today+yesterday uncompressed, gzips older, deletes `.gz` >60 days (Part 5 test).
+- [ ] Alloy runs **our** `config.alloy` (not the sample) and tails the tree / attempts the Loki push.
+- [ ] Only the **VIP-holder** writes and forwards — each event lands once.
+
+**🧪 End-to-end test:**
+```bash
+sudo rsyslogd -N1
+logger -n 172.16.10.70 -P 514 -d "pipeline test from $(hostname)"
+ls -lR /var/log/devnetlabs_logs/                 # dated file, owned syslog:adm
+alloy fmt /etc/alloy/config.alloy | head         # shows local.file_match "devnetlabs", NOT the sample
+```
+
+**⚠️ Watch out for:**
+- **Escaped `$`** in the `re_extract` regex (`"([^/]+)\$"`) — a bare `$` fails config validation.
+- **Alloy running the packaged sample** — you must *overwrite* `/etc/alloy/config.alloy`; `alloy fmt` should echo our components. The `remotecfg "noop client"` error is benign.
+- **Local `logger` misses the ruleset** — a local socket message uses the default ruleset; test over the network (`logger -n …`).
+- **Backend push errors while Loki/Graylog are down** — expected; buffered/retried, not a failure.
+- **Double-ingest** — only one collector may hold the VIP (keepalived); two holders = duplicate lines.
+
+---
+
 See also: [logging-design.md](logging-design.md) · [naming-convention.md](naming-convention.md) ·
 [lld.md](lld.md)
