@@ -77,7 +77,7 @@ sudo ufw allow from 172.16.10.0/24  to any port 22   proto tcp    # SSH (mgmt / 
 sudo ufw allow from 172.16.254.0/24 to any port 22   proto tcp    # SSH (lab_lan)
 sudo ufw allow from 172.16.10.71    to any port 3100 proto tcp    # Alloy push (dnllog101)
 sudo ufw allow from 172.16.10.72    to any port 3100 proto tcp    # Alloy push (dnllog201)
-# add your Grafana host/subnet -> :3100 when Grafana exists
+sudo ufw allow from 10.110.10.71    to any port 3100 proto tcp    # Grafana queries (dnlgrf101)
 sudo ufw enable
 ```
 > **No change needed on the collectors** — their Alloy→Loki push is *outbound* (ufw
