@@ -141,7 +141,8 @@ find /var/log/devnetlabs_logs -type d -empty -delete
 
 > **Runs on: the collectors (`dnllog101` / `dnllog201`), not the Loki host.** Alloy tails
 > the **local** `/var/log/devnetlabs_logs/` tree and pushes over the network to the Loki
-> server on `dnllok101:3100` — `dnllok101` in the config below is the push *destination*,
+> server on `dnllok101.dc01.devnetlabs.com:3100` (Loki is on the **dc01_apps** VLAN, so use
+> its FQDN) — `dnllok101` in the config below is the push *destination*,
 > not where Alloy runs. Install Alloy on **both** collectors (like rsyslog/keepalived);
 > only the **active** VIP-holder's tree grows, so only it pushes — no double-ingest, and
 > the standby takes over on failover (offsets are tracked per-host).
@@ -192,7 +193,7 @@ loki.source.file "devnetlabs" {
   targets    = local.file_match.devnetlabs.targets
   forward_to = [loki.process.label_from_path.receiver]
 }
-loki.write "default" { endpoint { url = "http://dnllok101:3100/loki/api/v1/push" } }
+loki.write "default" { endpoint { url = "http://dnllok101.dc01.devnetlabs.com:3100/loki/api/v1/push" } }
 EOF
 
 # 3. Let Alloy READ the tree: it runs as user 'alloy', but the tree is syslog:adm 0750

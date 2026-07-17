@@ -10,7 +10,7 @@ full-text SIEM-style store (Graylog) on the *same* log sources.
 |------|------|------|------|------|-------|
 | rsyslog collector (active) | `log` | `dnllog101` | 1004 | dc01 | HA pair with dnllog201 |
 | rsyslog collector (standby) | `log` | `dnllog201` | 2004 | dc02 | HA pair with dnllog101 |
-| Loki (light, always-on) | `lok` | `dnllok101` | 1007 | dc01 | label-indexed; UI via Grafana |
+| Loki (light, always-on) | `lok` | `dnllok101` | 1104 | dc01 (apps/1101, 10.110.10.70) | label-indexed; UI via Grafana |
 | Graylog (heavy, on-demand) | `gry` | `dnlgry201` | 2003 | dc02 | OpenSearch, 6–8 GB; own web UI |
 
 - **Graylog lives on dc02** (the heavy / on-demand node) so its RAM + NVMe I/O don't tax
@@ -66,7 +66,7 @@ action(
     queue.saveOnShutdown="on"          # survive rsyslog/host restart
 )
 # Loki (dc01) — its own queue so Graylog being down never stalls it
-action(type="omhttp" server="dnllok101" ... queue.type="linkedList"
+action(type="omhttp" server="dnllok101.dc01.devnetlabs.com" ... queue.type="linkedList"
        queue.filename="q_loki" queue.saveOnShutdown="on" action.resumeRetryCount="-1")
 ```
 

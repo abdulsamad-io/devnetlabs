@@ -134,6 +134,7 @@ split-horizon (split-brain) DNS:
 | `dnllog101` | 1004 |
 | `dnldns101` | 1005 |
 | `dnlctl101` | 1006 |
+| `dnllok101` | 1104 |
 | `dnlplx101` | 1201 |
 | `dnlnas101` | 1301 |
 | `dnlpbs101` | 1302 |
