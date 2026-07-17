@@ -10,7 +10,9 @@ $TTL 3600
 @   IN NS  dnldns201.mgmt.devnetlabs.com.
 
 ; dc01 PER-NODE-VLAN hosts only (apps/media/nas). Mgmt-VLAN hosts (bastion, DNS,
-; logging, NetBox, Loki, Cloudflare…) live in mgmt.devnetlabs.com, not here.
+; logging, NetBox, Cloudflare…) live in mgmt.devnetlabs.com, not here.
+; (Loki is an apps-VLAN host — it lives here, not in mgmt.)
+dnllok101   IN A 10.110.10.70      ; Loki log store (lok 1104, apps 1101)
 dnlnas101   IN A 10.110.30.50      ; TrueNAS (nas 1103)
 ; --- TBD (fill IPs as built) ---
 ;dnlplx101  IN A 10.110.20.__      ; Plex (media 1102)

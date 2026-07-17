@@ -38,8 +38,8 @@ Scheme: **`NZSS`** (4 digits).
 | 1004 | `dnllog101` | rsyslog collector (HA active) | VM | mgmt (1000) |
 | 1005 | `dnldns101` | Technitium DNS #1 (.53) | VM | mgmt (1000) |
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | mgmt (1000) |
-| 1007 | `dnllok101` | Loki (log store) | VM | mgmt (1000) |
-| 11xx | — | *reserved — apps zone, no services yet* | — | apps (1101) |
+| 1007 | — | *reserved — mgmt* | — | mgmt (1000) |
+| 1104 | `dnllok101` | Loki (log store) | VM | apps (1101) |
 | 1201 | `dnlplx101` | Plex / media | VM | media (1102) |
 | 1301 | `dnlnas101` | TrueNAS | VM | nas (1103) |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | nas (1103) |
