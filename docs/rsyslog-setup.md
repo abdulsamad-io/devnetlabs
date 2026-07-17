@@ -151,10 +151,24 @@ Let the **path become the labels** — low-cardinality `category` + `vendor` onl
 stay *in the line* (filter with LogQL `|=`), not as labels (avoids cardinality blowups
 from churny PNETLab devices).
 
-This is Alloy's **config file `/etc/alloy/config.alloy`** (River syntax — a config file,
-**not** shell commands; deploy it with the steps below):
+The Alloy config lives at **`/etc/alloy/config.alloy`** (River syntax). The package ships
+a *sample* `config.alloy`, so **Step 2 below overwrites it** with our pipeline — don't
+skip it, or Alloy keeps running the sample (self-metrics only) and never tails the tree.
 
-```alloy
+### Install & deploy (on **both** collectors)
+
+Alloy isn't installed by default. Run on each collector:
+```bash
+# 1. Grafana apt repo + install
+sudo apt install -y gpg
+sudo mkdir -p /etc/apt/keyrings
+wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg >/dev/null
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" \
+  | sudo tee /etc/apt/sources.list.d/grafana.list
+sudo apt update && sudo apt install -y alloy
+
+# 2. Overwrite the sample config with our pipeline (path->labels, tree tail -> Loki push)
+sudo tee /etc/alloy/config.alloy >/dev/null <<'EOF'
 local.file_match "devnetlabs" {
   path_targets = [{ __path__ = "/var/log/devnetlabs_logs/**/*.log" }]
 }
@@ -171,21 +185,7 @@ loki.source.file "devnetlabs" {
   forward_to = [loki.process.label_from_path.receiver]
 }
 loki.write "default" { endpoint { url = "http://dnllok101:3100/loki/api/v1/push" } }
-```
-
-### Install & deploy (on **both** collectors)
-
-Alloy isn't installed by default. Run on each collector:
-```bash
-# 1. Grafana apt repo + install
-sudo apt install -y gpg
-sudo mkdir -p /etc/apt/keyrings
-wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg >/dev/null
-echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" \
-  | sudo tee /etc/apt/sources.list.d/grafana.list
-sudo apt update && sudo apt install -y alloy
-
-# 2. Save the config above to /etc/alloy/config.alloy (the package's default path)
+EOF
 
 # 3. Let Alloy READ the tree: it runs as user 'alloy', but the tree is syslog:adm 0750
 sudo usermod -aG adm alloy
