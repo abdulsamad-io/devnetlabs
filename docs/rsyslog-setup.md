@@ -131,6 +131,22 @@ find /var/log/devnetlabs_logs -type d -empty -delete
 
 ## Part 6 — Forwarding to Loki (Grafana Alloy tails the tree)
 
+> **Runs on: the collectors (`dnllog101` / `dnllog201`), not the Loki host.** Alloy tails
+> the **local** `/var/log/devnetlabs_logs/` tree and pushes over the network to the Loki
+> server on `dnllok101:3100` — `dnllok101` in the config below is the push *destination*,
+> not where Alloy runs. Install Alloy on **both** collectors (like rsyslog/keepalived);
+> only the **active** VIP-holder's tree grows, so only it pushes — no double-ingest, and
+> the standby takes over on failover (offsets are tracked per-host).
+
+| Host | Runs |
+|------|------|
+| `dnllog101` / `dnllog201` (collectors) | rsyslog + keepalived + **Grafana Alloy** |
+| `dnllok101` (Loki) | the **Loki server** only (receives pushes on `:3100`) |
+| Grafana | queries Loki with LogQL |
+
+Contrast the two backends: **Loki** is *pull-from-file* (Alloy tails the tree here);
+**Graylog** is *push* (rsyslog `omfwd` in Part 4 → `dnlgry201:1514`).
+
 Let the **path become the labels** — low-cardinality `category` + `vendor` only. Host/IP
 stay *in the line* (filter with LogQL `|=`), not as labels (avoids cardinality blowups
 from churny PNETLab devices).
