@@ -65,7 +65,9 @@ ruleset(name="devnetlabs_collect") {
     set $.leaf = re_extract($.path, "([^/]+)\$", 0, 1, "others");
 
     action(type="omfile" dynaFile="devnetlabs_dynafile" template="line_ip"
-           dirCreateMode="0750" fileCreateMode="0640" dynaFileCacheSize="200")
+           dirCreateMode="0750" fileCreateMode="0640"
+           fileOwner="syslog" fileGroup="adm" dirOwner="syslog" dirGroup="adm"
+           dynaFileCacheSize="200")
 
     action(type="omfwd" target="dnlgry201" port="1514" protocol="tcp"
            template="RSYSLOG_SyslogProtocol23Format"
@@ -90,8 +92,9 @@ EOF
   a variable sigil and fails config validation. (Safe inside the `<<'EOF'` quoted
   heredoc: the shell won't touch the backslash.)
 - **action 1 (`omfile`)** — write to the vendor tree via the dynafile template;
-  auto-create dirs `0750`, files `0640`; `dynaFileCacheSize=200` keeps ~200 open file
-  handles (plenty for the vendor×day set).
+  auto-create dirs `0750`, files `0640`, **group `adm`** (`fileGroup`/`dirGroup`) so the
+  `alloy` user can read the tree — rsyslog drops to `syslog:syslog` and would otherwise
+  create files Alloy can't read. `dynaFileCacheSize=200` keeps ~200 open file handles.
 - **action 2 (`omfwd` → Graylog)** — forward to `dnlgry201:1514` over TCP with a
   **disk-assisted queue**: `resumeRetryCount=-1` (retry forever), `queue.filename` makes
   it spill to disk, `maxDiskSpace=2g` caps the backlog, `saveOnShutdown` survives
@@ -132,10 +135,13 @@ sudo systemctl restart rsyslog
 
 ## Step 7 — Test
 ```bash
-logger -n 127.0.0.1 -P 514 -T -d "collector self-test"      # -T = TCP
+logger -n 127.0.0.1 -P 514 -T -d "collector self-test"      # -T = TCP (local — no VIP needed)
 ls -R /var/log/devnetlabs_logs/                              # a file should appear
 sudo tail -f /var/log/devnetlabs_logs/others/others-*.log    # unmatched sources land here
 ```
+> This local test needs no VIP. A **VIP-based** test (`logger -n 172.16.10.70`) only works
+> once **keepalived** is running; before that, sending to `.70` is silently dropped — use
+> `127.0.0.1` or the collector's own IP.
 
 ## Adding a source later (dynamic, no restart)
 ```bash
@@ -167,7 +173,7 @@ Then configure the device itself per [log-source-onboarding.md](log-source-onboa
 ```bash
 sudo rsyslogd -N1                                           # clean
 ss -lntu | grep ':514'                                      # udp + tcp listeners present
-logger -n 172.16.10.70 -P 514 -T -d "collector self-test"   # -T = TCP, via the VIP
+logger -n 172.16.10.70 -P 514 -T -d "collector self-test"   # via the VIP (needs keepalived); else 127.0.0.1 / own IP
 ls -lR /var/log/devnetlabs_logs/                            # dated file appears (syslog:adm 0640)
 ```
 Expected: `-N1` clean, both listeners present, a fresh `*-YYYY-MM-DD.log` written as `syslog:adm`.
@@ -175,6 +181,7 @@ Expected: `-N1` clean, both listeners present, a fresh `*-YYYY-MM-DD.log` writte
 **⚠️ Watch out for:**
 - **`$` in the `re_extract` regex** — must be escaped `"([^/]+)\$"`; a bare `$` fails validation (safe inside the `<<'EOF'` heredoc).
 - **Files owned by `root`** — the log root must be `syslog:adm 0750` (Step 1), or rsyslog can't write / Alloy can't read.
+- **Vendor tree owned `syslog:syslog`** — the `omfile` action must set `fileGroup="adm" dirGroup="adm"` (Step 4) or the `alloy` user can't read the logs; `sudo chgrp -R adm /var/log/devnetlabs_logs` fixes an existing tree.
 - **Only `/var/log/syslog`, nothing in the tree** — a *local* `logger` uses the default ruleset; test over the **network** (`logger -n …`) to hit `devnetlabs_collect`.
 - **Graylog push errors** — expected while `dnlgry201` (dc02) is off; the disk-queue buffers and replays. Not a failure.
 - **Timezone** — filenames follow local time; confirm `timedatectl` is `Europe/Amsterdam` or dates bucket in UTC.

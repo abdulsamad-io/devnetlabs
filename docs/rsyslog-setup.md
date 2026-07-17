@@ -88,9 +88,11 @@ ruleset(name="devnetlabs_collect") {
     set $.path = lookup("srcmap", $fromhost-ip);              # "security/asa" | "others"
     set $.leaf = re_extract($.path, "([^/]+)\$", 0, 1, "others");  # "asa" | "others"  (\$ = escaped end-anchor)
 
-    # (1) ARCHIVE — write to the vendor tree
+    # (1) ARCHIVE — write to the vendor tree (group 'adm' so the Alloy user can read it)
     action(type="omfile" dynaFile="devnetlabs_dynafile" template="line_ip"
-           dirCreateMode="0750" fileCreateMode="0640" dynaFileCacheSize="200")
+           dirCreateMode="0750" fileCreateMode="0640"
+           fileOwner="syslog" fileGroup="adm" dirOwner="syslog" dirGroup="adm"
+           dynaFileCacheSize="200")
 
     # (2) FAN-OUT → Graylog (dc02, on-demand): disk-assisted queue buffers + replays
     action(type="omfwd" target="dnlgry201" port="1514" protocol="tcp"
@@ -104,6 +106,12 @@ ruleset(name="devnetlabs_collect") {
 }
 ```
 Apply: `sudo rsyslogd -N1 && sudo systemctl restart rsyslog` (validate config first).
+
+> **Why `fileGroup="adm"`:** rsyslog drops privileges to `syslog:syslog`, so without it the
+> vendor tree is created `syslog:syslog` — unreadable by the `alloy` user (in `adm`), so the
+> Loki tail silently gets **nothing**. Forcing group `adm` matches the Part 1 log root and
+> lets any `adm` member read. Fix an **existing** tree once:
+> `sudo chgrp -R adm /var/log/devnetlabs_logs`.
 
 > The `%$now%` date is the collector's processing date — a fresh file per vendor per day,
 > so no HUP-rotate dance. The folder already encodes the vendor; the filename repeats it
@@ -233,10 +241,13 @@ Windows Event Log → syslog and send to the VIP (classified as `compute/windows
 
 **Verify:**
 ```bash
-logger -n 172.16.10.70 -P 514 -d "test from $(hostname)"     # send a test event
+logger -n 172.16.10.70 -P 514 -d "test from $(hostname)"     # VIP — needs keepalived up (see note)
 ls -R /var/log/devnetlabs_logs/                              # file appears in the right branch
 sudo tail -f /var/log/devnetlabs_logs/others/others-*.log    # unmatched sources land here
 ```
+> **Before keepalived is running, the VIP `172.16.10.70` exists on no host** — a `logger`
+> to it is silently dropped (no listener). Until the VIP is up, test against the collector's
+> **own IP**: `logger -n <collector-ip> -P 514 -d "test"` (or `-n 127.0.0.1`, → `others/`).
 
 ---
 
@@ -252,8 +263,8 @@ sudo tail -f /var/log/devnetlabs_logs/others/others-*.log    # unmatched sources
 **🧪 End-to-end test:**
 ```bash
 sudo rsyslogd -N1
-logger -n 172.16.10.70 -P 514 -d "pipeline test from $(hostname)"
-ls -lR /var/log/devnetlabs_logs/                 # dated file, owned syslog:adm
+logger -n 172.16.10.70 -P 514 -d "pipeline test from $(hostname)"   # VIP if keepalived up; else the collector's own IP
+ls -lR /var/log/devnetlabs_logs/                 # dated file, owned syslog:adm (via fileGroup=adm)
 alloy fmt /etc/alloy/config.alloy | head         # shows local.file_match "devnetlabs", NOT the sample
 ```
 
@@ -263,6 +274,8 @@ alloy fmt /etc/alloy/config.alloy | head         # shows local.file_match "devne
 - **Local `logger` misses the ruleset** — a local socket message uses the default ruleset; test over the network (`logger -n …`).
 - **Backend push errors while Loki/Graylog are down** — expected; buffered/retried, not a failure.
 - **Double-ingest** — only one collector may hold the VIP (keepalived); two holders = duplicate lines.
+- **Tree owned `syslog:syslog`** — the `omfile` action must set `fileGroup="adm" dirGroup="adm"` (Part 4) or the `alloy` user can't read it; `sudo chgrp -R adm /var/log/devnetlabs_logs` fixes an existing tree.
+- **VIP test before keepalived** — `logger -n 172.16.10.70` is silently dropped until the VIP is up; test against the collector's own IP first.
 
 ---
 
