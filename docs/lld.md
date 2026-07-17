@@ -129,8 +129,13 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLAB — mgmt NIC also on 1000), `dnleve201` (EVE-NG), `dnlgrf201` (Grafana, .71), `dnlprm201` (Prometheus + snmp_exporter, .72) |
 
 > **Observability is a per-DC stack** — `grf`/`prm` run on **both** dc01 and dc02, each in
-> its own apps VLAN. Because **dc02 is on-demand**, its `dnlgrf201`/`dnlprm201` are live
-> only when dc02 is powered; dc01's `dnlgrf101`/`dnlprm101` are the always-on pair. Loki
+> its own apps VLAN. **Both Prometheus servers scrape the full fleet across both DCs**
+> (cross-VLAN; inter-VLAN routing is open) — each is a complete copy, not a shard:
+> - `dnlprm101` (dc01, **always-on**) — the **authoritative, always-up-to-date** copy.
+> - `dnlprm201` (dc02, **on-demand**) — a **redundant** copy that will have gaps whenever
+>   dc02 is powered off; accepted trade-off.
+>
+> Each DC's Grafana (`dnlgrf101`/`dnlgrf201`) fronts its local Prometheus. Loki
 > (`dnllok101`) stays dc01-only for now.
 
 ### 6.3 dc03 — Dell E6430 (PBS DR target)
