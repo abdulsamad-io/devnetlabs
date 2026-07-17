@@ -209,6 +209,17 @@ Expected: the event appears under `<category>/<vendor>/` with the device's sourc
 - **Forgot the HUP reload** — a new mapping doesn't take effect until `sudo pkill -HUP rsyslogd`.
 - **Device clock skew** — events bucket into the wrong day's file; enable NTP + high-res timestamps.
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| Device's logs land in `others/` | source IP not in `sources.json`, or device sources from a different IP | add the mapping + `sudo pkill -HUP rsyslogd`; pin the device's syslog `source-interface`/`source-address` to its mgmt IP |
+| No logs arrive at all | ACL/firewall to the VIP, wrong transport, or pointing at a collector IP not the VIP | `sudo tcpdump -ni any port 514` on the active collector; confirm the device targets `172.16.10.70`; check TCP vs UDP |
+| Intermittent loss on a chatty device | UDP has no delivery guarantee | switch the device to **TCP** (`@@` / `transport tcp` / `mode reliable`) |
+| New mapping didn't take effect | forgot the reload | `jq . …sources.json` (valid?) then `sudo pkill -HUP rsyslogd` |
+| Lines bucket into the wrong day's file | device clock skew | enable NTP + high-resolution timestamps on the device |
+| Windows host sends nothing | nxlog not running / wrong output target | `Get-Service nxlog`; check `nxlog.conf` `om_tcp` Host = `172.16.10.70` |
+
 ---
 
 See also: [rsyslog-setup.md](rsyslog-setup.md) · [keepalived-setup.md](keepalived-setup.md) ·

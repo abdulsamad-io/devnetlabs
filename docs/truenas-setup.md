@@ -249,6 +249,18 @@ Expected: pool **ONLINE**, share maps without error, files read/write.
 - **Disk absent in Proxmox** — BIOS: set SATA to **AHCI**, disable **VMD/RST** (Part A).
 - **Single-disk pool = no redundancy** — snapshots ≠ backups; replication/PBS still pending (#18).
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| Pool wizard: *duplicate serial numbers: None* | passthrough/virtual disks have no serial | set a unique `serial=` per disk in `/etc/pve/qemu-server/1301.conf` (Part E) |
+| SMB map fails, System error 86 | username mismatch | use the TrueNAS **account** `abdoolsamad` (double-o), not the share name; `net use \\10.110.30.50 /delete /y` first |
+| Data SSD not visible in Proxmox | Intel **VMD/RST** enabled in BIOS | BIOS → SATA **AHCI**, disable VMD/RST; re-seat/enable the bay |
+| TrueNAS installed on the 1.9 TB SSD | data disk attached before install | attach the data disk **after** install (Part E); target the 32 GB disk |
+| Very slow SMB/NFS transfer (~10 MB/s) | 100 Mbps MikroTik (RB951 Fast Ethernet) is the bottleneck | known lab limit — a gigabit switch/router is the fix, not TrueNAS |
+| Boot menu shows no DVD | ISO not mounted | `qm config 1301 \| grep ide2`; re-set `--boot order='ide2;scsi0'` |
+| Single-disk pool — data at risk | stripe vdev, no redundancy | snapshots ≠ backups — stand up replication / PBS (#18) |
+
 ---
 
 See also: [lld.md](lld.md) · [vmid-plan.md](vmid-plan.md) ·

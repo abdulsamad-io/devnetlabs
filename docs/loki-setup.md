@@ -109,9 +109,16 @@ wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt
 echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" \
   | sudo tee /etc/apt/sources.list.d/grafana.list
 sudo apt update && sudo apt install -y loki
+# The package creates the 'loki' USER but with primary group 'nogroup' and NO 'loki'
+# group, so `chown loki:loki` fails until we create the group and make it loki's primary:
+getent group loki >/dev/null || sudo groupadd --system loki
+sudo usermod -g loki loki
 sudo chown -R loki:loki /var/lib/loki
 ```
 > The package creates the `loki` user + `loki.service` and reads `/etc/loki/config.yml`.
+> ⚠️ It does **not** create a `loki` group and sets the user's primary group to `nogroup`
+> — hence the `groupadd`/`usermod` above; the service unit is `User=loki` with no
+> `Group=`, so it uses whatever loki's primary group is.
 
 ## Part F — Configure Loki (single-binary, filesystem, 60-day retention)
 
@@ -211,6 +218,20 @@ Expected: `/ready` → `ready`, labels include `category`/`vendor`, the test lin
 - **Retention not enforced** — `compactor.retention_enabled: true` (+ `delete_request_store`) is required; without it Loki keeps data forever regardless of `retention_period`.
 - **`/` fills up** — chunks must live on the data disk via `common.path_prefix: /var/lib/loki`; verify with `df -h`.
 - **Old samples rejected** — `reject_old_samples_max_age` drops lines older than 7d; replaying old archives needs it raised.
+
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| `chown loki:loki` → `invalid group 'loki'` | package made the `loki` user with primary group `nogroup`, no `loki` group | `getent group loki \|\| sudo groupadd --system loki` → `sudo usermod -g loki loki` → retry |
+| `/ready` → `Ingester not ready: waiting for 15s` | normal startup grace period | wait ~20 s and re-`curl`; it flips to `ready` |
+| `/labels` empty, queries return `0` | Alloy can't read the tree, or nothing ingested | fix `fileGroup="adm"` on the collectors (rsyslog Part 4); `sudo -u alloy head` a log file |
+| Alloy journal: `lookup dnllok101 … no such host` | endpoint uses the **short** name | use the FQDN `http://dnllok101.dc01.devnetlabs.com:3100/loki/api/v1/push` |
+| Collector can't reach `:3100` | Loki host ufw missing the allow | on Loki: `sudo ufw allow from 172.16.10.71 to any port 3100 proto tcp` (and `.72`) |
+| Old data never deleted | `compactor.retention_enabled` not set | set `retention_enabled: true` + `delete_request_store: filesystem`; restart |
+| `/` fills up while `/var/lib/loki` is empty | chunks written to root | set `common.path_prefix: /var/lib/loki`; confirm the data disk is mounted |
+| Stream count flat but data seems missing | `.data.result \| length` counts **streams**, not lines; same file path merges into one stream | query content (`\|= "…"`) or count `.values[]` |
+| Push rejected: entry too far behind | line older than `reject_old_samples_max_age` (7 d) | raise it to replay old archives, or accept the drop |
 
 ---
 

@@ -148,6 +148,18 @@ Run the tests in **Step 5**; the pair is healthy when:
 - **Wrong `interface`** — must be the VLAN-1000 NIC (`ip -br a`) or the VIP silently never appears.
 - **`dc02` off** — no standby present; the master stays up alone (expected, not a fault).
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| VIP `.70` on **both** nodes (split-brain) | VRRP not passing (ufw blocks proto 112, or `unicast_peer` wrong) | allow the peer in ufw; verify `unicast_src_ip`/`unicast_peer` + matching `virtual_router_id 51`; `sudo tcpdump -ni ens18 vrrp` |
+| VIP **never** fails over | `weight` too small — master stays above backup | the drop must cross the backup's priority (150−60=90 < 100); use `weight -60` |
+| VIP absent on **both** nodes | wrong `interface`, or keepalived down | fix `interface` to the VLAN-1000 NIC (`ip -br a`); `journalctl -u keepalived` |
+| `logger -n 172.16.10.70` silently dropped | no host holds the VIP | `ip -br a \| grep 172.16.10.70`; start keepalived on the master |
+| Brief blip / flapping on failback | default preempt (master reclaims) | set both `state BACKUP` + `nopreempt` if the VIP should stay put |
+| Health check never trips failover | `chk_rsyslog.sh` not executable / wrong path | `chmod 750 …chk_rsyslog.sh`; run it by hand; confirm `enable_script_security` + `script_user` |
+| Graylog buffer "lost" after failover | disk-queue is per-node | expected — the new active starts a fresh buffer; Loki keeps the full stream |
+
 ---
 
 See also: [logging-design.md](logging-design.md) · [rsyslog-setup.md](rsyslog-setup.md) ·

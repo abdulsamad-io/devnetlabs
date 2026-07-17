@@ -268,6 +268,18 @@ ssh dc01 hostname                                    # ProxyJump works -> prints
 - **Key perms** — `~/.ssh` `700`, `authorized_keys` `600`; SSH silently ignores group/other-readable key files.
 - **`IdentitiesOnly yes`** — without it the client may offer other keys first and burn `MaxAuthTries` before the lab key.
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| `ssh jump` → `Permission denied (publickey)` | key not installed / wrong perms / user not in `sshusers` / wrong key offered | `ssh -v jump` (which key?); `~/.ssh` 700 + `authorized_keys` 600; `id abdoolsamad` in `sshusers`; add `IdentitiesOnly yes` |
+| Locked out after an sshd change | bad `10-hardening.conf` | connect via the **Proxmox console**; `sudo sshd -t`; fix the drop-in; `sudo systemctl reload ssh` |
+| Password prompt still appears | `PasswordAuthentication no` not in effect | `sudo sshd -T \| grep -i passwordauth`; ensure `10-` sorts before `50-cloud-init.conf` |
+| Valid user's login refused | user not in `AllowGroups sshusers` | `sudo usermod -aG sshusers <user>`; re-login |
+| Can't reach bastion from lab_lan | ufw missing the `172.16.254.0/24` rule | `sudo ufw allow from 172.16.254.0/24 to any port 22 proto tcp` |
+| `ssh dc01` (ProxyJump) fails | `AllowTcpForwarding no`, or `jump` itself unreachable | confirm `AllowTcpForwarding yes`; verify plain `ssh jump` works first |
+| `fail2ban` banned you | repeated failed auth | from another allowed IP: `sudo fail2ban-client set sshd unbanip <ip>` |
+
 ---
 
 See also: [naming-convention.md](naming-convention.md) · [vmid-plan.md](vmid-plan.md) ·

@@ -278,6 +278,19 @@ alloy fmt /etc/alloy/config.alloy | head         # shows local.file_match "devne
 - **Tree owned `syslog:syslog`** — the `omfile` action must set `fileGroup="adm" dirGroup="adm"` (Part 4) or the `alloy` user can't read it; `sudo chgrp -R adm /var/log/devnetlabs_logs` fixes an existing tree.
 - **VIP test before keepalived** — `logger -n 172.16.10.70` is silently dropped until the VIP is up; test against the collector's own IP first.
 
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| `rsyslogd -N1` → `$-sign in double quotes must be escaped` | unescaped `$` in the `re_extract` regex | use `"([^/]+)\$"` |
+| Files created `syslog:syslog`; Alloy reads nothing | `omfile` missing `fileGroup="adm"` | add `fileGroup`/`dirGroup="adm"` (Part 4); `sudo chgrp -R adm /var/log/devnetlabs_logs`; restart rsyslog + alloy |
+| `logger -n 172.16.10.70` produces no file | VIP not up (keepalived not running) | test the collector's own IP or `127.0.0.1`; bring up keepalived |
+| Local `logger "x"` lands in `/var/log/syslog`, not the tree | local socket uses the default ruleset | test over the **network**: `logger -n <ip> -P 514 …` |
+| Loki/Graylog push errors in the journal | backend (Loki / dc02 Graylog) down | expected — disk-queue buffers + retries; not a failure |
+| The same event appears twice | two collectors hold the VIP | fix keepalived split-brain (only one active) |
+| Alloy ships nothing to Loki | running the packaged **sample** config | overwrite `/etc/alloy/config.alloy`; `alloy fmt` must echo `local.file_match "devnetlabs"` |
+| Log filenames show the wrong date | timezone still `Etc/UTC` | `sudo timedatectl set-timezone Europe/Amsterdam`; `systemctl restart rsyslog` |
+
 ---
 
 See also: [logging-design.md](logging-design.md) · [naming-convention.md](naming-convention.md) ·

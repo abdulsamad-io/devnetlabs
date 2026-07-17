@@ -95,6 +95,39 @@ Ansible → verify → update docs.
 > also require a **new IP** in the target node's subnet, and every consumer of the old
 > IP would need updating too.
 
+## Verification & success criteria
+
+**✅ Success criteria — the move is complete when:**
+- [ ] **VMID `N` = hostname `<dc>` = DNS zone** all agree on the *new* node (the invariant).
+- [ ] The new FQDN resolves in the **new** zone; the **old** A/PTR are gone.
+- [ ] The guest is reachable and its services are healthy on the new node.
+- [ ] Every consumer (mounts, monitoring, backups, Ansible, firewall lists) points at the new name/IP.
+- [ ] Docs updated: [vmid-plan.md](vmid-plan.md), [lld.md](lld.md), and the master mapping in [naming-convention.md](naming-convention.md).
+
+**🧪 Test:**
+```
+getent hosts <new-fqdn>            # -> new IP, in the new zone
+getent hosts <old-fqdn>            # -> NXDOMAIN (old record removed)
+qm config <new-vmid> | grep name   # Proxmox Name = new hostname
+```
+
+**⚠️ Watch out for:**
+- **Split identity** — updating only 2 of the 3 (VMID / hostname / zone) leaves a mismatch that bites later.
+- **Stale references** — a missed consumer (mount, monitor, firewall list) silently breaks after the move.
+- **Node-locked guests** — storage-anchored guests (`dnlnas101`, `dnlpbs101`, `dnlpbs301`) **rebuild**, not move.
+
+## Troubleshooting & remediation guide
+
+| Symptom | Likely cause | Diagnose / remediation |
+|---------|--------------|------------------------|
+| New FQDN won't resolve | A record not added to the new zone (or TTL cache) | add it in Technitium; flush the client's resolver cache |
+| Old FQDN still resolves | old A/PTR not removed | delete them from the old node's zone |
+| Live migration fails / VM won't boot on target | CPU model mismatch (`host` vs `x86-64-v2-AES`) | migrate **offline**, or restore from PBS with a common CPU baseline |
+| VMID collision on target | target VMID already in use | pick the next free `SS` under the target node's `N` |
+| Guest up but a consumer broke | a reference still points at the old name/IP | walk the step-6 list (mounts, monitoring, backups, Ansible, firewall) |
+| Per-node-VLAN guest unreachable after move | still using the old subnet's IP | re-IP into the target node's subnet (step 3) |
+| Cert warnings on the new FQDN | cert not reissued for the new zone | reissue under `*.dcNN.devnetlabs.com` (step 5) |
+
 ---
 
 See also: [naming-convention.md](naming-convention.md) · [vmid-plan.md](vmid-plan.md) ·
