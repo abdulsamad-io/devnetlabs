@@ -147,31 +147,43 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 ---
 
-## 7. Guest inventory (master table)
+## 7. Guest inventory (per node)
 
-| VMID | Hostname | Service | Type | Node | VLAN | IP |
-|------|----------|---------|------|------|------|-----|
-| 1002 | `dnladm101` | Admin / bastion (jump) | VM | dc01 | 1000 | 172.16.10.2 (STAT) |
-| 1001 | `dnlnms101` | LibreNMS | VM | dc01 | 1000 | RSV/TBD |
-| 1003 | `dnlnbx101` | NetBox (IPAM source of truth) | VM | dc01 | 1000 | RSV/TBD |
-| 1004 | `dnllog101` | rsyslog collector (HA active) | VM | dc01 | 1000 | 172.16.10.71 (STAT) |
-| 1005 | `dnldns101` | Technitium DNS #1 | VM | dc01 | 1000 | 172.16.10.53 (STAT) |
-| 1006 | `dnlctl101` | Cloudflare tunnel | VM | dc01 | 1000 | RSV/TBD |
-| 1201 | `dnlplx101` | Plex / media | VM | dc01 | 1102 | RSV/TBD |
-| 1301 | `dnlnas101` | TrueNAS | VM | dc01 | 1103 | RSV/TBD |
-| 1302 | `dnlpbs101` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
-| 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
-| 1104 | `dnllok101` | Loki (log store) | VM | dc01 | 1101 | 10.110.10.70 (STAT) |
-| 1105 | `dnlgrf101` | Grafana | VM | dc01 | 1101 | 10.110.10.71 (STAT) |
-| 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | dc01 | 1101 | 10.110.10.72 (STAT) |
-| 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.54 (RSV) |
-| 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | dc02 | 1000 | 172.16.10.72 (STAT) |
-| 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | dc02 | 1000 | RSV/TBD |
-| 2101 | `dnlpnt201` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
-| 2102 | `dnleve201` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
-| 2105 | `dnlgrf201` | Grafana | VM | dc02 | 1201 | 10.120.10.71 (STAT) |
-| 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | dc02 | 1201 | 10.120.10.72 (STAT) |
-| 3401 | `dnlpbs301` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |
+### 7.1 dc01 — GEEKOM IT13 (always-on)
+
+| VMID | Hostname | Service | Type | VLAN | IP |
+|------|----------|---------|------|------|-----|
+| 1001 | `dnlnms101` | LibreNMS | VM | 1000 | RSV/TBD |
+| 1002 | `dnladm101` | Admin / bastion (jump) | VM | 1000 | 172.16.10.2 (STAT) |
+| 1003 | `dnlnbx101` | NetBox (IPAM source of truth) | VM | 1000 | RSV/TBD |
+| 1004 | `dnllog101` | rsyslog collector (HA active) | VM | 1000 | 172.16.10.71 (STAT) |
+| 1005 | `dnldns101` | Technitium DNS #1 | VM | 1000 | 172.16.10.53 (STAT) |
+| 1006 | `dnlctl101` | Cloudflare tunnel | VM | 1000 | RSV/TBD |
+| 1104 | `dnllok101` | Loki (log store) | VM | 1101 | 10.110.10.70 (STAT) |
+| 1105 | `dnlgrf101` | Grafana | VM | 1101 | 10.110.10.71 (STAT) |
+| 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | 1101 | 10.110.10.72 (STAT) |
+| 1201 | `dnlplx101` | Plex / media | VM | 1102 | RSV/TBD |
+| 1301 | `dnlnas101` | TrueNAS | VM | 1103 | RSV/TBD |
+| 1302 | `dnlpbs101` | PBS (local, M.2) | VM | 1103 | RSV/TBD |
+| 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | — | — |
+
+### 7.2 dc02 — HPE ML150 G9 (on-demand)
+
+| VMID | Hostname | Service | Type | VLAN | IP |
+|------|----------|---------|------|------|-----|
+| 2001 | `dnldns201` | Technitium DNS #2 | VM | 1000 | 172.16.10.54 (RSV) |
+| 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | 1000 | RSV/TBD |
+| 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | 1000 | 172.16.10.72 (STAT) |
+| 2101 | `dnlpnt201` | PNETLAB | VM | 1201 (+1000 mgmt) | RSV/TBD |
+| 2102 | `dnleve201` | EVE-NG | VM | 1201 | RSV/TBD |
+| 2105 | `dnlgrf201` | Grafana | VM | 1201 | 10.120.10.71 (STAT) |
+| 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | 1201 | 10.120.10.72 (STAT) |
+
+### 7.3 dc03 — Dell E6430 (PBS DR target)
+
+| VMID | Hostname | Service | Type | VLAN | IP |
+|------|----------|---------|------|------|-----|
+| 3401 | `dnlpbs301` | PBS (cross-node DR) | VM | 1301 | RSV/TBD |
 
 ---
 
