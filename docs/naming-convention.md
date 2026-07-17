@@ -43,8 +43,10 @@ Every role code is **exactly 3 lowercase letters**.
 | `eve` | EVE-NG |
 | `ctl` | Cloudflare tunnel connector (cloudflared) |
 | `gry` | Graylog |
+| `grf` | Grafana |
+| `prm` | Prometheus (+ `snmp_exporter`) |
 
-**Reserved for future use (3-letter):** `git`, `awx`, `vlt` (Vault), `grf` (Grafana),
+**Reserved for future use (3-letter):** `git`, `awx`, `vlt` (Vault),
 `tsd` (time-series DB), `dkr` (Docker), `k8s` (Kubernetes), `prx` (reverse proxy),
 `pki` (internal CA), `adc` (Active Directory).
 
@@ -135,11 +137,15 @@ split-horizon (split-brain) DNS:
 | `dnldns101` | 1005 |
 | `dnlctl101` | 1006 |
 | `dnllok101` | 1104 |
+| `dnlgrf101` | 1105 |
+| `dnlprm101` | 1106 |
 | `dnlplx101` | 1201 |
 | `dnlnas101` | 1301 |
 | `dnlpbs101` | 1302 |
 | `dnldns201` | 2001 |
 | `dnllog201` | 2004 |
+| `dnlgrf201` | 2105 |
+| `dnlprm201` | 2106 |
 | `dnlpnt201` | 2101 |
 | `dnleve201` | 2102 |
 | `dnlpbs301` | 3401 |

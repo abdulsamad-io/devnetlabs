@@ -40,6 +40,8 @@ Scheme: **`NZSS`** (4 digits).
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | mgmt (1000) |
 | 1007 | — | *reserved — mgmt* | — | mgmt (1000) |
 | 1104 | `dnllok101` | Loki (log store) | VM | apps (1101) |
+| 1105 | `dnlgrf101` | Grafana | VM | apps (1101) |
+| 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | apps (1101) |
 | 1201 | `dnlplx101` | Plex / media | VM | media (1102) |
 | 1301 | `dnlnas101` | TrueNAS | VM | nas (1103) |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | nas (1103) |
@@ -55,6 +57,8 @@ Scheme: **`NZSS`** (4 digits).
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | mgmt (1000) |
 | 2101 | `dnlpnt201` | PNETLAB (+ mgmt NIC on 1000) | VM | apps (1201) |
 | 2102 | `dnleve201` | EVE-NG | VM | apps (1201) |
+| 2105 | `dnlgrf201` | Grafana | VM | apps (1201) |
+| 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | apps (1201) |
 
 ### dc03 — Dell E6430 (PBS cross-node DR target)
 

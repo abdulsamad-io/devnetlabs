@@ -117,7 +117,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnlnms101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog, HA active), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel) |
-| dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki log store, `10.110.10.70`) |
+| dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72) |
 | dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
 
@@ -126,7 +126,17 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnldns201` (Technitium DNS #2), `dnllog201` (rsyslog, HA standby), `dnlgry201` (Graylog, on-demand) |
-| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLAB — mgmt NIC also on 1000), `dnleve201` (EVE-NG) |
+| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLAB — mgmt NIC also on 1000), `dnleve201` (EVE-NG), `dnlgrf201` (Grafana, .71), `dnlprm201` (Prometheus + snmp_exporter, .72) |
+
+> **Observability is a per-DC stack** — `grf`/`prm` run on **both** dc01 and dc02, each in
+> its own apps VLAN. **Both Prometheus servers scrape the full fleet across both DCs**
+> (cross-VLAN; inter-VLAN routing is open) — each is a complete copy, not a shard:
+> - `dnlprm101` (dc01, **always-on**) — the **authoritative, always-up-to-date** copy.
+> - `dnlprm201` (dc02, **on-demand**) — a **redundant** copy that will have gaps whenever
+>   dc02 is powered off; accepted trade-off.
+>
+> Each DC's Grafana (`dnlgrf101`/`dnlgrf201`) fronts its local Prometheus. Loki
+> (`dnllok101`) stays dc01-only for now.
 
 ### 6.3 dc03 — Dell E6430 (PBS DR target)
 
@@ -152,11 +162,15 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | dc01 | 1103 | RSV/TBD |
 | 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | dc01 | — | — |
 | 1104 | `dnllok101` | Loki (log store) | VM | dc01 | 1101 | 10.110.10.70 (STAT) |
+| 1105 | `dnlgrf101` | Grafana | VM | dc01 | 1101 | 10.110.10.71 (STAT) |
+| 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | dc01 | 1101 | 10.110.10.72 (STAT) |
 | 2001 | `dnldns201` | Technitium DNS #2 | VM | dc02 | 1000 | 172.16.10.54 (RSV) |
 | 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | dc02 | 1000 | 172.16.10.72 (STAT) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | dc02 | 1000 | RSV/TBD |
 | 2101 | `dnlpnt201` | PNETLAB | VM | dc02 | 1201 (+1000 mgmt) | RSV/TBD |
 | 2102 | `dnleve201` | EVE-NG | VM | dc02 | 1201 | RSV/TBD |
+| 2105 | `dnlgrf201` | Grafana | VM | dc02 | 1201 | 10.120.10.71 (STAT) |
+| 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | dc02 | 1201 | 10.120.10.72 (STAT) |
 | 3401 | `dnlpbs301` | PBS (cross-node DR) | VM | dc03 | 1301 | RSV/TBD |
 
 ---
