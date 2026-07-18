@@ -1,17 +1,17 @@
-$ORIGIN mgmt.devnetlabs.com.
+$ORIGIN mgt.devnetlabs.com.
 $TTL 3600
-@   IN SOA dnldns101.mgmt.devnetlabs.com. hostmaster.devnetlabs.com. (
+@   IN SOA dnldns101.mgt.devnetlabs.com. hostmaster.devnetlabs.com. (
         2026071601  ; serial (bump on every change: YYYYMMDDnn)
         3600        ; refresh
         900         ; retry
         604800      ; expire
         3600 )      ; minimum
-@   IN NS  dnldns101.mgmt.devnetlabs.com.
-@   IN NS  dnldns201.mgmt.devnetlabs.com.
+@   IN NS  dnldns101.mgt.devnetlabs.com.
+@   IN NS  dnldns201.mgt.devnetlabs.com.
 
 ; Shared management VLAN 1000 (172.16.10.0/24) — node-neutral.
 ; Hosts here live on the SHARED mgmt VLAN regardless of which node runs them,
-; so their zone is mgmt.* (not dcNN.*). The hostname's dc digit still names the node.
+; so their zone is mgt.* (not dcNN.*). The hostname's dc digit still names the node.
 dnladm101   IN A 172.16.10.2       ; bastion / jump (dc01)
 dnldns101   IN A 172.16.10.53      ; Technitium DNS #1 (dc01)
 dnldns201   IN A 172.16.10.54      ; Technitium DNS #2 (dc02)
@@ -20,6 +20,6 @@ dnllog201   IN A 172.16.10.72      ; rsyslog collector (dc02)
 syslog      IN A 172.16.10.70      ; rsyslog VIP (keepalived)
 ; --- TBD (fill IPs as built) ---
 ;dnlnms101  IN A 172.16.10.__      ; LibreNMS (dc01)
-dnlnbx101   IN A 172.16.10.55      ; NetBox — DCIM/IPAM SoT (nbx 1003)
+dnlnbx101   IN A 172.16.10.50      ; NetBox — DCIM/IPAM SoT (nbx 1003)
 ;dnlctl101  IN A 172.16.10.__      ; Cloudflare tunnel (dc01)
 ;dnlgry201  IN A 172.16.10.__      ; Graylog (dc02)

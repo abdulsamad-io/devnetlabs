@@ -2,7 +2,7 @@
 # from the environment: export TF_VAR_api_token="..."  (never commit it).
 
 zones = [
-  "mgmt.devnetlabs.com",     # shared mgmt VLAN 1000 (node-neutral)
+  "mgt.devnetlabs.com",     # shared mgmt VLAN 1000 (node-neutral)
   "dc01.devnetlabs.com",
   "dc02.devnetlabs.com",
   "dc03.devnetlabs.com",
@@ -13,8 +13,8 @@ forwarders     = ["192.168.2.254", "1.1.1.1"]
 blocklist_urls = ["https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"]
 
 dhcp_scopes = [
-  { name = "vlan1000-mgmt", mask = "255.255.255.0", router = "172.16.10.1", dns = "172.16.10.53,172.16.10.54", domain = "mgmt.devnetlabs.com", lease_hours = 12 },
-  { name = "lab_lan", mask = "255.255.255.0", router = "172.16.254.1", dns = "172.16.10.53,172.16.10.54", domain = "mgmt.devnetlabs.com", lease_hours = 12 },
+  { name = "vlan1000-mgmt", mask = "255.255.255.0", router = "172.16.10.1", dns = "172.16.10.53,172.16.10.54", domain = "mgt.devnetlabs.com", lease_hours = 12 },
+  { name = "lab_lan", mask = "255.255.255.0", router = "172.16.254.1", dns = "172.16.10.53,172.16.10.54", domain = "mgt.devnetlabs.com", lease_hours = 12 },
 ]
 
 # Split ranges so the two servers never overlap
