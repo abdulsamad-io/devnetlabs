@@ -2,7 +2,7 @@
 
 Stand up the dc01 **Grafana** frontend — the single pane over **Loki** (logs, LogQL) and
 **Prometheus** (metrics/SNMP, PromQL). Native binary + systemd. Context:
-[loki-setup.md](loki-setup.md) · [lld.md](lld.md) · [logging-design.md](logging-design.md).
+[loki-setup.md](../logging/loki-setup.md) · [lld.md](../lld.md) · [logging-design.md](../logging/logging-design.md).
 
 ## Facts
 
@@ -188,5 +188,5 @@ curl -s http://dnllok101.dc01.devnetlabs.com:3100/ready               # ready
 
 ---
 
-See also: [loki-setup.md](loki-setup.md) · [lld.md](lld.md) ·
-[logging-design.md](logging-design.md) · [rsyslog-setup.md](rsyslog-setup.md)
+See also: [loki-setup.md](../logging/loki-setup.md) · [lld.md](../lld.md) ·
+[logging-design.md](../logging/logging-design.md) · [rsyslog-setup.md](../logging/rsyslog-setup.md)

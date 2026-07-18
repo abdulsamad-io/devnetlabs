@@ -13,17 +13,17 @@ Design documentation and (future) IaC for the **DevNetLabs** home lab.
 | Doc | Purpose |
 |-----|---------|
 | [Low-Level Design (LLD)](docs/lld.md) | Consolidated topology, addressing, SDN VNets, guest inventory |
-| [Network & VLAN design](docs/network-vlan-design.md) | MikroTik core, VLANs, bridges, DHCP, port map |
-| [VMID plan](docs/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
-| [Naming convention](docs/naming-convention.md) | `dnl<role><dc><nn>` guest naming, role codes, per-node DNS |
+| [Network & VLAN design](docs/network/network-vlan-design.md) | MikroTik core, VLANs, bridges, DHCP, port map |
+| [VMID plan](docs/conventions/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
+| [Naming convention](docs/conventions/naming-convention.md) | `dnl<role><dc><nn>` guest naming, role codes, per-node DNS |
 | [Cross-DC migration](docs/cross-dc-migration.md) | Moving a VM between nodes (VMID + hostname + DNS) |
-| [DHCP migration](docs/dhcp-migration.md) | Move DHCP MikroTik→Technitium (relay, scopes, break-glass) |
-| [Logging design](docs/logging-design.md) | rsyslog HA → cross-feed Loki (dc01) + Graylog (dc02) |
-| [rsyslog setup](docs/rsyslog-setup.md) | Central collector: vendor/category tree, classification, rotation, forwarding |
-| [keepalived VIP](docs/keepalived-setup.md) | Floating VIP 172.16.10.70 across the log collectors (HA) |
-| [Log collector VMs](docs/log-collector-setup.md) | Build the dnllog101/dnllog201 Ubuntu collector VMs |
-| [Log source onboarding](docs/log-source-onboarding.md) | Per-device syslog client config (Cisco/Juniper/ASA/PAN-OS/FortiGate/Windows/…) |
-| [rsyslog install script](docs/rsyslog-install-script.md) | Copy-paste collector config, line-by-line explained |
+| [DHCP migration](docs/network/dhcp-migration.md) | Move DHCP MikroTik→Technitium (relay, scopes, break-glass) |
+| [Logging design](docs/logging/logging-design.md) | rsyslog HA → cross-feed Loki (dc01) + Graylog (dc02) |
+| [rsyslog setup](docs/logging/rsyslog-setup.md) | Central collector: vendor/category tree, classification, rotation, forwarding |
+| [keepalived VIP](docs/logging/keepalived-setup.md) | Floating VIP 172.16.10.70 across the log collectors (HA) |
+| [Log collector VMs](docs/logging/log-collector-setup.md) | Build the dnllog101/dnllog201 Ubuntu collector VMs |
+| [Log source onboarding](docs/logging/log-source-onboarding.md) | Per-device syslog client config (Cisco/Juniper/ASA/PAN-OS/FortiGate/Windows/…) |
+| [rsyslog install script](docs/logging/rsyslog-install-script.md) | Copy-paste collector config, line-by-line explained |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Bastion setup](docs/bastion-setup.md) | Jump host build + hardening runbook (incl. Windows key gen) |
 | [TrueNAS setup](docs/truenas-setup.md) | TrueNAS VM build, disk passthrough, ZFS pool, shares |

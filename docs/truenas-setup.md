@@ -263,5 +263,5 @@ Expected: pool **ONLINE**, share maps without error, files read/write.
 
 ---
 
-See also: [lld.md](lld.md) · [vmid-plan.md](vmid-plan.md) ·
-[network-vlan-design.md](network-vlan-design.md)
+See also: [lld.md](lld.md) · [vmid-plan.md](conventions/vmid-plan.md) ·
+[network-vlan-design.md](network/network-vlan-design.md)

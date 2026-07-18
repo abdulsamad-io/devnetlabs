@@ -282,5 +282,5 @@ ssh dc01 hostname                                    # ProxyJump works -> prints
 
 ---
 
-See also: [naming-convention.md](naming-convention.md) · [vmid-plan.md](vmid-plan.md) ·
-[network-vlan-design.md](network-vlan-design.md)
+See also: [naming-convention.md](conventions/naming-convention.md) · [vmid-plan.md](conventions/vmid-plan.md) ·
+[network-vlan-design.md](network/network-vlan-design.md)

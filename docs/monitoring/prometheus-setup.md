@@ -2,7 +2,7 @@
 
 Stand up the dc01 **Prometheus** metrics store with an on-box **`snmp_exporter`** for lab
 SNMP (MikroTik, switches, firewalls). Grafana (`dnlgrf101`) queries it with PromQL.
-Native binaries + systemd. Context: [grafana-setup.md](grafana-setup.md) · [lld.md](lld.md).
+Native binaries + systemd. Context: [grafana-setup.md](grafana-setup.md) · [lld.md](../lld.md).
 
 ## Facts
 
@@ -286,5 +286,5 @@ df -h /var/lib/prometheus                                           # data on th
 
 ---
 
-See also: [grafana-setup.md](grafana-setup.md) · [loki-setup.md](loki-setup.md) ·
-[lld.md](lld.md) · [log-source-onboarding.md](log-source-onboarding.md)
+See also: [grafana-setup.md](grafana-setup.md) · [loki-setup.md](../logging/loki-setup.md) ·
+[lld.md](../lld.md) · [log-source-onboarding.md](../logging/log-source-onboarding.md)

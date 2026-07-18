@@ -22,7 +22,7 @@ Scheme: **`NZSS`** (4 digits).
   `<dc>` digit **must equal this VMID's `N` digit** (see
   [naming-convention.md](naming-convention.md)). Moving a guest across nodes means
   renumbering the VMID **and** renaming the host — see
-  [cross-dc-migration.md](cross-dc-migration.md).
+  [cross-dc-migration.md](../cross-dc-migration.md).
 
 ---
 
@@ -73,6 +73,6 @@ Scheme: **`NZSS`** (4 digits).
 >   is bare-metal, it has no VMID.
 > - **Logging:** rsyslog HA pair (`dnllog101`/`dnllog201`) cross-feeds **Loki**
 >   (`dnllok101`, dc01) + **Graylog** (`dnlgry201`, dc02) — see
->   [logging-design.md](logging-design.md).
+>   [logging-design.md](../logging/logging-design.md).
 > - **Unmapped / pending (see OPEN-ITEMS):**
 >   - **M.2 2242 role** — local PBS (`1302`) vs vzdump + TrueNAS replication target.

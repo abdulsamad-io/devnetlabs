@@ -15,7 +15,7 @@ Example: **`dnladm101`** (admin/bastion host on **dc01**, instance **01**).
 - **Placement is encoded in the name** (and in the VMID and DNS zone). This is
   deliberate — the hostname/FQDN tells you the node at a glance. **Trade-off:** a guest
   moved to another node must be **renamed + renumbered + its DNS record re-homed** to
-  the new zone (see [cross-dc-migration.md](cross-dc-migration.md)).
+  the new zone (see [cross-dc-migration.md](../cross-dc-migration.md)).
 
 > **Scheme change:** this node-embedded `dnl<role><dc><nn>` form **supersedes** the
 > earlier node-agnostic flat `dnl<role><NNN>` convention (which itself replaced the
@@ -87,7 +87,7 @@ Examples: `tmpl-deb12-base`, `tmpl-ubn2404-docker`.
   forwarding, block lists, DNSSEC, DoH/DoT, and a full HTTP API for IaC.
 - Keep the **public apex `devnetlabs.com` separate** from these internal zones.
 - **TLS via DNS-01:** one wildcard **per zone** — `*.mgt`, `*.dc01`, `*.dc02`,
-  `*.dc03`.devnetlabs.com (internal CA planned — see [OPEN-ITEMS.md](OPEN-ITEMS.md) #31).
+  `*.dc03`.devnetlabs.com (internal CA planned — see [OPEN-ITEMS.md](../OPEN-ITEMS.md) #31).
 
 ### Split-horizon (public vs internal)
 

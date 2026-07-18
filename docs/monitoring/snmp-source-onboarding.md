@@ -1,7 +1,7 @@
 # SNMP Source Onboarding — per-device SNMPv2c / SNMPv3 config
 
 How to enable SNMP on each device and register it with Prometheus. The metrics analog of
-[log-source-onboarding.md](log-source-onboarding.md); expands the SNMP job in
+[log-source-onboarding.md](../logging/log-source-onboarding.md); expands the SNMP job in
 [prometheus-setup.md](prometheus-setup.md).
 
 ## How the polling works (read this first)
@@ -257,5 +257,5 @@ Expected: the `/snmp` curl returns metrics, and the target's `health` is `up`.
 
 ---
 
-See also: [prometheus-setup.md](prometheus-setup.md) · [log-source-onboarding.md](log-source-onboarding.md) ·
-[grafana-setup.md](grafana-setup.md) · [lld.md](lld.md)
+See also: [prometheus-setup.md](prometheus-setup.md) · [log-source-onboarding.md](../logging/log-source-onboarding.md) ·
+[grafana-setup.md](grafana-setup.md) · [lld.md](../lld.md)

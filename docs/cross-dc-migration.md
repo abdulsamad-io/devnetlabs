@@ -69,10 +69,10 @@ node's subnet. On VLAN 1000 the IP can remain; on a per-node VLAN it must change
 **7. Verify.** New FQDN resolves in the new zone; old records gone; connectivity and
 services healthy; VMID/hostname/zone all agree.
 
-**8. Update the docs.** Move the row in [vmid-plan.md](vmid-plan.md) to the target
+**8. Update the docs.** Move the row in [vmid-plan.md](conventions/vmid-plan.md) to the target
 node's table (new VMID + hostname), and update [lld.md](lld.md) (guest inventory, SDN
 VNet table, reserved-address table) and the master mapping in
-[naming-convention.md](naming-convention.md).
+[naming-convention.md](conventions/naming-convention.md).
 
 ---
 
@@ -102,7 +102,7 @@ Ansible → verify → update docs.
 - [ ] The new FQDN resolves in the **new** zone; the **old** A/PTR are gone.
 - [ ] The guest is reachable and its services are healthy on the new node.
 - [ ] Every consumer (mounts, monitoring, backups, Ansible, firewall lists) points at the new name/IP.
-- [ ] Docs updated: [vmid-plan.md](vmid-plan.md), [lld.md](lld.md), and the master mapping in [naming-convention.md](naming-convention.md).
+- [ ] Docs updated: [vmid-plan.md](conventions/vmid-plan.md), [lld.md](lld.md), and the master mapping in [naming-convention.md](conventions/naming-convention.md).
 
 **🧪 Test:**
 ```
@@ -130,5 +130,5 @@ qm config <new-vmid> | grep name   # Proxmox Name = new hostname
 
 ---
 
-See also: [naming-convention.md](naming-convention.md) · [vmid-plan.md](vmid-plan.md) ·
+See also: [naming-convention.md](conventions/naming-convention.md) · [vmid-plan.md](conventions/vmid-plan.md) ·
 [lld.md](lld.md)

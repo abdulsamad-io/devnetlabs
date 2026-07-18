@@ -3,8 +3,8 @@
 Consolidated low-level view of the lab: physical topology, VLAN/L3 addressing, the
 MikroTik data plane, Proxmox SDN VNets, and the full guest inventory (hostname ↔ VMID ↔
 IP ↔ VLAN). This is the single detailed reference; it reconciles
-[network-vlan-design.md](network-vlan-design.md), [vmid-plan.md](vmid-plan.md), and
-[naming-convention.md](naming-convention.md), and supersedes the older hand-drawn
+[network-vlan-design.md](network/network-vlan-design.md), [vmid-plan.md](conventions/vmid-plan.md), and
+[naming-convention.md](conventions/naming-convention.md), and supersedes the older hand-drawn
 topology diagram (see [§9 Consistency review](#9-consistency-review--deltas-from-the-diagram)).
 
 Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created),

@@ -293,5 +293,5 @@ alloy fmt /etc/alloy/config.alloy | head         # shows local.file_match "devne
 
 ---
 
-See also: [logging-design.md](logging-design.md) · [naming-convention.md](naming-convention.md) ·
-[lld.md](lld.md)
+See also: [logging-design.md](logging-design.md) · [naming-convention.md](../conventions/naming-convention.md) ·
+[lld.md](../lld.md)

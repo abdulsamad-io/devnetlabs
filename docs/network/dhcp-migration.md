@@ -228,5 +228,5 @@ is instant and lossless.
 
 ---
 
-See also: [network-vlan-design.md](network-vlan-design.md) · [lld.md](lld.md) ·
-[OPEN-ITEMS.md](OPEN-ITEMS.md)
+See also: [network-vlan-design.md](network-vlan-design.md) · [lld.md](../lld.md) ·
+[OPEN-ITEMS.md](../OPEN-ITEMS.md)
