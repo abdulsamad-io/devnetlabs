@@ -52,6 +52,8 @@ Grouped to match the `docs/` folder layout.
 | [Grafana setup](docs/monitoring/grafana-setup.md) | Grafana frontend over Loki + Prometheus (`dnlgrf101`) |
 | [Prometheus setup](docs/monitoring/prometheus-setup.md) | Prometheus + `snmp_exporter` (`dnlprm101`), file_sd targets |
 | [SNMP source onboarding](docs/monitoring/snmp-source-onboarding.md) | Per-device SNMPv2c/v3 config for Prometheus |
+| [Uptime Kuma setup](docs/monitoring/uptime-kuma-setup.md) | Availability monitoring + status page + cert-expiry (Docker) |
+| [ntfy setup](docs/monitoring/ntfy-setup.md) | Self-hosted push-notification hub for lab alerts |
 
 ## Nodes
 

@@ -53,6 +53,8 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | 1104 | `dnllok101` | `dc01;zone-apps;tier-logging;av-always-on;bkp-pbs;ha-none` |
 | 1105 | `dnlgrf101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
 | 1106 | `dnlprm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
+| 1107 | `dnlukm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
+| 1108 | `dnlnfy101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
 | 1201 | `dnlplx101` | `dc01;zone-media;tier-media;av-always-on;bkp-pbs;ha-none` |
 | 1301 | `dnlnas101` | `dc01;zone-nas;tier-storage;av-always-on;bkp-repl;ha-none` |
 | 1302 | `dnlpbs101` | `dc01;zone-nas;tier-backup;av-always-on;bkp-none;ha-none` |

@@ -42,6 +42,8 @@ Scheme: **`NZSS`** (4 digits).
 | 1104 | `dnllok101` | Loki (log store) | VM | apps (1101) |
 | 1105 | `dnlgrf101` | Grafana | VM | apps (1101) |
 | 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | apps (1101) |
+| 1107 | `dnlukm101` | Uptime Kuma (availability) | VM | apps (1101) |
+| 1108 | `dnlnfy101` | ntfy (notifications) | VM | apps (1101) |
 | 1201 | `dnlplx101` | Plex / media | VM | media (1102) |
 | 1301 | `dnlnas101` | TrueNAS | VM | nas (1103) |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | nas (1103) |

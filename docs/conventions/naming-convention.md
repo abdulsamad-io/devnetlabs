@@ -45,6 +45,8 @@ Every role code is **exactly 3 lowercase letters**.
 | `gry` | Graylog |
 | `grf` | Grafana |
 | `prm` | Prometheus (+ `snmp_exporter`) |
+| `ukm` | Uptime Kuma (availability monitor) |
+| `nfy` | ntfy (notification hub) |
 
 **Reserved for future use (3-letter):** `git`, `awx`, `vlt` (Vault),
 `tsd` (time-series DB), `dkr` (Docker), `k8s` (Kubernetes), `prx` (reverse proxy),
@@ -141,6 +143,8 @@ split-horizon (split-brain) DNS:
 | `dnllok101` | 1104 |
 | `dnlgrf101` | 1105 |
 | `dnlprm101` | 1106 |
+| `dnlukm101` | 1107 |
+| `dnlnfy101` | 1108 |
 | `dnlplx101` | 1201 |
 | `dnlnas101` | 1301 |
 | `dnlpbs101` | 1302 |
