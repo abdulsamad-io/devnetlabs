@@ -11,7 +11,7 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 - **lowercase**, words separated by `-`; dimension prefix then value (`tier-logging`).
   Proxmox tags allow `A–Za–z0–9_+.-` only — **no `:`**, so use `-`, not `key:value`.
 - **Multi-valued**, semicolon-separated in `qm`: `--tags "dc01;zone-mgt;tier-dns;..."`.
-- Every VM carries **one tag per dimension** below (5 core; HA/state optional).
+- Every VM carries **one tag per dimension** below (6 core incl. `ha-`; `state-`/`template` optional).
 - Tags are for **grouping/filtering**, not authority — the VMID/hostname remain the source
   of truth for identity; NetBox (#23) will be the SoT that these mirror.
 - **Register the tags + colors** at the datacenter level so they're consistent and
@@ -26,11 +26,11 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | **Functionality** (tier) | `tier-` | `tier-mgmt` · `tier-dns` · `tier-ipam` · `tier-logging` · `tier-monitoring` · `tier-virt` · `tier-storage` · `tier-backup` · `tier-media` · `tier-edge` |
 | **Availability** | `av-` | `av-always-on` · `av-on-demand` · `av-dr` |
 | **Backup policy** | `bkp-` | `bkp-pbs` (vzdump→PBS) · `bkp-repl` (ZFS replication) · `bkp-none` |
+| **HA role** | `ha-` | `ha-none` (standalone) · `ha-active` · `ha-standby` (syslog VIP pair) · `ha-primary` · `ha-secondary` (DNS pair) |
 
 **Optional add-ons**
 | Dimension | Prefix | Values | Use |
 |-----------|--------|--------|-----|
-| **HA member** | `ha-` | `ha-active` · `ha-standby` · `ha-primary` · `ha-secondary` | the syslog VIP pair, the DNS pair |
 | **Rollout state** | `state-` | `state-planned` · `state-built` | flip to `state-built` once verified; a live build tracker |
 | **Template** | *(none)* | `template` | on `tmpl-*` guests |
 
@@ -44,18 +44,18 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 
 | VMID | Hostname | Tags |
 |------|----------|------|
-| 1001 | `dnlnms101` | `dc01;zone-mgt;tier-monitoring;av-always-on;bkp-pbs` |
-| 1002 | `dnladm101` | `dc01;zone-mgt;tier-mgmt;av-always-on;bkp-pbs` |
-| 1003 | `dnlnbx101` | `dc01;zone-mgt;tier-ipam;av-always-on;bkp-pbs` |
+| 1001 | `dnllbr101` | `dc01;zone-mgt;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
+| 1002 | `dnladm101` | `dc01;zone-mgt;tier-mgmt;av-always-on;bkp-pbs;ha-none` |
+| 1003 | `dnlnbx101` | `dc01;zone-mgt;tier-ipam;av-always-on;bkp-pbs;ha-none` |
 | 1004 | `dnllog101` | `dc01;zone-mgt;tier-logging;av-always-on;bkp-pbs;ha-active` |
 | 1005 | `dnldns101` | `dc01;zone-mgt;tier-dns;av-always-on;bkp-pbs;ha-primary` |
-| 1006 | `dnlctl101` | `dc01;zone-mgt;tier-edge;av-always-on;bkp-pbs` |
-| 1104 | `dnllok101` | `dc01;zone-apps;tier-logging;av-always-on;bkp-pbs` |
-| 1105 | `dnlgrf101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs` |
-| 1106 | `dnlprm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs` |
-| 1201 | `dnlplx101` | `dc01;zone-media;tier-media;av-always-on;bkp-pbs` |
-| 1301 | `dnlnas101` | `dc01;zone-nas;tier-storage;av-always-on;bkp-repl` |
-| 1302 | `dnlpbs101` | `dc01;zone-nas;tier-backup;av-always-on;bkp-none` |
+| 1006 | `dnlctl101` | `dc01;zone-mgt;tier-edge;av-always-on;bkp-pbs;ha-none` |
+| 1104 | `dnllok101` | `dc01;zone-apps;tier-logging;av-always-on;bkp-pbs;ha-none` |
+| 1105 | `dnlgrf101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
+| 1106 | `dnlprm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
+| 1201 | `dnlplx101` | `dc01;zone-media;tier-media;av-always-on;bkp-pbs;ha-none` |
+| 1301 | `dnlnas101` | `dc01;zone-nas;tier-storage;av-always-on;bkp-repl;ha-none` |
+| 1302 | `dnlpbs101` | `dc01;zone-nas;tier-backup;av-always-on;bkp-none;ha-none` |
 | 1901/1902 | *(templates)* | `dc01;template` |
 
 ### dc02 — HPE ML150 G9 (on-demand)
@@ -63,18 +63,18 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | VMID | Hostname | Tags |
 |------|----------|------|
 | 2001 | `dnldns201` | `dc02;zone-mgt;tier-dns;av-on-demand;bkp-pbs;ha-secondary` |
-| 2003 | `dnlgry201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs` |
+| 2003 | `dnlgry201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs;ha-none` |
 | 2004 | `dnllog201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs;ha-standby` |
-| 2101 | `dnlpnt201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-none` |
-| 2102 | `dnleve201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-none` |
-| 2105 | `dnlgrf201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs` |
-| 2106 | `dnlprm201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs` |
+| 2101 | `dnlpnt201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-pbs;ha-none` |
+| 2102 | `dnleve201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-pbs;ha-none` |
+| 2105 | `dnlgrf201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs;ha-none` |
+| 2106 | `dnlprm201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs;ha-none` |
 
 ### dc03 — Dell E6430 (DR target)
 
 | VMID | Hostname | Tags |
 |------|----------|------|
-| 3401 | `dnlpbs301` | `dc03;zone-pbs;tier-backup;av-dr;bkp-none` |
+| 3401 | `dnlpbs301` | `dc03;zone-pbs;tier-backup;av-dr;bkp-none;ha-none` |
 
 > **Notes:** `dnlpnt201` is dual-homed (apps NIC + a mgmt NIC on 1000) — add `zone-mgt` too
 > if you want that reflected. `bkp-none` on the PBS/lab-emulator guests is deliberate: PBS
@@ -88,7 +88,7 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 colour in the UI:
 ```
 tag-style: ordering=config;shape=full;color-map=dc01:2ecc71,dc02:e67e22,dc03:95a5a6,zone-mgt:34495e,zone-apps:2980b9,zone-nas:16a085,tier-logging:3498db,tier-monitoring:9b59b6,tier-dns:1abc9c,tier-backup:7f8c8d,tier-virt:e74c3c,av-on-demand:f39c12,av-dr:c0392b,bkp-none:bdc3c7
-registered-tags: dc01;dc02;dc03;zone-mgt;zone-apps;zone-media;zone-nas;zone-pbs;tier-mgmt;tier-dns;tier-ipam;tier-logging;tier-monitoring;tier-virt;tier-storage;tier-backup;tier-media;tier-edge;av-always-on;av-on-demand;av-dr;bkp-pbs;bkp-repl;bkp-none;ha-active;ha-standby;ha-primary;ha-secondary;template
+registered-tags: dc01;dc02;dc03;zone-mgt;zone-apps;zone-media;zone-nas;zone-pbs;tier-mgmt;tier-dns;tier-ipam;tier-logging;tier-monitoring;tier-virt;tier-storage;tier-backup;tier-media;tier-edge;av-always-on;av-on-demand;av-dr;bkp-pbs;bkp-repl;bkp-none;ha-none;ha-active;ha-standby;ha-primary;ha-secondary;template
 ```
 *(Colour map trimmed for brevity — extend to taste. `ordering=config` shows tags in the
 order set, not alphabetical.)*

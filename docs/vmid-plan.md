@@ -32,7 +32,7 @@ Scheme: **`NZSS`** (4 digits).
 
 | VMID | Hostname | Guest | Type | Zone (VLAN) |
 |------|----------|-------|------|-------------|
-| 1001 | `dnlnms101` | LibreNMS | VM | mgmt (1000) |
+| 1001 | `dnllbr101` | LibreNMS | VM | mgmt (1000) |
 | 1002 | `dnladm101` | Admin / bastion (jump) host | VM | mgmt (1000) |
 | 1003 | `dnlnbx101` | NetBox | VM | mgmt (1000) |
 | 1004 | `dnllog101` | rsyslog collector (HA active) | VM | mgmt (1000) |

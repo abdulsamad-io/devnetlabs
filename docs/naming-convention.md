@@ -31,7 +31,7 @@ Every role code is **exactly 3 lowercase letters**.
 | Code | Service |
 |------|---------|
 | `adm` | Admin / bastion (jump) host |
-| `nms` | LibreNMS |
+| `lbr` | LibreNMS |
 | `nbx` | NetBox |
 | `log` | rsyslog collector |
 | `lok` | Loki (log store) |
@@ -132,7 +132,7 @@ split-horizon (split-brain) DNS:
 
 | Hostname | VMID |
 |----------|------|
-| `dnlnms101` | 1001 |
+| `dnllbr101` | 1001 |
 | `dnladm101` | 1002 |
 | `dnlnbx101` | 1003 |
 | `dnllog101` | 1004 |
