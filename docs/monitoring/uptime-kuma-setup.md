@@ -98,7 +98,9 @@ docker run -d --name uptime-kuma --restart unless-stopped \
 - `--restart unless-stopped` + `systemctl enable docker` → survives reboots (no systemd unit needed).
 - Named volume `uptime-kuma` holds the SQLite DB + config (persists across container upgrades).
 - Upgrade later: `docker pull louislam/uptime-kuma:1 && docker rm -f uptime-kuma && <re-run>`.
-> **Check:** `docker ps` shows it `Up`; `curl -sI http://localhost:3001/ | head -1` → `HTTP/1.1 200`.
+> **Check:** `docker ps` shows it `Up`; `curl -sI http://localhost:3001/ | head -1` →
+> `HTTP/1.1 302 Found` — normal: Kuma redirects `/` → `/setup` (first run) or `/dashboard`.
+> Add `-L` to follow through to `200`.
 
 ## Part F — First-run setup
 
@@ -130,7 +132,8 @@ Add the A record `dnlukm101 → 10.110.10.73` in the **`dc01.devnetlabs.com`** z
 **🧪 End-to-end test:**
 ```bash
 docker ps --filter name=uptime-kuma
-curl -sI http://localhost:3001/ | head -1                 # HTTP/1.1 200
+curl -sI  http://localhost:3001/ | head -1                # HTTP/1.1 302 Found (redirect to /setup)
+curl -sIL http://localhost:3001/ | grep -E '^HTTP' | tail -1   # follows -> HTTP/1.1 200
 # add a monitor to a known-up host -> green; add one to 10.0.0.254 -> Down + ntfy push
 docker volume inspect uptime-kuma >/dev/null && echo "volume OK"
 ```
@@ -147,6 +150,7 @@ docker volume inspect uptime-kuma >/dev/null && echo "volume OK"
 | Symptom | Likely cause | Diagnose / remediation |
 |---------|--------------|------------------------|
 | UI won't load | container down / ufw / wrong port | `docker ps -a`; `docker logs uptime-kuma`; `sudo ufw status`; port is `3001` |
+| `curl /` returns **302**, not 200 | normal — Kuma's SPA redirects `/` → `/setup` (first run) / `/dashboard` | not an error; `curl -sIL` to follow to `200`, or just open the UI |
 | Container gone after reboot | Docker not enabled / no restart policy | `sudo systemctl enable --now docker`; re-run with `--restart unless-stopped` |
 | Monitors all Down | egress blocked or DNS broken on the VM | `curl`/`ping` the target from the VM; check `resolvectl status` |
 | ntfy notifications don't fire | wrong ntfy URL/topic or ntfy unreachable | test `curl -d test http://dnlnfy101.dc01.devnetlabs.com/lab-alerts`; re-check the notification config |
