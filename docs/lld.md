@@ -117,7 +117,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
-| shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnlnms101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog, HA active), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel) |
+| shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnllbr101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog, HA active), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel) |
 | dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72) |
 | dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
@@ -154,7 +154,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 
 | VMID | Hostname | Service | Type | VLAN | IP |
 |------|----------|---------|------|------|-----|
-| 1001 | `dnlnms101` | LibreNMS | VM | 1000 | RSV/TBD |
+| 1001 | `dnllbr101` | LibreNMS | VM | 1000 | RSV/TBD |
 | 1002 | `dnladm101` | Admin / bastion (jump) | VM | 1000 | 172.16.10.2 (STAT) |
 | 1003 | `dnlnbx101` | NetBox (DCIM/IPAM source of truth) | VM | 1000 | 172.16.10.50 (RSV) |
 | 1004 | `dnllog101` | rsyslog collector (HA active) | VM | 1000 | 172.16.10.71 (STAT) |
@@ -215,7 +215,7 @@ currency**, corrected in §6–§7 above:
 | 4 | NAS VNET (1103): `Proxmox backup server` only | **TrueNAS missing** — it's the primary NAS | `dnlnas101` (TrueNAS) **+** `dnlpbs101` (local PBS) |
 | 5 | shared VNET: `logserver … Rsyslog` | Redundant — rsyslog **is** the logserver | Single `dnllog101` |
 | 6 | `dns server` (generic) | DNS engine changed | **Technitium** (`dnldns101` / `dnldns201`) |
-| 7 | `LiberNMS` | Typo | **LibreNMS** (`dnlnms101`) |
+| 7 | `LiberNMS` | Typo | **LibreNMS** (`dnllbr101`) |
 | 8 | (absent) | Cloudflare tunnel connector not shown | `dnlctl101` in shared_mgt (1000) |
 | 9 | (absent) | Graylog (planned always-on) not shown | Listed as **pending** (unmapped VMID) |
 | 10 | dc02 shared VNET: `logserver, dns server` | Not labelled as the secondary instances | `dnldns201` / `dnllog201` |
