@@ -189,11 +189,10 @@ scrape_configs:
   - job_name: snmp
     metrics_path: /snmp
     params:
-      module: [if_mib]                   # match a module in snmp.yml
-    static_configs:
-      - targets:
-          - 172.16.10.1                  # MikroTik core (fill in real device mgmt IPs,
-          # - 10.120.10.1                #   BOTH DCs — this Prometheus scrapes the full fleet)
+      module: [if_mib]                   # default module (per-device override via a label — see below)
+    file_sd_configs:                     # targets live in a JSON file, hot-reloaded on change
+      - files: ['/etc/prometheus/targets/snmp_*.json']
+        refresh_interval: 30s
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -202,6 +201,31 @@ scrape_configs:
       - target_label: __address__
         replacement: 127.0.0.1:9116      # the LOCAL snmp_exporter does the polling
 ```
+
+**Device list — a JSON file, edit/generate freely.** `file_sd_configs` reads any
+`/etc/prometheus/targets/snmp_*.json`; Prometheus **auto-reloads within `refresh_interval`
+— no restart**. List all fleet devices (both DCs). Create the dir + file:
+```bash
+sudo mkdir -p /etc/prometheus/targets
+sudo tee /etc/prometheus/targets/snmp_devices.json >/dev/null <<'EOF'
+[
+  { "targets": ["172.16.10.1"],  "labels": { "vendor": "mikrotik", "role": "core-router" } },
+  { "targets": ["10.120.10.1"],  "labels": { "vendor": "mikrotik", "role": "svi" } }
+]
+EOF
+sudo chown -R prometheus:prometheus /etc/prometheus/targets
+```
+- Each object's `targets` are device mgmt IPs; `labels` are attached to every series from
+  those devices (filter in PromQL / Grafana by `vendor`, `role`, …).
+- **Add/remove a device:** edit the JSON (keep it valid — `jq . …`) and save; Prometheus
+  picks it up on the next refresh. To confirm: **Status → Service Discovery / Targets** in
+  the UI.
+- **Per-device SNMP module:** override the job default by adding `"__param_module": "<mod>"`
+  to that entry's `labels` (a `__param_*` meta-label sets the URL param for just that
+  target) — e.g. a Cisco device using a `cisco` module while others use `if_mib`.
+- **Dynamic source:** generate this JSON from **NetBox** (same pattern as the rsyslog
+  `sources.json`, #33) once NetBox is the SoT — then adds/removes are automatic.
+
 Validate + start everything:
 ```bash
 sudo promtool check config /etc/prometheus/prometheus.yml     # must be SUCCESS
@@ -255,6 +279,7 @@ df -h /var/lib/prometheus                                           # data on th
 | `snmp` target `health="down"` | device SNMP off / wrong community / unreachable | `curl 'localhost:9116/snmp?target=<ip>&module=if_mib'`; enable SNMP on the device; check UDP/161 reachability |
 | All SNMP metrics labelled `instance="127.0.0.1:9116"` | missing/again-ordered `relabel_configs` | restore the three relabel rules (Part G) |
 | `snmp_exporter` unknown module | `params.module` not in `snmp.yml` | pick a module present in `snmp.yml`, or regenerate with the generator |
+| Edited the JSON but targets didn't change | invalid JSON, or file not matched by the `files:` glob | `jq . /etc/prometheus/targets/snmp_devices.json`; confirm the path/glob; check **Status → Service Discovery** in the UI |
 | TSDB fills `/` | wrong `--storage.tsdb.path` | point it at `/var/lib/prometheus`; confirm the disk is mounted |
 | Samples rejected (timestamp) | host clock skew | `timedatectl`; ensure chrony synced |
 | Retention not applied | flag typo / not restarted | confirm `--storage.tsdb.retention.time=30d`; `systemctl restart prometheus` |
