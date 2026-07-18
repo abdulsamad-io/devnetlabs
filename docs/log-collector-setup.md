@@ -70,14 +70,14 @@ network:
     ens18:                                   # confirm with: ip -br a
       addresses: [172.16.10.71/24]
       routes: [{ to: default, via: 172.16.10.1 }]
-      nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [mgmt.devnetlabs.com] }
+      nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [mgt.devnetlabs.com] }
 ```
 ```bash
 sudo hostnamectl set-hostname dnllog101      # dnllog201 on the other
 sudo netplan apply
 ```
 > Both collectors sit on the shared mgmt VLAN 1000, so their search domain is
-> `mgmt.devnetlabs.com` (node-neutral zone — #28 resolved). Both DNS servers
+> `mgt.devnetlabs.com` (node-neutral zone — #28 resolved). Both DNS servers
 > (`.53`/`.54`) are listed for resolver redundancy.
 
 ## Part C — Base config
@@ -161,7 +161,7 @@ Then the VIP + syslog end-to-end checks from the keepalived/rsyslog runbooks.
 **✅ Success criteria — the VM base is ready when:**
 - [ ] `lsblk` shows `/boot` + `/` (LVM) on the **16 GB** disk; the **50 GB** disk is a bare `disk`.
 - [ ] `/var/log/devnetlabs_logs` is mounted from the 50 GB disk (by **LABEL**), owned `syslog:adm`.
-- [ ] `ip -br a` shows `.71`/`.72` on `ens18`; DNS resolves via `.53`/`.54`; search `mgmt.devnetlabs.com`.
+- [ ] `ip -br a` shows `.71`/`.72` on `ens18`; DNS resolves via `.53`/`.54`; search `mgt.devnetlabs.com`.
 - [ ] `timedatectl` synced + timezone `Europe/Amsterdam`; key-only SSH; ufw default-deny with 514 open.
 
 **🧪 Test (Part F):**

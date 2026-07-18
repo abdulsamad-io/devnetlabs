@@ -13,7 +13,7 @@ human-readable index; the issues hold the working detail.
 > **Resolved:**
 > - dc01/dc02 PVE mgmt IPs — **dc01 = `172.16.10.9`, dc02 = `172.16.10.10`** (node `.10`
 >   still named `abdulsamad`, rename pending). Confirmed via `:8006` — #17.
-> - Shared mgmt-VLAN DNS zone — **`mgmt.devnetlabs.com`** (node-neutral) for VLAN 1000;
+> - Shared mgmt-VLAN DNS zone — **`mgt.devnetlabs.com`** (node-neutral) for VLAN 1000;
 >   per-node zones stay for the per-node VLANs — #28.
 
 ## Pending work

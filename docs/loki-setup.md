@@ -62,7 +62,7 @@ sudo hostnamectl set-hostname dnllok101
 sudo netplan apply
 sudo timedatectl set-timezone Europe/Amsterdam
 ```
-> **Check:** `ip -br a` shows `.70` on `ens18`; `getent hosts dnldns101.mgmt.devnetlabs.com`
+> **Check:** `ip -br a` shows `.70` on `ens18`; `getent hosts dnldns101.mgt.devnetlabs.com`
 > resolves (DNS reachable cross-VLAN).
 
 ## Part C — Base config + firewall
@@ -176,7 +176,7 @@ loki.write "default" { endpoint { url = "http://dnllok101.dc01.devnetlabs.com:31
 ```bash
 sudo systemctl restart alloy
 ```
-> The short name `dnllok101` won't resolve under the collectors' `mgmt.devnetlabs.com`
+> The short name `dnllok101` won't resolve under the collectors' `mgt.devnetlabs.com`
 > search domain (Loki is in `dc01.devnetlabs.com`). Use the FQDN — or add
 > `dc01.devnetlabs.com` to the collectors' netplan `search` list.
 
@@ -212,7 +212,7 @@ df -h /var/lib/loki                                        # data on the 32G dis
 Expected: `/ready` → `ready`, labels include `category`/`vendor`, the test line is returned.
 
 **⚠️ Watch out for:**
-- **Alloy can't resolve `dnllok101`** — use the **FQDN**; the mgmt search domain won't find the dc01 zone. Symptom: `journalctl -u alloy` shows no-such-host on the push endpoint.
+- **Alloy can't resolve `dnllok101`** — use the **FQDN**; the mgt search domain won't find the dc01 zone. Symptom: `journalctl -u alloy` shows no-such-host on the push endpoint.
 - **`:3100` blocked** — the Loki host ufw must allow `:3100` from the collectors (`.71`/`.72`) and Grafana; the collectors need **no** change (push is outbound).
 - **Empty queries / no labels** — Alloy still can't read the tree: apply the `syslog:adm` group fix ([rsyslog-setup.md](rsyslog-setup.md) Part 4) and confirm `sudo -u alloy` can read a log file.
 - **Retention not enforced** — `compactor.retention_enabled: true` (+ `delete_request_store`) is required; without it Loki keeps data forever regardless of `retention_period`.

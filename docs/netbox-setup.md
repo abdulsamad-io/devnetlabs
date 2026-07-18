@@ -14,15 +14,15 @@ Prometheus `snmp_devices.json`, DNS, Ansible inventory — deferred, see **#62**
 | Role | NetBox — DCIM/IPAM source of truth (`nbx`) |
 | VMID | **1003** (VM, dc01) |
 | OS | Ubuntu Server 26.04 LTS |
-| VLAN / IP | **shared_mgt (1000)** — **`172.16.10.55/24`**, gw `172.16.10.1` |
-| FQDN | `dnlnbx101.mgmt.devnetlabs.com` (mgmt-VLAN host → **mgmt** zone, #28) |
+| VLAN / IP | **shared_mgt (1000)** — **`172.16.10.50/24`**, gw `172.16.10.1` |
+| FQDN | `dnlnbx101.mgt.devnetlabs.com` (mgmt-VLAN host → **mgmt** zone, #28) |
 | vCPU / RAM | 2 × `x86-64-v2-AES` / 4 GB (8 GB comfortable) |
 | Disk | 32 GB OS+data (`local-lvm`) — PostgreSQL lives here |
 | Stack | **PostgreSQL 14+** · **Redis** · **NetBox** (gunicorn) · **nginx** (reverse proxy) |
-| Web | `https://dnlnbx101.mgmt.devnetlabs.com/` (self-signed now; internal CA later — #31) |
+| Web | `https://dnlnbx101.mgt.devnetlabs.com/` (self-signed now; internal CA later — #31) |
 
 > **mgmt-tier host:** NetBox is on VLAN 1000, so its DNS record lives in
-> **`mgmt.devnetlabs.com`** (not `dc01` — the trap from the Grafana record).
+> **`mgt.devnetlabs.com`** (not `dc01` — the trap from the Grafana record).
 
 ---
 
@@ -48,9 +48,9 @@ network:
   version: 2
   ethernets:
     ens18:
-      addresses: [172.16.10.55/24]
+      addresses: [172.16.10.50/24]
       routes: [{ to: default, via: 172.16.10.1 }]
-      nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [mgmt.devnetlabs.com] }
+      nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [mgt.devnetlabs.com] }
 ```
 ```bash
 sudo hostnamectl set-hostname dnlnbx101
@@ -109,7 +109,7 @@ python3 -c 'import secrets; print(secrets.token_urlsafe(64))'   # -> SECRET_KEY
 ```
 Edit `configuration.py`:
 ```python
-ALLOWED_HOSTS = ['dnlnbx101.mgmt.devnetlabs.com', '172.16.10.55']
+ALLOWED_HOSTS = ['dnlnbx101.mgt.devnetlabs.com', '172.16.10.50']
 DATABASE = {'NAME': 'netbox', 'USER': 'netbox', 'PASSWORD': '<db-password>',
             'HOST': 'localhost', 'PORT': '', 'CONN_MAX_AGE': 300}
 REDIS = {
@@ -141,9 +141,9 @@ sudo systemctl enable --now netbox netbox-rq
 sudo apt install -y nginx
 sudo openssl req -x509 -nodes -days 825 -newkey rsa:2048 \
   -keyout /etc/ssl/private/netbox.key -out /etc/ssl/certs/netbox.crt \
-  -subj "/CN=dnlnbx101.mgmt.devnetlabs.com"          # self-signed until the internal CA (#31)
+  -subj "/CN=dnlnbx101.mgt.devnetlabs.com"          # self-signed until the internal CA (#31)
 sudo cp /opt/netbox/contrib/nginx.conf /etc/nginx/sites-available/netbox
-# edit server_name -> dnlnbx101.mgmt.devnetlabs.com; ssl_certificate paths above
+# edit server_name -> dnlnbx101.mgt.devnetlabs.com; ssl_certificate paths above
 sudo ln -sf /etc/nginx/sites-available/netbox /etc/nginx/sites-enabled/netbox
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl restart nginx
@@ -190,8 +190,8 @@ Model the lab so the automation outputs (#62) can be generated from it. Build in
 
 **✅ Success criteria — NetBox is up when:**
 - [ ] `systemctl status netbox netbox-rq nginx postgresql redis-server` all active.
-- [ ] `https://dnlnbx101.mgmt.devnetlabs.com/` loads and you log in as the superuser.
-- [ ] The FQDN resolves via Technitium (record in **`mgmt`** zone) → `172.16.10.55`.
+- [ ] `https://dnlnbx101.mgt.devnetlabs.com/` loads and you log in as the superuser.
+- [ ] The FQDN resolves via Technitium (record in **`mgt`** zone) → `172.16.10.50`.
 - [ ] A test object (a VLAN + a prefix) saves and the API returns it with a token.
 - [ ] Redis-backed jobs work (an object change enqueues without error in `netbox-rq`).
 
@@ -199,13 +199,13 @@ Model the lab so the automation outputs (#62) can be generated from it. Build in
 ```bash
 systemctl is-active netbox netbox-rq nginx postgresql redis-server     # all "active"
 curl -sk https://localhost/login/ | grep -i netbox                     # login page served
-getent hosts dnlnbx101.mgmt.devnetlabs.com                             # -> 172.16.10.55
+getent hosts dnlnbx101.mgt.devnetlabs.com                             # -> 172.16.10.50
 # API smoke (create a token in the UI: Admin -> API Tokens):
 curl -sk -H "Authorization: Token <token>" https://localhost/api/ipam/vlans/ | jq '.count'
 ```
 
 **⚠️ Watch out for:**
-- **Record in the wrong DNS zone** — NetBox is mgmt-tier → `mgmt.devnetlabs.com`, not `dc01`.
+- **Record in the wrong DNS zone** — NetBox is mgmt-tier → `mgt.devnetlabs.com`, not `dc01`.
 - **`ALLOWED_HOSTS`** — must list the FQDN + IP or NetBox returns HTTP 400 (`Bad Request`).
 - **`SECRET_KEY` / DB password** drift between `configuration.py` and PostgreSQL — auth/login failures.
 - **`netbox-rq` not running** — background jobs (webhooks, reports, later the generators) silently don't fire.
@@ -221,7 +221,7 @@ curl -sk -H "Authorization: Token <token>" https://localhost/api/ipam/vlans/ | j
 | `upgrade.sh` fails on migrate | DB creds / PostgreSQL down | verify `DATABASE` in `configuration.py`; `psql -U netbox -h localhost -W netbox` |
 | Login OK but changes error | `netbox-rq` / Redis down | `systemctl status netbox-rq redis-server`; `redis-cli ping` |
 | Static assets 404 / unstyled UI | `collectstatic` not run | re-run `sudo /opt/netbox/upgrade.sh` |
-| FQDN won't resolve | record missing or in wrong zone | add `dnlnbx101` A `172.16.10.55` in **`mgmt.devnetlabs.com`** (live Technitium) |
+| FQDN won't resolve | record missing or in wrong zone | add `dnlnbx101` A `172.16.10.50` in **`mgt.devnetlabs.com`** (live Technitium) |
 | API 403 | missing/expired token or wrong header | create a token (Admin → API Tokens); `Authorization: Token <token>` |
 
 ---

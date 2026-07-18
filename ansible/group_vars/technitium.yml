@@ -21,7 +21,7 @@ technitium_blocklist_urls:
 # Records live in ansible/zones/<name>.zone (BIND format), imported to the PRIMARY;
 # the SECONDARY receives them via zone transfer.
 zones:
-  - name: mgmt.devnetlabs.com         # shared mgmt VLAN 1000 (node-neutral)
+  - name: mgt.devnetlabs.com         # shared mgmt VLAN 1000 (node-neutral)
   - name: dc01.devnetlabs.com         # dc01 per-node-VLAN hosts (apps/media/nas)
   - name: dc02.devnetlabs.com         # dc02 per-node-VLAN hosts (apps)
   - name: dc03.devnetlabs.com         # dc03 per-node-VLAN hosts (pbs)
@@ -36,12 +36,12 @@ dhcp_scopes:
     mask: 255.255.255.0
     router: 172.16.10.1
     dns: "172.16.10.53,172.16.10.54"
-    domain: mgmt.devnetlabs.com
+    domain: mgt.devnetlabs.com
     lease_hours: 12
   - name: lab_lan
     subnet: 172.16.254.0
     mask: 255.255.255.0
     router: 172.16.254.1
     dns: "172.16.10.53,172.16.10.54"
-    domain: mgmt.devnetlabs.com
+    domain: mgt.devnetlabs.com
     lease_hours: 12

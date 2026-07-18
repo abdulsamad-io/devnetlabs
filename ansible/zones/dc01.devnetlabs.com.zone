@@ -1,17 +1,17 @@
 $ORIGIN dc01.devnetlabs.com.
 $TTL 3600
-@   IN SOA dnldns101.mgmt.devnetlabs.com. hostmaster.devnetlabs.com. (
+@   IN SOA dnldns101.mgt.devnetlabs.com. hostmaster.devnetlabs.com. (
         2026071601  ; serial (bump on every change: YYYYMMDDnn)
         3600        ; refresh
         900         ; retry
         604800      ; expire
         3600 )      ; minimum
-@   IN NS  dnldns101.mgmt.devnetlabs.com.
-@   IN NS  dnldns201.mgmt.devnetlabs.com.
+@   IN NS  dnldns101.mgt.devnetlabs.com.
+@   IN NS  dnldns201.mgt.devnetlabs.com.
 
 ; dc01 PER-NODE-VLAN hosts only (apps/media/nas). Mgmt-VLAN hosts (bastion, DNS,
-; logging, NetBox, Cloudflare…) live in mgmt.devnetlabs.com, not here.
-; (Loki is an apps-VLAN host — it lives here, not in mgmt.)
+; logging, NetBox, Cloudflare…) live in mgt.devnetlabs.com, not here.
+; (Loki is an apps-VLAN host — it lives here, not in mgt.)
 dnllok101   IN A 10.110.10.70      ; Loki log store (lok 1104, apps 1101)
 dnlgrf101   IN A 10.110.10.71      ; Grafana (grf 1105, apps 1101)
 dnlprm101   IN A 10.110.10.72      ; Prometheus + snmp_exporter (prm 1106, apps 1101)
