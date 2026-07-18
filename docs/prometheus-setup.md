@@ -103,7 +103,7 @@ fi
 Prometheus isn't in the Grafana apt repo; use the upstream release (current, and matches
 the native-binary approach). Set `PROM_VER` to the latest from <https://prometheus.io/download>:
 ```bash
-PROM_VER=3.5.0                                   # <-- check prometheus.io/download
+PROM_VER=3.13.1                                  # <-- check prometheus.io/download (current at time of writing)
 cd /tmp
 wget -q https://github.com/prometheus/prometheus/releases/download/v${PROM_VER}/prometheus-${PROM_VER}.linux-amd64.tar.gz
 tar xzf prometheus-${PROM_VER}.linux-amd64.tar.gz
