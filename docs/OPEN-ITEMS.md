@@ -28,6 +28,7 @@ human-readable index; the issues hold the working detail.
 - [ ] **Cloudflare tunnel** — `dnlctl101`, publish `pve.devnetlabs.com` (dc01 first) — [#22]
 - [ ] **NetBox** — stand up `dnlnbx101` (native + full DCIM/IPAM; see [netbox-setup.md](netbox-setup.md)), load VMID/naming/IP data as source of truth — [#23]
 - [ ] **NetBox integration outputs** — decide + build which artifacts the SoT generates (rsyslog `sources.json`, Prometheus SNMP `file_sd`, Technitium DNS, Ansible inventory); depends on [#23] — [#62]
+- [ ] **Alerting / on-call layer** — sketch where Alertmanager (dedup/group/route → ntfy) + Grafana OnCall (schedules/escalation) slot in; completes the Uptime Kuma + ntfy pipeline (Opsgenie ruled out) — [#71]
 - [ ] **rsyslog `sources.json` from NetBox** — generate the IP→category/vendor classification from NetBox (SoT) + `SIGHUP` reload; Ansible-templating deferred; depends on [#23] — [#33]
 - [ ] **Internal-CA TLS** — replace the public Let's Encrypt wildcard with an internal CA (`pki` role) — [#31]
 - [ ] **MikroTik backups** — confirm `my_config_backup_v4`/`v5` were exported — [#24]
@@ -70,3 +71,4 @@ human-readable index; the issues hold the working detail.
 [#33]: https://github.com/abdulsamad-io/devnetlabs/issues/33
 [#38]: https://github.com/abdulsamad-io/devnetlabs/issues/38
 [#62]: https://github.com/abdulsamad-io/devnetlabs/issues/62
+[#71]: https://github.com/abdulsamad-io/devnetlabs/issues/71
