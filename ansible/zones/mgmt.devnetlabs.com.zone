@@ -20,6 +20,6 @@ dnllog201   IN A 172.16.10.72      ; rsyslog collector (dc02)
 syslog      IN A 172.16.10.70      ; rsyslog VIP (keepalived)
 ; --- TBD (fill IPs as built) ---
 ;dnlnms101  IN A 172.16.10.__      ; LibreNMS (dc01)
-;dnlnbx101  IN A 172.16.10.__      ; NetBox (dc01)
+dnlnbx101   IN A 172.16.10.55      ; NetBox — DCIM/IPAM SoT (nbx 1003)
 ;dnlctl101  IN A 172.16.10.__      ; Cloudflare tunnel (dc01)
 ;dnlgry201  IN A 172.16.10.__      ; Graylog (dc02)

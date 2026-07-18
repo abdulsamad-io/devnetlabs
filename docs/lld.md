@@ -104,6 +104,7 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 172.16.10.72 | STAT | `dnllog201` — rsyslog collector (dc02, HA standby) |
 | 172.16.10.53 | STAT | `dnldns101` — Technitium DNS #1 (live) |
 | 172.16.10.54 | RSV | `dnldns201` — Technitium DNS #2 |
+| 172.16.10.55 | RSV | `dnlnbx101` — NetBox (DCIM/IPAM SoT) |
 
 ---
 
@@ -155,7 +156,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 |------|----------|---------|------|------|-----|
 | 1001 | `dnlnms101` | LibreNMS | VM | 1000 | RSV/TBD |
 | 1002 | `dnladm101` | Admin / bastion (jump) | VM | 1000 | 172.16.10.2 (STAT) |
-| 1003 | `dnlnbx101` | NetBox (IPAM source of truth) | VM | 1000 | RSV/TBD |
+| 1003 | `dnlnbx101` | NetBox (DCIM/IPAM source of truth) | VM | 1000 | 172.16.10.55 (RSV) |
 | 1004 | `dnllog101` | rsyslog collector (HA active) | VM | 1000 | 172.16.10.71 (STAT) |
 | 1005 | `dnldns101` | Technitium DNS #1 | VM | 1000 | 172.16.10.53 (STAT) |
 | 1006 | `dnlctl101` | Cloudflare tunnel | VM | 1000 | RSV/TBD |
