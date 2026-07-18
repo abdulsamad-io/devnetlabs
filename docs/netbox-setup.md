@@ -134,12 +134,10 @@ sudo cp -v /opt/netbox/contrib/*.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now netbox netbox-rq
 ```
-> `netbox` = the web app (gunicorn on `127.0.0.1:8001`); `netbox-rq` = the background worker.
-> **gunicorn vs uWSGI:** this runbook uses **gunicorn** (HTTP on `127.0.0.1:8001`) → nginx
-> `proxy_pass http://127.0.0.1:8001`. NetBox also runs under **uWSGI** (`uwsgi --ini
-> uwsgi.ini`), which speaks the **uwsgi binary protocol** on `:8001` → then nginx must use
-> **`uwsgi_pass 127.0.0.1:8001`** instead, and you **can't `curl` `:8001` directly** (HTTP to
-> a uwsgi socket logs `invalid request block size …skip`). Pick one; keep nginx in sync.
+> `netbox` = the web app (**gunicorn**, HTTP on `127.0.0.1:8001`); `netbox-rq` = the
+> background worker. nginx proxies to it with `proxy_pass http://127.0.0.1:8001` (the shipped
+> `contrib/nginx.conf`). Because it's plain HTTP, `curl http://127.0.0.1:8001/` works for a
+> quick app-only check. (gunicorn is NetBox's default and what this runbook uses throughout.)
 > **Check:** `systemctl status netbox netbox-rq`; `curl -s localhost:8001/login/ | head`.
 
 ## Part H — nginx reverse proxy (TLS)
@@ -212,8 +210,8 @@ curl -skI -H 'Host: dnlnbx101.mgt.devnetlabs.com' https://localhost/login/   # -
 curl -sk -H "Authorization: Token <token>" -H 'Host: dnlnbx101.mgt.devnetlabs.com' \
      https://localhost/api/ipam/vlans/ | jq '.count'
 ```
-Expected: `200` on `/login/` and a numeric count from the API. (Don't `curl :8001` directly —
-that's the app port, HTTP for gunicorn / uwsgi-protocol for uWSGI; go through nginx.)
+Expected: `200` on `/login/` and a numeric count from the API. (`:8001` is gunicorn's HTTP
+app port — curl-able for an app-only check, but verify through nginx for TLS + `ALLOWED_HOSTS`.)
 
 **⚠️ Watch out for:**
 - **Record in the wrong DNS zone** — NetBox is mgmt-tier → `mgt.devnetlabs.com`, not `dc01`.
@@ -223,16 +221,15 @@ that's the app port, HTTP for gunicorn / uwsgi-protocol for uWSGI; go through ng
 - **Redis vs valkey** — Ubuntu may ship `valkey`; NetBox needs a Redis-compatible server on `:6379`.
 - **Version drift** — `NETBOX_VER` is a placeholder; use the current stable and re-run `upgrade.sh` on upgrades.
 - **`TIME_ZONE`** — must be an **IANA name** (`Europe/Amsterdam`), not `CEST`/`CET`; an abbreviation makes `upgrade.sh` abort with `ValueError: Incorrect timezone setting`.
-- **Verify through nginx, not the app port** — a `Host: localhost` request 400s (not in `ALLOWED_HOSTS`), and under uWSGI `:8001` speaks the uwsgi protocol, not HTTP. Use a real Host header.
+- **Verify with a real Host header** — a `Host: localhost` request 400s (DisallowedHost) unless `localhost` is in `ALLOWED_HOSTS`; test via the FQDN or `-H 'Host: …'`.
 
 ## Troubleshooting & remediation guide
 
 | Symptom | Likely cause | Diagnose / remediation |
 |---------|--------------|------------------------|
 | Web → HTTP 400 Bad Request | requested Host not in `ALLOWED_HOSTS` (DisallowedHost) — e.g. `Host: localhost` | add the host to `configuration.py`; test via the FQDN / `-H 'Host: …'`; `sudo systemctl restart netbox` |
-| 502 Bad Gateway from nginx | app (`netbox`) down, or nginx upstream mismatch (`proxy_pass` for gunicorn vs `uwsgi_pass` for uWSGI) | `systemctl status netbox`; match the nginx directive to the runtime |
-| nginx `upstream timed out … 127.0.0.1:8001` | app slow/not-ready, or too few workers | `journalctl -u netbox`; raise `processes`/`workers` (uwsgi.ini) or gunicorn workers |
-| uWSGI log `invalid request block size … max 4096 …skip` | HTTP sent to the uwsgi-protocol port (curling `:8001`), or headers exceed the buffer | go through nginx, not `:8001`; for genuinely large headers raise `buffer-size` in `uwsgi.ini` |
+| 502 Bad Gateway from nginx | gunicorn (`netbox`) down / wrong upstream | `systemctl status netbox`; confirm nginx `proxy_pass http://127.0.0.1:8001` and gunicorn is listening (`ss -tlnp | grep 8001`) |
+| nginx `upstream timed out … 127.0.0.1:8001` | app slow/not-ready, or too few workers | `journalctl -u netbox`; raise the `workers` count in `/opt/netbox/gunicorn.py` |
 | `upgrade.sh` → `ValueError: Incorrect timezone setting` | `TIME_ZONE` is an abbreviation (`CEST`), not an IANA name | set `TIME_ZONE = 'Europe/Amsterdam'`; re-run `upgrade.sh` |
 | `upgrade.sh` fails on migrate | DB creds / PostgreSQL down | verify `DATABASE` in `configuration.py`; `psql -U netbox -h localhost -W netbox` |
 | Login OK but changes error | `netbox-rq` / Redis down | `systemctl status netbox-rq redis-server`; `redis-cli ping` |
