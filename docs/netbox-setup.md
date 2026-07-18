@@ -136,8 +136,9 @@ sudo systemctl enable --now netbox netbox-rq
 ```
 > `netbox` = the web app (**gunicorn**, HTTP on `127.0.0.1:8001`); `netbox-rq` = the
 > background worker. nginx proxies to it with `proxy_pass http://127.0.0.1:8001` (the shipped
-> `contrib/nginx.conf`). Because it's plain HTTP, `curl http://127.0.0.1:8001/` works for a
-> quick app-only check. (gunicorn is NetBox's default and what this runbook uses throughout.)
+> `contrib/nginx.conf`). It's plain HTTP, so you can curl it directly for an app-only check —
+> but pass a **Host in `ALLOWED_HOSTS`** (`-H 'Host: dnlnbx101.mgt.devnetlabs.com'`), else
+> Django 400s the default `Host: 127.0.0.1`. (gunicorn is NetBox's default and used throughout.)
 > **Check:** `systemctl status netbox netbox-rq`; `curl -s localhost:8001/login/ | head`.
 
 ## Part H — nginx reverse proxy (TLS)
