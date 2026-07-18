@@ -87,9 +87,9 @@ action(type="omhttp" server="dnllok101.dc01.devnetlabs.com" ... queue.type="link
 
 - Reserve **`172.16.10.70`** (syslog VIP) outside the DHCP pool.
 - rsyslog = `log` (two instances, HA pair); Loki = `lok`; Graylog = `gry` — see
-  [naming-convention.md](naming-convention.md) and [vmid-plan.md](vmid-plan.md).
+  [naming-convention.md](../conventions/naming-convention.md) and [vmid-plan.md](../conventions/vmid-plan.md).
 
 ---
 
-See also: [network-vlan-design.md](network-vlan-design.md) · [lld.md](lld.md) ·
-[OPEN-ITEMS.md](OPEN-ITEMS.md)
+See also: [network-vlan-design.md](../network/network-vlan-design.md) · [lld.md](../lld.md) ·
+[OPEN-ITEMS.md](../OPEN-ITEMS.md)

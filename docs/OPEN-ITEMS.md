@@ -36,11 +36,11 @@ human-readable index; the issues hold the working detail.
 ## Recently resolved
 
 - ✅ **Graylog placement** — Loki (dc01) + Graylog (dc02, on-demand), fed by an rsyslog HA
-  pair — see [logging-design.md](logging-design.md).
+  pair — see [logging-design.md](logging/logging-design.md).
 - ✅ **VLAN 1000 DHCP had no DNS** — resolved by the DNS cutover to Technitium
   (`172.16.10.53` / `.54`).
 - ✅ **DHCP migration** — VLAN 1000 (direct) + `1101/1102/1103/1201/1301` (relay) moved to
-  Technitium; MikroTik servers disabled as break-glass — see [dhcp-migration.md](dhcp-migration.md).
+  Technitium; MikroTik servers disabled as break-glass — see [dhcp-migration.md](network/dhcp-migration.md).
 - ✅ **dnldns101 IP** — corrected to `172.16.10.53` (was documented `.55`).
 
 ## dc01 hardware — current state

@@ -82,7 +82,7 @@ sudo netplan apply
 
 ## Part C — Base config
 
-**User + key-only SSH** (mirror the bastion — see [bastion-setup.md](bastion-setup.md)):
+**User + key-only SSH** (mirror the bastion — see [bastion-setup.md](../bastion-setup.md)):
 create your user, install your public key, then the `10-hardening.conf` sshd drop-in
 (`PasswordAuthentication no`, `PermitRootLogin no`, `AllowGroups sshusers`).
 
@@ -192,4 +192,4 @@ ip -br a; timedatectl                         # .71/.72 on ens18; CEST; NTP sync
 ---
 
 See also: [rsyslog-setup.md](rsyslog-setup.md) · [keepalived-setup.md](keepalived-setup.md) ·
-[logging-design.md](logging-design.md) · [lld.md](lld.md)
+[logging-design.md](logging-design.md) · [lld.md](../lld.md)

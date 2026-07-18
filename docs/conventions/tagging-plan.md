@@ -118,4 +118,4 @@ qm set 1002 --tags "dc01;zone-mgt;tier-mgmt;av-always-on;bkp-pbs"
 ---
 
 See also: [naming-convention.md](naming-convention.md) · [vmid-plan.md](vmid-plan.md) ·
-[lld.md](lld.md)
+[lld.md](../lld.md)

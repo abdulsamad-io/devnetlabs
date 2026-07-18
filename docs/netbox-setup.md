@@ -4,7 +4,7 @@ Stand up **NetBox** as the lab **source of truth** (full DCIM + IPAM). Native in
 (PostgreSQL + Redis + gunicorn + nginx via systemd), matching the fleet's native pattern.
 Later it **generates** the configs currently hand-maintained (rsyslog `sources.json`,
 Prometheus `snmp_devices.json`, DNS, Ansible inventory — deferred, see **#62**). Context:
-[lld.md](lld.md) · [naming-convention.md](naming-convention.md) · [vmid-plan.md](vmid-plan.md).
+[lld.md](lld.md) · [naming-convention.md](conventions/naming-convention.md) · [vmid-plan.md](conventions/vmid-plan.md).
 
 ## Facts
 
@@ -240,5 +240,5 @@ app port — curl-able for an app-only check, but verify through nginx for TLS +
 
 ---
 
-See also: [lld.md](lld.md) · [naming-convention.md](naming-convention.md) ·
-[vmid-plan.md](vmid-plan.md) · [OPEN-ITEMS.md](OPEN-ITEMS.md)
+See also: [lld.md](lld.md) · [naming-convention.md](conventions/naming-convention.md) ·
+[vmid-plan.md](conventions/vmid-plan.md) · [OPEN-ITEMS.md](OPEN-ITEMS.md)

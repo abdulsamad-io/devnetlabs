@@ -163,4 +163,4 @@ Run the tests in **Step 5**; the pair is healthy when:
 ---
 
 See also: [logging-design.md](logging-design.md) · [rsyslog-setup.md](rsyslog-setup.md) ·
-[lld.md](lld.md)
+[lld.md](../lld.md)

@@ -1,8 +1,8 @@
 # Ansible — Technitium DNS + DHCP
 
 Manage **both** Technitium servers (`dnldns101` primary, `dnldns201` secondary) from a
-single source of truth. See [../docs/naming-convention.md](../docs/naming-convention.md)
-(DNS/split-horizon) and [../docs/dhcp-migration.md](../docs/dhcp-migration.md).
+single source of truth. See [../docs/conventions/naming-convention.md](../docs/conventions/naming-convention.md)
+(DNS/split-horizon) and [../docs/network/dhcp-migration.md](../docs/network/dhcp-migration.md).
 
 > **Status: scaffold.** The structure and patterns are ready; the Technitium API
 > endpoint/parameter names should be **validated against your running version** (browse

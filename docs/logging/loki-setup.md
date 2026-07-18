@@ -236,4 +236,4 @@ Expected: `/ready` → `ready`, labels include `category`/`vendor`, the test lin
 ---
 
 See also: [logging-design.md](logging-design.md) · [rsyslog-setup.md](rsyslog-setup.md) ·
-[log-collector-setup.md](log-collector-setup.md) · [lld.md](lld.md)
+[log-collector-setup.md](log-collector-setup.md) · [lld.md](../lld.md)
