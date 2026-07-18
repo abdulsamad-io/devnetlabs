@@ -140,7 +140,7 @@ WantedBy=multi-user.target
 
 Set `SNMP_VER` from <https://github.com/prometheus/snmp_exporter/releases>:
 ```bash
-SNMP_VER=0.29.0                                  # <-- check the releases page
+SNMP_VER=0.30.1                                  # <-- check the releases page (current at time of writing)
 cd /tmp
 wget -q https://github.com/prometheus/snmp_exporter/releases/download/v${SNMP_VER}/snmp_exporter-${SNMP_VER}.linux-amd64.tar.gz
 tar xzf snmp_exporter-${SNMP_VER}.linux-amd64.tar.gz
