@@ -14,7 +14,7 @@ Context: [prometheus-setup.md](prometheus-setup.md) · [ntfy-setup.md](ntfy-setu
 | Role | Uptime Kuma — availability monitor (`ukm`) |
 | VMID | **1107** (VM, dc01) |
 | OS | Ubuntu Server 26.04 LTS |
-| VLAN / IP | **dc01_apps (1101)** — **`10.110.10.73/24`**, gw `10.110.10.1` |
+| VLAN / IP | **dc01_apps (1101)** — **`10.110.10.53/24`**, gw `10.110.10.1` |
 | FQDN | `dnlukm101.dc01.devnetlabs.com` (apps-VLAN → **dc01** zone) |
 | vCPU / RAM | 2 × `x86-64-v2-AES` / 2 GB |
 | Disk | 16 GB OS (`local-lvm`) — SQLite state in a Docker volume |
@@ -50,7 +50,7 @@ network:
   version: 2
   ethernets:
     ens18:
-      addresses: [10.110.10.73/24]
+      addresses: [10.110.10.53/24]
       routes: [{ to: default, via: 10.110.10.1 }]
       nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [dc01.devnetlabs.com] }
 ```
@@ -59,7 +59,7 @@ sudo hostnamectl set-hostname dnlukm101
 sudo netplan apply
 sudo timedatectl set-timezone Europe/Amsterdam
 ```
-> **Check:** `ip -br a` shows `.73`; `getent hosts dnlnfy101.dc01.devnetlabs.com` resolves.
+> **Check:** `ip -br a` shows `.53`; `getent hosts dnlnfy101.dc01.devnetlabs.com` resolves.
 
 ## Part C — Base config + firewall
 
@@ -104,7 +104,7 @@ docker run -d --name uptime-kuma --restart unless-stopped \
 
 ## Part F — First-run setup
 
-1. Browse `http://10.110.10.73:3001/` (or the FQDN once the DNS record is in), create the admin.
+1. Browse `http://10.110.10.53:3001/` (or the FQDN once the DNS record is in), create the admin.
 2. **Add monitors** — the fleet's services + devices, e.g.:
    - HTTP: `https://dnlgrf101.dc01.devnetlabs.com`, `https://dnlnbx101.mgt.devnetlabs.com`, PVE `:8006`
    - TCP: Loki `10.110.10.70:3100`, Prometheus `10.110.10.72:9090`
@@ -116,7 +116,7 @@ docker run -d --name uptime-kuma --restart unless-stopped \
 
 ## Part G — DNS record
 
-Add the A record `dnlukm101 → 10.110.10.73` in the **`dc01.devnetlabs.com`** zone (Technitium).
+Add the A record `dnlukm101 → 10.110.10.53` in the **`dc01.devnetlabs.com`** zone (Technitium).
 
 ---
 
@@ -124,7 +124,7 @@ Add the A record `dnlukm101 → 10.110.10.73` in the **`dc01.devnetlabs.com`** z
 
 **✅ Success criteria — Uptime Kuma is serving when:**
 - [ ] `docker ps` shows `uptime-kuma` `Up`, restart policy `unless-stopped`.
-- [ ] The UI loads at `http://10.110.10.73:3001/` and the admin is created.
+- [ ] The UI loads at `http://10.110.10.53:3001/` and the admin is created.
 - [ ] At least one monitor is **green (Up)**, and one deliberately-bad monitor goes **Down**.
 - [ ] An **ntfy** notification fires on a state change (test with a paused/resumed monitor).
 - [ ] State survives a container recreate (volume `uptime-kuma` persists).
