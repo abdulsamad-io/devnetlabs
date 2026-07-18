@@ -109,7 +109,7 @@ python3 -c 'import secrets; print(secrets.token_urlsafe(64))'   # -> SECRET_KEY
 ```
 Edit `configuration.py`:
 ```python
-ALLOWED_HOSTS = ['dnlnbx101.mgt.devnetlabs.com', '172.16.10.50']
+ALLOWED_HOSTS = ['dnlnbx101.mgt.devnetlabs.com', '172.16.10.50']   # add 'localhost'/'127.0.0.1' for local curl tests
 DATABASE = {'NAME': 'netbox', 'USER': 'netbox', 'PASSWORD': '<db-password>',
             'HOST': 'localhost', 'PORT': '', 'CONN_MAX_AGE': 300}
 REDIS = {
@@ -117,6 +117,8 @@ REDIS = {
   'caching': {'HOST': 'localhost', 'PORT': 6379, 'DATABASE': 1, 'SSL': False},
 }
 SECRET_KEY = '<generated-above>'
+TIME_ZONE = 'Europe/Amsterdam'        # IANA tz name — NOT 'CEST'/'CET' (an abbreviation aborts upgrade.sh)
+# API_TOKEN_PEPPERS = ['<secret>']    # optional: enables hashed "v2" API tokens; classic tokens work without it
 ```
 Run the installer (creates the venv, migrates, collects static, prompts for a superuser):
 ```bash
@@ -133,6 +135,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now netbox netbox-rq
 ```
 > `netbox` = the web app (gunicorn on `127.0.0.1:8001`); `netbox-rq` = the background worker.
+> **gunicorn vs uWSGI:** this runbook uses **gunicorn** (HTTP on `127.0.0.1:8001`) → nginx
+> `proxy_pass http://127.0.0.1:8001`. NetBox also runs under **uWSGI** (`uwsgi --ini
+> uwsgi.ini`), which speaks the **uwsgi binary protocol** on `:8001` → then nginx must use
+> **`uwsgi_pass 127.0.0.1:8001`** instead, and you **can't `curl` `:8001` directly** (HTTP to
+> a uwsgi socket logs `invalid request block size …skip`). Pick one; keep nginx in sync.
 > **Check:** `systemctl status netbox netbox-rq`; `curl -s localhost:8001/login/ | head`.
 
 ## Part H — nginx reverse proxy (TLS)
@@ -198,11 +205,15 @@ Model the lab so the automation outputs (#62) can be generated from it. Build in
 **🧪 End-to-end test:**
 ```bash
 systemctl is-active netbox netbox-rq nginx postgresql redis-server     # all "active"
-curl -sk https://localhost/login/ | grep -i netbox                     # login page served
 getent hosts dnlnbx101.mgt.devnetlabs.com                             # -> 172.16.10.50
+# Test THROUGH nginx with an ALLOWED_HOSTS value as the Host — 'localhost' 400s (DisallowedHost):
+curl -skI -H 'Host: dnlnbx101.mgt.devnetlabs.com' https://localhost/login/   # -> HTTP/1.1 200
 # API smoke (create a token in the UI: Admin -> API Tokens):
-curl -sk -H "Authorization: Token <token>" https://localhost/api/ipam/vlans/ | jq '.count'
+curl -sk -H "Authorization: Token <token>" -H 'Host: dnlnbx101.mgt.devnetlabs.com' \
+     https://localhost/api/ipam/vlans/ | jq '.count'
 ```
+Expected: `200` on `/login/` and a numeric count from the API. (Don't `curl :8001` directly —
+that's the app port, HTTP for gunicorn / uwsgi-protocol for uWSGI; go through nginx.)
 
 **⚠️ Watch out for:**
 - **Record in the wrong DNS zone** — NetBox is mgmt-tier → `mgt.devnetlabs.com`, not `dc01`.
@@ -211,13 +222,18 @@ curl -sk -H "Authorization: Token <token>" https://localhost/api/ipam/vlans/ | j
 - **`netbox-rq` not running** — background jobs (webhooks, reports, later the generators) silently don't fire.
 - **Redis vs valkey** — Ubuntu may ship `valkey`; NetBox needs a Redis-compatible server on `:6379`.
 - **Version drift** — `NETBOX_VER` is a placeholder; use the current stable and re-run `upgrade.sh` on upgrades.
+- **`TIME_ZONE`** — must be an **IANA name** (`Europe/Amsterdam`), not `CEST`/`CET`; an abbreviation makes `upgrade.sh` abort with `ValueError: Incorrect timezone setting`.
+- **Verify through nginx, not the app port** — a `Host: localhost` request 400s (not in `ALLOWED_HOSTS`), and under uWSGI `:8001` speaks the uwsgi protocol, not HTTP. Use a real Host header.
 
 ## Troubleshooting & remediation guide
 
 | Symptom | Likely cause | Diagnose / remediation |
 |---------|--------------|------------------------|
-| Web → HTTP 400 Bad Request | FQDN/IP not in `ALLOWED_HOSTS` | add it to `configuration.py`; `sudo systemctl restart netbox` |
-| 502 Bad Gateway from nginx | gunicorn (`netbox`) down / wrong upstream port | `systemctl status netbox`; confirm proxy_pass `127.0.0.1:8001` |
+| Web → HTTP 400 Bad Request | requested Host not in `ALLOWED_HOSTS` (DisallowedHost) — e.g. `Host: localhost` | add the host to `configuration.py`; test via the FQDN / `-H 'Host: …'`; `sudo systemctl restart netbox` |
+| 502 Bad Gateway from nginx | app (`netbox`) down, or nginx upstream mismatch (`proxy_pass` for gunicorn vs `uwsgi_pass` for uWSGI) | `systemctl status netbox`; match the nginx directive to the runtime |
+| nginx `upstream timed out … 127.0.0.1:8001` | app slow/not-ready, or too few workers | `journalctl -u netbox`; raise `processes`/`workers` (uwsgi.ini) or gunicorn workers |
+| uWSGI log `invalid request block size … max 4096 …skip` | HTTP sent to the uwsgi-protocol port (curling `:8001`), or headers exceed the buffer | go through nginx, not `:8001`; for genuinely large headers raise `buffer-size` in `uwsgi.ini` |
+| `upgrade.sh` → `ValueError: Incorrect timezone setting` | `TIME_ZONE` is an abbreviation (`CEST`), not an IANA name | set `TIME_ZONE = 'Europe/Amsterdam'`; re-run `upgrade.sh` |
 | `upgrade.sh` fails on migrate | DB creds / PostgreSQL down | verify `DATABASE` in `configuration.py`; `psql -U netbox -h localhost -W netbox` |
 | Login OK but changes error | `netbox-rq` / Redis down | `systemctl status netbox-rq redis-server`; `redis-cli ping` |
 | Static assets 404 / unstyled UI | `collectstatic` not run | re-run `sudo /opt/netbox/upgrade.sh` |
