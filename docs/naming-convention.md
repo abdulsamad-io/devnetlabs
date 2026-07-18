@@ -123,6 +123,8 @@ split-horizon (split-brain) DNS:
 - Set Proxmox VM `Name` = guest `/etc/hostname` = DNS A record (avoid 3-way drift).
 - Regenerate `machine-id` and SSH host keys on template clones.
 - Give infra guests **DHCP reservations** so their A records stay valid.
+- **Tag** each guest per [tagging-plan.md](tagging-plan.md) — function/location/placement/
+  availability/backup — so the PVE UI can filter/group beyond the hostname.
 
 ---
 
