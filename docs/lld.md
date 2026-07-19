@@ -105,7 +105,6 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 172.16.10.53 | STAT | `dnldns101` — Technitium DNS #1 (live) |
 | 172.16.10.54 | RSV | `dnldns201` — Technitium DNS #2 |
 | 172.16.10.50 | RSV | `dnlnbx101` — NetBox (DCIM/IPAM SoT) |
-| 172.16.10.60 | RSV | `dnlpnt201` — PNETLab mgmt NIC (UI/SSH; lab on dc02_apps) |
 
 ---
 
@@ -119,7 +118,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnllbr101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog, HA active), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel) |
-| dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72), `dnlukm101` (Uptime Kuma, .53), `dnlnfy101` (ntfy, .74) |
+| dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72), `dnlukm101` (Uptime Kuma, .53), `dnlnfy101` (ntfy, .74), `dnlpnt101` (PNETLab, .60 — small/med, always-on) |
 | dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
 
@@ -128,7 +127,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnldns201` (Technitium DNS #2), `dnllog201` (rsyslog, HA standby), `dnlgry201` (Graylog, on-demand) |
-| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLAB — mgmt NIC also on 1000), `dnleve201` (EVE-NG), `dnlgrf201` (Grafana, .71), `dnlprm201` (Prometheus + snmp_exporter, .72) |
+| dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLab, .60 — medium/large, on-demand), `dnleve201` (EVE-NG), `dnlgrf201` (Grafana, .71), `dnlprm201` (Prometheus + snmp_exporter, .72) |
 
 > **Observability is a per-DC stack** — `grf`/`prm` run on **both** dc01 and dc02, each in
 > its own apps VLAN. **Both Prometheus servers scrape the full fleet across both DCs**
@@ -166,6 +165,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | 1101 | 10.110.10.72 (STAT) |
 | 1107 | `dnlukm101` | Uptime Kuma (availability) | VM | 1101 | 10.110.10.53 (STAT) |
 | 1108 | `dnlnfy101` | ntfy (notifications) | VM | 1101 | 10.110.10.74 (STAT) |
+| 1109 | `dnlpnt101` | PNETLab (small/med labs, always-on) | VM | 1101 | 10.110.10.60 (RSV) |
 | 1201 | `dnlplx101` | Plex / media | VM | 1102 | RSV/TBD |
 | 1301 | `dnlnas101` | TrueNAS | VM | 1103 | RSV/TBD |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | 1103 | RSV/TBD |
@@ -178,7 +178,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 2001 | `dnldns201` | Technitium DNS #2 | VM | 1000 | 172.16.10.54 (RSV) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | 1000 | RSV/TBD |
 | 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | 1000 | 172.16.10.72 (STAT) |
-| 2101 | `dnlpnt201` | PNETLAB (network emulation) | VM | 1201 (+1000 mgmt) | 172.16.10.60 (RSV, mgmt) |
+| 2101 | `dnlpnt201` | PNETLab (medium/large labs, on-demand) | VM | 1201 | 10.120.10.60 (RSV) |
 | 2102 | `dnleve201` | EVE-NG | VM | 1201 | RSV/TBD |
 | 2105 | `dnlgrf201` | Grafana | VM | 1201 | 10.120.10.71 (STAT) |
 | 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | 1201 | 10.120.10.72 (STAT) |

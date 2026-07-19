@@ -8,9 +8,11 @@ human-readable index; the issues hold the working detail.
 | # | Decision | Issue |
 |---|----------|-------|
 | 1 | **M.2 2242 role on dc01** — local PBS (`dnlpbs101`) vs vzdump + TrueNAS ZFS replication target | [#18] |
-| 2 | **PNETLab placement** — dc02 (`dnlpnt201`) vs a light on-demand dc01 (`dnlpnt101`) | [#19] |
 
 > **Resolved:**
+> - **PNETLab placement** — **both**: `dnlpnt101` on dc01 (dc01_apps `10.110.10.60`,
+>   always-on, small/med labs) + `dnlpnt201` on dc02 (dc02_apps `10.120.10.60`, on-demand,
+>   medium/large labs). Both apps-only (no mgmt NIC) — see [pnetlab-setup.md](pnetlab-setup.md) — #19.
 > - dc01/dc02 PVE mgmt IPs — **dc01 = `172.16.10.9`, dc02 = `172.16.10.10`** (node `.10`
 >   still named `abdulsamad`, rename pending). Confirmed via `:8006` — #17.
 > - Shared mgmt-VLAN DNS zone — **`mgt.devnetlabs.com`** (node-neutral) for VLAN 1000;

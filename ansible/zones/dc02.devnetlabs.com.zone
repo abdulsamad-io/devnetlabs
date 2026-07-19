@@ -10,6 +10,6 @@ $TTL 3600
 ; live in mgt.devnetlabs.com, not here.
 dnlgrf201   IN A 10.120.10.71      ; Grafana (grf 2105, apps 1201)
 dnlprm201   IN A 10.120.10.72      ; Prometheus + snmp_exporter (prm 2106, apps 1201)
+dnlpnt201   IN A 10.120.10.60      ; PNETLab — medium/large labs, on-demand (pnt 2101, apps 1201)
 ; --- TBD (fill IPs as built) ---
-;dnlpnt201  IN A 10.120.10.__      ; PNETLAB (apps 1201)
 ;dnleve201  IN A 10.120.10.__      ; EVE-NG (apps 1201)

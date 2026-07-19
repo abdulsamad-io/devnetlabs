@@ -21,7 +21,7 @@ Grouped to match the `docs/` folder layout.
 | [NetBox setup](docs/netbox-setup.md) | NetBox DCIM/IPAM source of truth — native install + data model |
 | [Cloudflare tunnel](docs/cloudflare-tunnel.md) | Zero Trust tunnel publishing PVE UIs |
 | [Cross-DC migration](docs/cross-dc-migration.md) | Moving a VM between nodes (VMID + hostname + DNS) |
-| [PNETLab setup](docs/pnetlab-setup.md) | Network-emulation platform (dc02, nested-virt, 20 GB RAM, 300 GB image store) |
+| [PNETLab setup](docs/pnetlab-setup.md) | Network-emulation — `dnlpnt101` (dc01, always-on, small/med) + `dnlpnt201` (dc02, on-demand, large); nested-virt, separate 300 GB data volume |
 
 ### Conventions (`docs/conventions/`)
 | Doc | Purpose |
