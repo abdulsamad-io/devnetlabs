@@ -14,7 +14,7 @@ Context: [prometheus-setup.md](prometheus-setup.md) · [ntfy-setup.md](ntfy-setu
 | Role | Uptime Kuma — availability monitor (`ukm`) |
 | VMID | **1107** (VM, dc01) |
 | OS | Ubuntu Server 26.04 LTS |
-| VLAN / IP | **dc01_apps (1101)** — **`10.110.10.73/24`**, gw `10.110.10.1` |
+| VLAN / IP | **dc01_apps (1101)** — **`10.110.10.53/24`**, gw `10.110.10.1` |
 | FQDN | `dnlukm101.dc01.devnetlabs.com` (apps-VLAN → **dc01** zone) |
 | vCPU / RAM | 2 × `x86-64-v2-AES` / 2 GB |
 | Disk | 16 GB OS (`local-lvm`) — SQLite state in a Docker volume |
@@ -50,7 +50,7 @@ network:
   version: 2
   ethernets:
     ens18:
-      addresses: [10.110.10.73/24]
+      addresses: [10.110.10.53/24]
       routes: [{ to: default, via: 10.110.10.1 }]
       nameservers: { addresses: [172.16.10.53, 172.16.10.54], search: [dc01.devnetlabs.com] }
 ```
@@ -59,7 +59,7 @@ sudo hostnamectl set-hostname dnlukm101
 sudo netplan apply
 sudo timedatectl set-timezone Europe/Amsterdam
 ```
-> **Check:** `ip -br a` shows `.73`; `getent hosts dnlnfy101.dc01.devnetlabs.com` resolves.
+> **Check:** `ip -br a` shows `.53`; `getent hosts dnlnfy101.dc01.devnetlabs.com` resolves.
 
 ## Part C — Base config + firewall
 
@@ -98,11 +98,13 @@ docker run -d --name uptime-kuma --restart unless-stopped \
 - `--restart unless-stopped` + `systemctl enable docker` → survives reboots (no systemd unit needed).
 - Named volume `uptime-kuma` holds the SQLite DB + config (persists across container upgrades).
 - Upgrade later: `docker pull louislam/uptime-kuma:1 && docker rm -f uptime-kuma && <re-run>`.
-> **Check:** `docker ps` shows it `Up`; `curl -sI http://localhost:3001/ | head -1` → `HTTP/1.1 200`.
+> **Check:** `docker ps` shows it `Up`; `curl -sI http://localhost:3001/ | head -1` →
+> `HTTP/1.1 302 Found` — normal: Kuma redirects `/` → `/setup` (first run) or `/dashboard`.
+> Add `-L` to follow through to `200`.
 
 ## Part F — First-run setup
 
-1. Browse `http://10.110.10.73:3001/` (or the FQDN once the DNS record is in), create the admin.
+1. Browse `http://10.110.10.53:3001/` (or the FQDN once the DNS record is in), create the admin.
 2. **Add monitors** — the fleet's services + devices, e.g.:
    - HTTP: `https://dnlgrf101.dc01.devnetlabs.com`, `https://dnlnbx101.mgt.devnetlabs.com`, PVE `:8006`
    - TCP: Loki `10.110.10.70:3100`, Prometheus `10.110.10.72:9090`
@@ -114,7 +116,7 @@ docker run -d --name uptime-kuma --restart unless-stopped \
 
 ## Part G — DNS record
 
-Add the A record `dnlukm101 → 10.110.10.73` in the **`dc01.devnetlabs.com`** zone (Technitium).
+Add the A record `dnlukm101 → 10.110.10.53` in the **`dc01.devnetlabs.com`** zone (Technitium).
 
 ---
 
@@ -122,7 +124,7 @@ Add the A record `dnlukm101 → 10.110.10.73` in the **`dc01.devnetlabs.com`** z
 
 **✅ Success criteria — Uptime Kuma is serving when:**
 - [ ] `docker ps` shows `uptime-kuma` `Up`, restart policy `unless-stopped`.
-- [ ] The UI loads at `http://10.110.10.73:3001/` and the admin is created.
+- [ ] The UI loads at `http://10.110.10.53:3001/` and the admin is created.
 - [ ] At least one monitor is **green (Up)**, and one deliberately-bad monitor goes **Down**.
 - [ ] An **ntfy** notification fires on a state change (test with a paused/resumed monitor).
 - [ ] State survives a container recreate (volume `uptime-kuma` persists).
@@ -130,7 +132,8 @@ Add the A record `dnlukm101 → 10.110.10.73` in the **`dc01.devnetlabs.com`** z
 **🧪 End-to-end test:**
 ```bash
 docker ps --filter name=uptime-kuma
-curl -sI http://localhost:3001/ | head -1                 # HTTP/1.1 200
+curl -sI  http://localhost:3001/ | head -1                # HTTP/1.1 302 Found (redirect to /setup)
+curl -sIL http://localhost:3001/ | grep -E '^HTTP' | tail -1   # follows -> HTTP/1.1 200
 # add a monitor to a known-up host -> green; add one to 10.0.0.254 -> Down + ntfy push
 docker volume inspect uptime-kuma >/dev/null && echo "volume OK"
 ```
@@ -147,6 +150,7 @@ docker volume inspect uptime-kuma >/dev/null && echo "volume OK"
 | Symptom | Likely cause | Diagnose / remediation |
 |---------|--------------|------------------------|
 | UI won't load | container down / ufw / wrong port | `docker ps -a`; `docker logs uptime-kuma`; `sudo ufw status`; port is `3001` |
+| `curl /` returns **302**, not 200 | normal — Kuma's SPA redirects `/` → `/setup` (first run) / `/dashboard` | not an error; `curl -sIL` to follow to `200`, or just open the UI |
 | Container gone after reboot | Docker not enabled / no restart policy | `sudo systemctl enable --now docker`; re-run with `--restart unless-stopped` |
 | Monitors all Down | egress blocked or DNS broken on the VM | `curl`/`ping` the target from the VM; check `resolvectl status` |
 | ntfy notifications don't fire | wrong ntfy URL/topic or ntfy unreachable | test `curl -d test http://dnlnfy101.dc01.devnetlabs.com/lab-alerts`; re-check the notification config |

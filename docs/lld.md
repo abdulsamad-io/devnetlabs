@@ -118,7 +118,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | VNet (VLAN) | Subnet | Guests |
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnladm101` (bastion), `dnllbr101` (LibreNMS), `dnlnbx101` (NetBox), `dnllog101` (rsyslog, HA active), `dnldns101` (Technitium DNS #1), `dnlctl101` (Cloudflare tunnel) |
-| dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72), `dnlukm101` (Uptime Kuma, .73), `dnlnfy101` (ntfy, .74) |
+| dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72), `dnlukm101` (Uptime Kuma, .53), `dnlnfy101` (ntfy, .74) |
 | dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
 
@@ -163,7 +163,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1104 | `dnllok101` | Loki (log store) | VM | 1101 | 10.110.10.70 (STAT) |
 | 1105 | `dnlgrf101` | Grafana | VM | 1101 | 10.110.10.71 (STAT) |
 | 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | 1101 | 10.110.10.72 (STAT) |
-| 1107 | `dnlukm101` | Uptime Kuma (availability) | VM | 1101 | 10.110.10.73 (STAT) |
+| 1107 | `dnlukm101` | Uptime Kuma (availability) | VM | 1101 | 10.110.10.53 (STAT) |
 | 1108 | `dnlnfy101` | ntfy (notifications) | VM | 1101 | 10.110.10.74 (STAT) |
 | 1201 | `dnlplx101` | Plex / media | VM | 1102 | RSV/TBD |
 | 1301 | `dnlnas101` | TrueNAS | VM | 1103 | RSV/TBD |
