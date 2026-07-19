@@ -67,7 +67,7 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | 2001 | `dnldns201` | `dc02;zone-mgt;tier-dns;av-on-demand;bkp-pbs;ha-secondary` |
 | 2003 | `dnlgry201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs;ha-none` |
 | 2004 | `dnllog201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs;ha-standby` |
-| 2101 | `dnlpnt201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-pbs;ha-none` |
+| 2101 | `dnlpnt201` | `dc02;zone-apps;zone-mgt;tier-virt;av-on-demand;bkp-pbs;ha-none` |
 | 2102 | `dnleve201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-pbs;ha-none` |
 | 2105 | `dnlgrf201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs;ha-none` |
 | 2106 | `dnlprm201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs;ha-none` |

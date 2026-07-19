@@ -105,6 +105,7 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 172.16.10.53 | STAT | `dnldns101` — Technitium DNS #1 (live) |
 | 172.16.10.54 | RSV | `dnldns201` — Technitium DNS #2 |
 | 172.16.10.50 | RSV | `dnlnbx101` — NetBox (DCIM/IPAM SoT) |
+| 172.16.10.60 | RSV | `dnlpnt201` — PNETLab mgmt NIC (UI/SSH; lab on dc02_apps) |
 
 ---
 
@@ -177,7 +178,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 2001 | `dnldns201` | Technitium DNS #2 | VM | 1000 | 172.16.10.54 (RSV) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | 1000 | RSV/TBD |
 | 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | 1000 | 172.16.10.72 (STAT) |
-| 2101 | `dnlpnt201` | PNETLAB | VM | 1201 (+1000 mgmt) | RSV/TBD |
+| 2101 | `dnlpnt201` | PNETLAB (network emulation) | VM | 1201 (+1000 mgmt) | 172.16.10.60 (RSV, mgmt) |
 | 2102 | `dnleve201` | EVE-NG | VM | 1201 | RSV/TBD |
 | 2105 | `dnlgrf201` | Grafana | VM | 1201 | 10.120.10.71 (STAT) |
 | 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | 1201 | 10.120.10.72 (STAT) |

@@ -21,5 +21,6 @@ syslog      IN A 172.16.10.70      ; rsyslog VIP (keepalived)
 ; --- TBD (fill IPs as built) ---
 ;dnllbr101  IN A 172.16.10.__      ; LibreNMS (dc01)
 dnlnbx101   IN A 172.16.10.50      ; NetBox — DCIM/IPAM SoT (nbx 1003)
+dnlpnt201   IN A 172.16.10.60      ; PNETLab mgmt NIC — UI/SSH (pnt 2101, lab on dc02_apps)
 ;dnlctl101  IN A 172.16.10.__      ; Cloudflare tunnel (dc01)
 ;dnlgry201  IN A 172.16.10.__      ; Graylog (dc02)
