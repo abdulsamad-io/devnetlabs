@@ -55,6 +55,7 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | 1106 | `dnlprm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
 | 1107 | `dnlukm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
 | 1108 | `dnlnfy101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
+| 1109 | `dnlpnt101` | `dc01;zone-apps;tier-virt;av-always-on;bkp-pbs;ha-none` |
 | 1201 | `dnlplx101` | `dc01;zone-media;tier-media;av-always-on;bkp-pbs;ha-none` |
 | 1301 | `dnlnas101` | `dc01;zone-nas;tier-storage;av-always-on;bkp-repl;ha-none` |
 | 1302 | `dnlpbs101` | `dc01;zone-nas;tier-backup;av-always-on;bkp-none;ha-none` |
@@ -78,11 +79,10 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 |------|----------|------|
 | 3401 | `dnlpbs301` | `dc03;zone-pbs;tier-backup;av-dr;bkp-none;ha-none` |
 
-> **Notes:** `dnlpnt201` is dual-homed (apps NIC + a mgmt NIC on 1000) — add `zone-mgt` too
-> if you want that reflected. `bkp-none` on the PBS/lab-emulator guests is deliberate: PBS
-> servers back up *others* (protect their datastore separately), and PNETLAB/EVE-NG rebuild
-> from templates. TrueNAS's data is on a passthrough disk → `bkp-repl` (ZFS replication),
-> not vzdump.
+> **Notes:** the PNETLab pair (`dnlpnt101` on dc01, `dnlpnt201` on dc02) is apps-only —
+> each lives on its node's `dcNN_apps` VLAN (no mgmt NIC on 1000). `bkp-none` on the PBS
+> guests is deliberate: PBS servers back up *others* (protect their datastore separately).
+> TrueNAS's data is on a passthrough disk → `bkp-repl` (ZFS replication), not vzdump.
 
 ## Register the tags + colors (datacenter)
 
