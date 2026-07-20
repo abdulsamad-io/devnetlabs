@@ -1,0 +1,11 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ baseline_hostname }}"
+
+- name: Ensure hostname resolves locally (/etc/hosts)
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ baseline_hostname }}"
+    state: present

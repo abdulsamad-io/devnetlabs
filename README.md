@@ -70,7 +70,8 @@ Grouped to match the `docs/` folder layout.
 
 | Path | Purpose |
 |------|---------|
-| [`ansible/`](ansible/README.md) | Technitium DNS + DHCP across `dnldns101`/`dnldns201` from one source (**preferred**) |
+| [`ansible/technitium/`](ansible/technitium/README.md) | Technitium DNS + DHCP across `dnldns101`/`dnldns201` from one source (**preferred**) |
+| [`ansible/linux-baseline/`](ansible/linux-baseline/README.md) | Reusable Linux baseline across all guests (DNS/chrony/SSH/ufw/unattended-upgrades + opt-in hardening) |
 | [`terraform/technitium/`](terraform/technitium/README.md) | Terraform equivalent of the Technitium setup (via `terracurl`) |
 
 More to come (e.g. Terraform for the Cloudflare tunnel).

@@ -1,0 +1,12 @@
+---
+# Drop-in sorts BEFORE 50-cloud-init.conf; sshd uses the FIRST value per key, so
+# ours wins. The handler validates with `sshd -t` and only reloads if valid —
+# a bad render fails the play WITHOUT reloading, so the live session is safe.
+- name: Deploy SSH hardening drop-in
+  ansible.builtin.template:
+    src: sshd-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload sshd

@@ -1,0 +1,31 @@
+---
+# Manage resolvers + search domain via a systemd-resolved drop-in. This is
+# deliberately NON-destructive: it does NOT touch the interface IP (set at
+# install). Caveat: if netplan sets per-link `nameservers`, those win for that
+# link — keep them consistent, or clear them so this global config governs.
+- name: Ensure resolved drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure DNS servers + search domain (systemd-resolved)
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/10-devnetlabs.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by the baseline role — DevNetLabs resolvers + search domain.
+      [Resolve]
+      DNS={{ baseline_dns_servers | join(' ') }}
+      Domains={{ baseline_dns_search }}
+  notify: restart systemd-resolved
+
+- name: Ensure systemd-resolved is running
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: started
+    enabled: true

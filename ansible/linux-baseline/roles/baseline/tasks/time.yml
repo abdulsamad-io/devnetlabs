@@ -1,0 +1,31 @@
+---
+- name: Set timezone (IANA)
+  community.general.timezone:
+    name: "{{ baseline_timezone }}"
+
+- name: Install chrony
+  ansible.builtin.apt:
+    name: chrony
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure chrony NTP sources (only when overridden)
+  ansible.builtin.copy:
+    dest: /etc/chrony/conf.d/devnetlabs.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by the baseline role — DevNetLabs NTP sources.
+      {% for line in baseline_ntp_sources %}
+      {{ line }}
+      {% endfor %}
+  when: baseline_ntp_sources | length > 0
+  notify: restart chrony
+
+- name: Enable + start chrony
+  ansible.builtin.service:
+    name: chrony
+    state: started
+    enabled: true

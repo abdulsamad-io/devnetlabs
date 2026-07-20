@@ -1,0 +1,34 @@
+---
+- name: Ensure SSH allow-group exists
+  ansible.builtin.group:
+    name: "{{ baseline_ssh_allow_group }}"
+    system: true
+    state: present
+
+# CRITICAL: put the allow-users into the group BEFORE ssh.yml sets
+# `AllowGroups`, or the next login (incl. Ansible's) is refused.
+- name: Ensure allow-users are in the SSH allow-group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: "{{ baseline_ssh_allow_group }}"
+    append: true
+  loop: "{{ baseline_ssh_allow_users }}"
+
+- name: Create optional extra admin users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups | default('sudo,' ~ baseline_ssh_allow_group) }}"
+    append: true
+    shell: /bin/bash
+    state: present
+  loop: "{{ baseline_admin_users }}"
+  loop_control: { label: "{{ item.name }}" }
+
+- name: Install admin authorized keys
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.key }}"
+    state: present
+  loop: "{{ baseline_admin_users }}"
+  loop_control: { label: "{{ item.name }}" }
+  when: item.key is defined

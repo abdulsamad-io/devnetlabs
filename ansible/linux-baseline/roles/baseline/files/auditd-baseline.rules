@@ -1,0 +1,10 @@
+# DevNetLabs auditd baseline — managed by the baseline role.
+# See docs/conventions/linux-baseline.md §B.
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/sudoers -p wa -k scope
+-w /etc/sudoers.d/ -p wa -k scope
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd
+-w /var/log/auth.log -p wa -k authlog
+-a always,exit -F arch=b64 -S execve -F euid=0 -k rootcmd

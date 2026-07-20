@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# DevNetLabs fail2ban sshd jail — see docs/conventions/linux-baseline.md §A
+[sshd]
+enabled  = true
+maxretry = {{ baseline_fail2ban_maxretry }}
+findtime = 10m
+bantime  = {{ baseline_fail2ban_bantime }}
+# never lock yourself out from the mgmt networks:
+ignoreip = {{ baseline_fail2ban_ignoreip | join(' ') }}
