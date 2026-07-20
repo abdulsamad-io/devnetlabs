@@ -41,6 +41,7 @@ human-readable index; the issues hold the working detail.
 - [ ] **Internal-CA TLS** — replace the public Let's Encrypt wildcard with an internal CA (`pki` role) — [#31]
 - [ ] **MikroTik backups** — confirm `my_config_backup_v4`/`v5` were exported — [#24]
 - [ ] **IaC** — Terraform (Cloudflare) + Ansible (Proxmox/MikroTik), beyond the existing Technitium `ansible/`+`terraform/` — [#25]
+- [ ] **Adopt the Linux baseline** — reference [linux-baseline.md](conventions/linux-baseline.md) from each service runbook (replace the copy-pasted "Base config") and codify Level 1 as an Ansible `base` role; roll out Level 2 hardening to edge/bastion hosts first — [#25]
 
 ## Recently resolved
 

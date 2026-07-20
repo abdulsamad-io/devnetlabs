@@ -29,6 +29,7 @@ Grouped to match the `docs/` folder layout.
 | [Naming convention](docs/conventions/naming-convention.md) | `dnl<role><dc><nn>` guest naming, role codes, per-node DNS |
 | [VMID plan](docs/conventions/vmid-plan.md) | `NZSS` global VMID numbering scheme + allocations |
 | [Tagging plan](docs/conventions/tagging-plan.md) | Proxmox VM tags — function/location/placement/availability/backup/HA |
+| [Linux baseline](docs/conventions/linux-baseline.md) | Per-host config standard — L1 operational (DNS/NTP/SSH/ufw/updates) + L2 opt-in hardening |
 
 ### Network (`docs/network/`)
 | Doc | Purpose |
