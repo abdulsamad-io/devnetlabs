@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+# Forward all logs to the DevNetLabs collector(s). The FIRST target is primary; any
+# others fire only when the previous is suspended (failover) -- never simultaneously,
+# so Loki/Graylog don't double-ingest. Each action has a disk-assisted queue so logs
+# survive a collector outage. protocol {{ baseline_syslog_protocol }}, port {{ baseline_syslog_port }}.
+{% for srv in baseline_syslog_servers %}
+*.* action(type="omfwd" target="{{ srv }}" port="{{ baseline_syslog_port }}" protocol="{{ baseline_syslog_protocol }}"
+{% if not loop.first %}
+    action.execOnlyWhenPreviousIsSuspended="on"
+{% endif %}
+    action.resumeRetryCount="-1" action.resumeInterval="30"
+    queue.type="linkedList" queue.filename="fwd_devnetlabs_{{ loop.index }}"
+    queue.maxDiskSpace="256m" queue.saveOnShutdown="on")
+{% endfor %}

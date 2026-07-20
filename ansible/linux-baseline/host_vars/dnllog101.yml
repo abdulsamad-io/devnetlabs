@@ -1,0 +1,5 @@
+---
+# Central rsyslog collector: it RECEIVES syslog and fans out to Loki/Graylog
+# (see ../../docs/logging/rsyslog-setup.md). Don't run the baseline client-forward here —
+# it would forward the collector's own logs back into the collection pipeline.
+baseline_manage_syslog: false

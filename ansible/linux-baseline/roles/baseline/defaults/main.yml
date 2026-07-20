@@ -11,9 +11,14 @@ baseline_hostname: "{{ inventory_hostname }}"      # dnl<role><dc><nn>
 # --- 2. Time (chrony + timezone) -------------------------------------------
 baseline_manage_time: true
 baseline_timezone: Europe/Amsterdam                # IANA — never CEST/CET
-# NTP sources for chrony. Empty = keep the distro's default pool.
-# e.g. ["server 172.16.10.1 iburst"] (MikroTik) or ["pool 2.pool.ntp.org iburst"].
-baseline_ntp_sources: []
+# NTP sources for chrony (chrony.conf syntax; `pool` for round-robin names, `server`
+# for single). Written to /etc/chrony/conf.d/devnetlabs.conf, added on top of the distro
+# default pool. Empty = keep only the distro default.
+baseline_ntp_sources:
+  - "pool 0.nl.pool.ntp.org iburst"
+  - "server ntspool.time.nl iburst"
+  - "server time1.google.com iburst"
+  - "server time2.google.com iburst"
 
 # --- 3. DNS (systemd-resolved drop-in — non-destructive, no IP change) -----
 baseline_manage_dns: true
@@ -76,6 +81,20 @@ baseline_manage_packages: true
 baseline_apt_upgrade: false                         # full-upgrade at run? (disruptive) off by default
 baseline_apt_autoremove: true
 baseline_base_packages: [chrony, ufw, unattended-upgrades]
+
+# --- 9. Syslog forwarding (rsyslog client -> central collector) ------------
+baseline_manage_syslog: true
+# Collector target(s). FIRST is primary; any others are FAILOVER only (used when the
+# previous is suspended) — NOT simultaneous, so no double-ingest into Loki/Graylog.
+#   - failover pair (uses both collectors, HA, no VIP needed): ['172.16.10.71','172.16.10.72']
+#   - keepalived VIP instead (per docs/logging/log-source-onboarding.md): ['172.16.10.70']
+baseline_syslog_servers:
+  - 172.16.10.71                                    # dnllog101 (primary)
+  - 172.16.10.72                                    # dnllog201 (failover)
+baseline_syslog_port: 514
+baseline_syslog_protocol: tcp                       # tcp (reliable) | udp
+# NOTE: the collectors themselves set baseline_manage_syslog=false (host_vars) so they
+# don't forward their own logs back into the pipeline.
 
 # ===========================================================================
 # LEVEL 2 — security hardening (opt-in). Master switch + per-component toggles.
