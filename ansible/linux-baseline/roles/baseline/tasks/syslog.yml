@@ -13,8 +13,15 @@
     owner: root
     group: root
     mode: "0644"
-    validate: 'rsyslogd -N1 -f %s'
   notify: restart rsyslog
+
+# NOTE: no inline copy `validate` — rsyslogd is AppArmor-confined and can't read Ansible's
+# temp file (`.../.ansible/tmp/.../.source.conf` -> Permission denied). Validate the
+# ASSEMBLED config instead: `rsyslogd -N1` (no -f) reads /etc/rsyslog.conf + /etc/rsyslog.d/*,
+# which AppArmor allows, so a bad drop-in is still caught before the restart handler fires.
+- name: Validate the assembled rsyslog config
+  ansible.builtin.command: rsyslogd -N1
+  changed_when: false
 
 - name: Ensure rsyslog is enabled + running
   ansible.builtin.service:
