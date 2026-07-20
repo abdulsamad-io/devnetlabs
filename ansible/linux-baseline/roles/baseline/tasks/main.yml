@@ -36,6 +36,11 @@
   tags: [updates, baseline]
   when: baseline_manage_unattended | bool
 
+- name: Syslog forwarding
+  ansible.builtin.import_tasks: syslog.yml
+  tags: [syslog, baseline]
+  when: baseline_manage_syslog | bool
+
 - name: Package hygiene
   ansible.builtin.import_tasks: packages.yml
   tags: [packages, baseline]

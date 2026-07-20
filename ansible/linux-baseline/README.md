@@ -21,10 +21,17 @@ else needs touching to onboard a host.
 
 ## What it configures
 
-**Level 1 (every host):** hostname · chrony + timezone `Europe/Amsterdam` · resolvers +
-search domain (systemd-resolved drop-in) · key-only SSH hardening drop-in + `sshusers` ·
-ufw default-deny (SSH from mgmt/lab_lan) · unattended-upgrades · sudo/allow-group ·
-passwordless sudo (`baseline_passwordless_sudo`, on) · package hygiene.
+**Level 1 (every host):** hostname · chrony + timezone `Europe/Amsterdam` (NTP sources in
+`baseline_ntp_sources`) · resolvers + search domain (systemd-resolved drop-in) · key-only
+SSH hardening drop-in + `sshusers` · ufw default-deny (SSH from mgmt/lab_lan) ·
+unattended-upgrades · sudo/allow-group · passwordless sudo (`baseline_passwordless_sudo`,
+on) · rsyslog forwarding to the collectors · package hygiene.
+
+> **Syslog forwarding** (`baseline_syslog_servers`, default `172.16.10.71`→`172.16.10.72`)
+> sends `*.*` to the primary collector and **fails over** to the second only if the first
+> is down — using both without double-ingesting into Loki/Graylog. Set it to `['172.16.10.70']`
+> to use the keepalived VIP instead. The collectors set `baseline_manage_syslog: false`
+> (host_vars) so they don't forward their own logs into their own pipeline.
 
 **Level 2 (opt-in, `-e baseline_hardening=true`):** fail2ban · auditd + rules · sysctl
 network hardening · SSH login banner · AIDE.

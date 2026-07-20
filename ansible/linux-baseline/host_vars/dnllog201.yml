@@ -1,0 +1,4 @@
+---
+# Central rsyslog collector (HA standby): receives + fans out, so it must not run the
+# baseline client-forward. See ../../docs/logging/rsyslog-setup.md.
+baseline_manage_syslog: false

@@ -47,10 +47,12 @@ sudo apt update && sudo apt install -y chrony
 sudo timedatectl set-timezone Europe/Amsterdam
 sudo systemctl enable --now chrony
 ```
-Point chrony at a single lab time source for consistency (edit `/etc/chrony/chrony.conf` —
-the MikroTik gateway if it serves NTP, else a public pool), e.g.:
+Point chrony at the standard lab NTP sources (a drop-in `/etc/chrony/conf.d/devnetlabs.conf`):
 ```
-pool 2.pool.ntp.org iburst      # or: server 172.16.10.1 iburst   (MikroTik, if NTP is enabled)
+pool 0.nl.pool.ntp.org iburst
+server ntspool.time.nl iburst
+server time1.google.com iburst
+server time2.google.com iburst
 ```
 > **Why it's Level 1, not cosmetic:** Prometheus **rejects samples with skewed timestamps**,
 > and rsyslog files bucket by date — a wrong clock scatters logs into the wrong day's file.
@@ -166,6 +168,34 @@ Keep the footprint minimal — install only what a role needs; don't add desktop
 to a server. `needrestart` (default on Ubuntu Server) will flag services to restart after
 library upgrades.
 
+## 9. Syslog forwarding (→ central collectors)
+
+Every host ships `*.*` to the rsyslog collectors so logs land in the central tree → Loki +
+Graylog. Forward to the **primary** collector with **failover** to the second (so both
+`dnllog101`/`dnllog201` are used, but never simultaneously — sending to both at once would
+double-ingest). `/etc/rsyslog.d/90-devnetlabs-forward.conf`:
+```
+# primary
+*.* action(type="omfwd" target="172.16.10.71" port="514" protocol="tcp"
+    action.resumeRetryCount="-1" queue.type="linkedList" queue.filename="fwd_devnetlabs_1"
+    queue.maxDiskSpace="256m" queue.saveOnShutdown="on")
+# failover — only when the primary is suspended
+*.* action(type="omfwd" target="172.16.10.72" port="514" protocol="tcp"
+    action.execOnlyWhenPreviousIsSuspended="on"
+    action.resumeRetryCount="-1" queue.type="linkedList" queue.filename="fwd_devnetlabs_2"
+    queue.maxDiskSpace="256m" queue.saveOnShutdown="on")
+```
+```bash
+sudo rsyslogd -N1 && sudo systemctl restart rsyslog     # validate, then apply
+```
+> **Alternative:** point at the keepalived **VIP `172.16.10.70`** instead of the pair (per
+> [../logging/log-source-onboarding.md](../logging/log-source-onboarding.md)) — same
+> no-duplicate guarantee, failover handled by keepalived rather than the client.
+> **The collectors themselves don't run this** — they *receive* and fan out
+> ([../logging/rsyslog-setup.md](../logging/rsyslog-setup.md)); forwarding their own logs
+> back in would loop. **Check:** on the active collector, this host's messages appear under
+> `/var/log/devnetlabs_logs/` (in `compute/linux`, or `others/` until its IP is classified).
+
 ---
 
 # Level 2 — Security hardening (opt-in, per-host)
@@ -279,6 +309,7 @@ Run in order on a fresh install; confirm each **Check** before moving on:
 - [ ] **6** unattended-upgrades enabled (`--dry-run` clean)
 - [ ] **7** named admin in `sudo`+`sshusers`; root login off
 - [ ] **8** fully patched, `autoremove` run
+- [ ] **9** rsyslog forwards to the collectors (primary→failover); logs land in the central tree
 
 > In each service runbook, the old "Part C — Base config" now reduces to: **"Apply the
 > [Linux baseline](conventions/linux-baseline.md) Level 1, then open this service's ports."**
