@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# DevNetLabs SSH hardening — see docs/conventions/linux-baseline.md §4
+{% for key, value in baseline_sshd_options.items() %}
+{{ key }} {{ value }}
+{% endfor %}
+AllowGroups {{ baseline_ssh_allow_group }}
+{% if baseline_hardening | bool and baseline_hardening_banner | bool %}
+Banner /etc/issue.net
+{% endif %}

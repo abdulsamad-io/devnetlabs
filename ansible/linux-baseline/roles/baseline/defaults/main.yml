@@ -1,0 +1,102 @@
+---
+# ===========================================================================
+# baseline role — defaults. Override per group/host in inventory or group_vars.
+# Mirrors docs/conventions/linux-baseline.md.
+# ===========================================================================
+
+# --- 1. Identity -----------------------------------------------------------
+baseline_set_hostname: true
+baseline_hostname: "{{ inventory_hostname }}"      # dnl<role><dc><nn>
+
+# --- 2. Time (chrony + timezone) -------------------------------------------
+baseline_manage_time: true
+baseline_timezone: Europe/Amsterdam                # IANA — never CEST/CET
+# NTP sources for chrony. Empty = keep the distro's default pool.
+# e.g. ["server 172.16.10.1 iburst"] (MikroTik) or ["pool 2.pool.ntp.org iburst"].
+baseline_ntp_sources: []
+
+# --- 3. DNS (systemd-resolved drop-in — non-destructive, no IP change) -----
+baseline_manage_dns: true
+baseline_dns_servers:
+  - 172.16.10.53                                   # dnldns101 (Technitium #1)
+  - 172.16.10.54                                   # dnldns201 (Technitium #2)
+baseline_dns_search: mgt.devnetlabs.com            # OVERRIDE per zone group (dcNN.*)
+
+# --- 4. SSH hardening ------------------------------------------------------
+baseline_manage_ssh: true
+baseline_ssh_allow_group: sshusers
+# Users guaranteed to be in the allow group (or AllowGroups locks everyone out).
+baseline_ssh_allow_users:
+  - "{{ ansible_user }}"
+baseline_sshd_options:                             # -> /etc/ssh/sshd_config.d/10-hardening.conf
+  PermitRootLogin: "no"
+  PasswordAuthentication: "no"
+  KbdInteractiveAuthentication: "no"
+  PubkeyAuthentication: "yes"
+  MaxAuthTries: "3"
+  LoginGraceTime: "20"
+  ClientAliveInterval: "300"
+  ClientAliveCountMax: "2"
+  X11Forwarding: "no"
+  AllowAgentForwarding: "no"
+  AllowTcpForwarding: "yes"                         # ProxyJump needs it
+
+# --- 5. Host firewall (ufw) ------------------------------------------------
+baseline_manage_ufw: true
+baseline_ufw_ssh_sources:                           # who may SSH in
+  - 172.16.10.0/24                                  # VLAN 1000 (mgmt / bastion)
+  - 172.16.254.0/24                                 # lab_lan
+# Per-host service ports (set in host_vars), e.g.:
+#   baseline_ufw_extra_rules:
+#     - { port: "3100", proto: tcp, from: "10.110.10.71" }   # Loki <- Grafana
+baseline_ufw_extra_rules: []
+
+# --- 6. Unattended security upgrades ---------------------------------------
+baseline_manage_unattended: true
+baseline_auto_reboot: false                         # reboot for kernel updates?
+baseline_auto_reboot_time: "04:30"
+
+# --- 7. Users / sudo -------------------------------------------------------
+baseline_manage_users: true
+# Optional extra admins (public keys are safe to commit):
+#   baseline_admin_users:
+#     - { name: alice, key: "ssh-ed25519 AAAA... alice", groups: "sudo,sshusers" }
+baseline_admin_users: []
+
+# --- 8. Package hygiene ----------------------------------------------------
+baseline_manage_packages: true
+baseline_apt_upgrade: false                         # full-upgrade at run? (disruptive) off by default
+baseline_apt_autoremove: true
+baseline_base_packages: [chrony, ufw, unattended-upgrades]
+
+# ===========================================================================
+# LEVEL 2 — security hardening (opt-in). Master switch + per-component toggles.
+# Enable with:  -e baseline_hardening=true   (or set per group/host)
+# ===========================================================================
+baseline_hardening: false
+baseline_hardening_fail2ban: true
+baseline_hardening_auditd: true
+baseline_hardening_sysctl: true
+baseline_hardening_banner: true
+baseline_hardening_aide: false                      # aideinit is slow — opt in explicitly
+
+# fail2ban: never ban yourself from the mgmt networks
+baseline_fail2ban_ignoreip:
+  - 127.0.0.1/8
+  - 172.16.10.0/24
+  - 172.16.254.0/24
+baseline_fail2ban_bantime: 1h
+baseline_fail2ban_maxretry: 4
+
+baseline_banner_text: "Authorized access only. Activity is logged and monitored."
+
+# sysctl hardening (safe for a non-routing VM — DO NOT set ip_forward=0 on a router)
+baseline_sysctl:
+  net.ipv4.conf.all.rp_filter: "1"
+  net.ipv4.conf.all.accept_source_route: "0"
+  net.ipv4.conf.all.accept_redirects: "0"
+  net.ipv4.conf.all.send_redirects: "0"
+  net.ipv4.conf.all.log_martians: "1"
+  net.ipv4.tcp_syncookies: "1"
+  net.ipv4.icmp_echo_ignore_broadcasts: "1"
+  kernel.randomize_va_space: "2"

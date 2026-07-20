@@ -1,0 +1,18 @@
+---
+# Apply the DevNetLabs Linux baseline to every host in `linux_baseline`.
+# Implements docs/conventions/linux-baseline.md (L1 mandatory + L2 opt-in hardening).
+#
+#   ansible-galaxy collection install -r requirements.yml   # once
+#   ansible-playbook site.yml                               # all hosts, Level 1
+#   ansible-playbook site.yml --check --diff                # dry-run, show changes
+#   ansible-playbook site.yml --limit dnllog101             # one host
+#   ansible-playbook site.yml --tags ssh,ufw                # subset
+#   ansible-playbook site.yml -e baseline_hardening=true    # + Level 2 hardening
+#
+# Tags: identity, time, dns, users, ssh, ufw, updates, packages, hardening
+- name: Apply DevNetLabs Linux baseline
+  hosts: linux_baseline
+  become: true
+  gather_facts: true
+  roles:
+    - baseline

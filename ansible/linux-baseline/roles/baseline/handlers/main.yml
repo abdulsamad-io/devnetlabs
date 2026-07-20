@@ -1,0 +1,26 @@
+---
+# Validate the FULL sshd config (all drop-ins), then reload — atomically.
+# If `sshd -t` fails, `&&` short-circuits so the reload never runs and the play
+# fails loudly; the live session keeps the old (working) config. No lockout.
+- name: reload sshd
+  ansible.builtin.shell: sshd -t && systemctl reload ssh
+  changed_when: true
+
+- name: restart systemd-resolved
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: restarted
+
+- name: restart chrony
+  ansible.builtin.service:
+    name: chrony
+    state: restarted
+
+- name: restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+
+- name: reload auditd rules
+  ansible.builtin.command: augenrules --load
+  changed_when: true

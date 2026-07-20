@@ -1,0 +1,48 @@
+---
+# Level 1 — operational baseline (every host). Order matters: users before ssh
+# (so AllowGroups can't lock out), rules before ufw enable.
+- name: Identity (hostname)
+  ansible.builtin.import_tasks: identity.yml
+  tags: [identity, baseline]
+  when: baseline_set_hostname | bool
+
+- name: Time (chrony + timezone)
+  ansible.builtin.import_tasks: time.yml
+  tags: [time, baseline]
+  when: baseline_manage_time | bool
+
+- name: DNS (resolvers + search domain)
+  ansible.builtin.import_tasks: dns.yml
+  tags: [dns, baseline]
+  when: baseline_manage_dns | bool
+
+- name: Users / sudo / allow-group
+  ansible.builtin.import_tasks: users.yml
+  tags: [users, ssh, baseline]
+  when: baseline_manage_users | bool
+
+- name: SSH hardening
+  ansible.builtin.import_tasks: ssh.yml
+  tags: [ssh, baseline]
+  when: baseline_manage_ssh | bool
+
+- name: Host firewall (ufw)
+  ansible.builtin.import_tasks: firewall.yml
+  tags: [ufw, firewall, baseline]
+  when: baseline_manage_ufw | bool
+
+- name: Automatic security updates
+  ansible.builtin.import_tasks: updates.yml
+  tags: [updates, baseline]
+  when: baseline_manage_unattended | bool
+
+- name: Package hygiene
+  ansible.builtin.import_tasks: packages.yml
+  tags: [packages, baseline]
+  when: baseline_manage_packages | bool
+
+# Level 2 — opt-in hardening
+- name: Security hardening (Level 2)
+  ansible.builtin.import_tasks: hardening.yml
+  tags: [hardening]
+  when: baseline_hardening | bool

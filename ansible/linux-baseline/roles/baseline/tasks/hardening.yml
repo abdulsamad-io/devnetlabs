@@ -1,0 +1,87 @@
+---
+# Level 2 — opt-in hardening. Each block gated by its own toggle.
+
+# A. fail2ban — SSH brute-force backstop
+- name: fail2ban — install
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: baseline_hardening_fail2ban | bool
+
+- name: fail2ban — sshd jail
+  ansible.builtin.template:
+    src: fail2ban-sshd.local.j2
+    dest: /etc/fail2ban/jail.d/sshd.local
+    owner: root
+    group: root
+    mode: "0644"
+  when: baseline_hardening_fail2ban | bool
+  notify: restart fail2ban
+
+- name: fail2ban — enable
+  ansible.builtin.service: { name: fail2ban, state: started, enabled: true }
+  when: baseline_hardening_fail2ban | bool
+
+# B. auditd — audit logging + baseline ruleset
+- name: auditd — install
+  ansible.builtin.apt:
+    name: [auditd, audispd-plugins]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: baseline_hardening_auditd | bool
+
+- name: auditd — baseline rules
+  ansible.builtin.copy:
+    src: auditd-baseline.rules
+    dest: /etc/audit/rules.d/10-baseline.rules
+    owner: root
+    group: root
+    mode: "0640"
+  when: baseline_hardening_auditd | bool
+  notify: reload auditd rules
+
+- name: auditd — enable
+  ansible.builtin.service: { name: auditd, state: started, enabled: true }
+  when: baseline_hardening_auditd | bool
+
+# C. sysctl network/kernel hardening
+- name: sysctl — apply hardening keys
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/60-hardening.conf
+    sysctl_set: true
+    reload: true
+    state: present
+  loop: "{{ baseline_sysctl | dict2items }}"
+  loop_control: { label: "{{ item.key }}" }
+  when: baseline_hardening_sysctl | bool
+
+# D. Login banner (authorised-use notice). sshd Banner line is added by the
+#    ssh template when hardening+banner are on — so re-run the ssh tag too.
+- name: banner — /etc/issue.net
+  ansible.builtin.copy:
+    dest: /etc/issue.net
+    owner: root
+    group: root
+    mode: "0644"
+    content: "{{ baseline_banner_text }}\n"
+  when: baseline_hardening_banner | bool
+
+# E. AIDE — file integrity (opt-in; aideinit is slow, only once)
+- name: aide — install
+  ansible.builtin.apt:
+    name: aide
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: baseline_hardening_aide | bool
+
+- name: aide — initialise DB (first run only)
+  ansible.builtin.shell: aideinit -y -f
+  args:
+    creates: /var/lib/aide/aide.db
+  when: baseline_hardening_aide | bool

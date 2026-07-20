@@ -190,7 +190,7 @@ sudo systemctl restart alloy
 ## Part H — DNS record
 
 Add the A record to the **`dc01.devnetlabs.com`** zone (Technitium):
-`dnllok101 → 10.110.10.70`. (Codified in `ansible/zones/dc01.devnetlabs.com.zone`.)
+`dnllok101 → 10.110.10.70`. (Codified in `ansible/technitium/zones/dc01.devnetlabs.com.zone`.)
 
 ---
 

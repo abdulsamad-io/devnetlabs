@@ -1,0 +1,68 @@
+---
+# ============================================================================
+# DevNetLabs — Linux baseline inventory  (ADD / REMOVE HOSTS HERE)
+# ============================================================================
+# Every Ubuntu guest that should receive the baseline goes under `linux_baseline`,
+# inside the group that matches its DNS search domain (its VLAN):
+#
+#   zone_mgt   -> VLAN 1000 hosts        -> search  mgt.devnetlabs.com
+#   zone_dc01  -> dc01 per-node VLANs    -> search  dc01.devnetlabs.com
+#   zone_dc02  -> dc02 per-node VLANs    -> search  dc02.devnetlabs.com
+#   zone_dc03  -> dc03 per-node VLANs    -> search  dc03.devnetlabs.com
+#
+# To ADD a host:    add one line  `dnlxxxNNN: { ansible_host: <ip> }`  under the
+#                   correct zone group. That's it.
+# To REMOVE a host: delete its line.
+#
+# The baseline itself is tuned in  roles/baseline/defaults/main.yml  (overridable
+# per group/host). Connection defaults (user + key) are in `all.vars` below.
+# ============================================================================
+
+all:
+  vars:
+    # --- how Ansible reaches every host (SSH, key-only — bootstrap the key first
+    #     via docs/bastion-setup.md). Override per host if a box differs. ---
+    ansible_user: abdoolsamad
+    ansible_ssh_private_key_file: ~/.ssh/id_ed25519_devnetlabs
+    ansible_python_interpreter: /usr/bin/python3
+
+  children:
+    linux_baseline:
+      children:
+
+        zone_mgt:                       # VLAN 1000 (shared_mgt)
+          vars:
+            baseline_dns_search: mgt.devnetlabs.com
+          hosts:
+            dnladm101: { ansible_host: 172.16.10.2 }    # bastion / jump
+            dnllog101: { ansible_host: 172.16.10.71 }   # rsyslog collector (dc01)
+            dnllog201: { ansible_host: 172.16.10.72 }   # rsyslog collector (dc02)
+            dnlnbx101: { ansible_host: 172.16.10.50 }   # NetBox
+            # dnldns101: { ansible_host: 172.16.10.53 } # Technitium (managed via API, not SSH)
+            # dnlctl101: { ansible_host: 172.16.10.__ } # Cloudflare tunnel
+            # dnllbr101: { ansible_host: 172.16.10.__ } # LibreNMS
+
+        zone_dc01:                      # dc01 per-node VLANs (apps/media/nas)
+          vars:
+            baseline_dns_search: dc01.devnetlabs.com
+          hosts:
+            dnllok101: { ansible_host: 10.110.10.70 }   # Loki
+            dnlgrf101: { ansible_host: 10.110.10.71 }   # Grafana
+            dnlprm101: { ansible_host: 10.110.10.72 }   # Prometheus
+            dnlukm101: { ansible_host: 10.110.10.53 }   # Uptime Kuma
+            dnlnfy101: { ansible_host: 10.110.10.74 }   # ntfy
+            # dnlpnt101: { ansible_host: 10.110.10.60 } # PNETLab (mgmt NIC)
+
+        zone_dc02:                      # dc02 per-node VLANs (apps)
+          vars:
+            baseline_dns_search: dc02.devnetlabs.com
+          hosts: {}
+            # dnlgrf201: { ansible_host: 10.120.10.71 }
+            # dnlprm201: { ansible_host: 10.120.10.72 }
+            # dnlpnt201: { ansible_host: 10.120.10.60 }
+
+        zone_dc03:                      # dc03 per-node VLANs (pbs)
+          vars:
+            baseline_dns_search: dc03.devnetlabs.com
+          hosts: {}
+            # dnlpbs301: { ansible_host: 10.130.10.__ }

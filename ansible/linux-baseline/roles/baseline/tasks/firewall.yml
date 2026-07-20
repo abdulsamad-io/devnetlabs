@@ -1,0 +1,37 @@
+---
+- name: Install ufw
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: ufw default policies
+  community.general.ufw:
+    direction: "{{ item.dir }}"
+    default: "{{ item.policy }}"
+  loop:
+    - { dir: incoming, policy: deny }
+    - { dir: outgoing, policy: allow }
+
+# Allow rules must exist BEFORE enabling, or we drop our own session.
+- name: Allow SSH from the management networks
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+    from_ip: "{{ item }}"
+  loop: "{{ baseline_ufw_ssh_sources }}"
+
+- name: Allow per-host service ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto | default('tcp') }}"
+    from_ip: "{{ item.from | default('any') }}"
+  loop: "{{ baseline_ufw_extra_rules }}"
+  loop_control: { label: "{{ item.port }}/{{ item.proto | default('tcp') }}" }
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
