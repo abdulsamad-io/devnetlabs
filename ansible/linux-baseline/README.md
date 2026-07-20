@@ -23,8 +23,8 @@ else needs touching to onboard a host.
 
 **Level 1 (every host):** hostname · chrony + timezone `Europe/Amsterdam` · resolvers +
 search domain (systemd-resolved drop-in) · key-only SSH hardening drop-in + `sshusers` ·
-ufw default-deny (SSH from mgmt/lab_lan) · unattended-upgrades · sudo/allow-group · package
-hygiene.
+ufw default-deny (SSH from mgmt/lab_lan) · unattended-upgrades · sudo/allow-group ·
+passwordless sudo (`baseline_passwordless_sudo`, on) · package hygiene.
 
 **Level 2 (opt-in, `-e baseline_hardening=true`):** fail2ban · auditd + rules · sysctl
 network hardening · SSH login banner · AIDE.
@@ -59,6 +59,17 @@ group/host in the inventory or `host_vars/`.
   `ssh -A` and drop `ansible_ssh_private_key_file` so Ansible uses your forwarded agent.)*
 - **Only list built, powered-on hosts** in `inventory.yml`. Unbuilt hosts (e.g. Prometheus,
   ntfy) are commented out — uncomment them once they exist, or a run fails `UNREACHABLE`.
+- **`become` needs passwordless sudo on this fleet.** The hosts use a custom sudo prompt
+  (`[sudo: authenticate]`) that overrides Ansible's own prompt, so `-K`/become-password
+  times out (`waiting for privilege escalation prompt`) no matter the timeout — even though
+  the password itself is fine. The role manages `/etc/sudoers.d/90-ansible`
+  (`baseline_passwordless_sudo: true`), but a **brand-new host needs a one-time manual
+  bootstrap** (writing the drop-in needs sudo). On the target, once:
+  ```bash
+  echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-ansible >/dev/null \
+    && sudo chmod 440 /etc/sudoers.d/90-ansible && sudo visudo -c
+  ```
+  After that, run the playbook with **no `-K`**; the role keeps the drop-in idempotent.
 
 ## Usage
 
@@ -72,13 +83,21 @@ ansible-playbook site.yml -e baseline_hardening=true   # + Level 2 hardening
 ```
 Tags: `identity time dns users ssh ufw updates packages hardening`.
 
-## Per-host service ports
+## Per-host overrides (`host_vars/`)
 
-The baseline only opens SSH. A service's own ports go in `host_vars/<host>.yml`, e.g.:
+Anything in `defaults/main.yml` can be overridden per host. Two examples in use:
+
+**Service ports** — the baseline only opens SSH; a service's own ports go in `host_vars/<host>.yml`:
 ```yaml
 # host_vars/dnllok101.yml
 baseline_ufw_extra_rules:
   - { port: "3100", proto: tcp, from: "10.110.10.71" }   # Loki API <- Grafana
+```
+**Extra DNS search domains** — the bastion searches every zone so `ssh <shortname>` works
+for apps-VLAN hosts, not just its own `mgt` zone ([`host_vars/dnladm101.yml`](host_vars/dnladm101.yml)):
+```yaml
+# host_vars/dnladm101.yml
+baseline_dns_search_extra: [dc01.devnetlabs.com, dc02.devnetlabs.com, dc03.devnetlabs.com]
 ```
 
 ## Safety notes

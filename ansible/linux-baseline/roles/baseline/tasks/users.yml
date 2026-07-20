@@ -4,6 +4,10 @@
     name: "{{ baseline_ssh_allow_group }}"
     system: true
     state: present
+  # Create the group even under --check so the next task (add user to group) can find it
+  # in check mode instead of failing "Group <name> does not exist". Creating an empty
+  # system group is idempotent + low-risk.
+  check_mode: false
 
 # CRITICAL: put the allow-users into the group BEFORE ssh.yml sets
 # `AllowGroups`, or the next login (incl. Ansible's) is refused.
@@ -32,3 +36,17 @@
   loop: "{{ baseline_admin_users }}"
   loop_control: { label: "{{ item.name }}" }
   when: item.key is defined
+
+# Passwordless sudo for the ansible/control user. Needed on this fleet because the hosts
+# use a custom sudo prompt that breaks Ansible's become-password handshake (see README).
+# NOTE: a brand-new host still needs a one-time manual bootstrap of this drop-in (the task
+# itself needs sudo to write it); after that, the role keeps it managed/idempotent.
+- name: Manage passwordless sudo for the ansible user (/etc/sudoers.d/90-ansible)
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/90-ansible
+    owner: root
+    group: root
+    mode: "0440"
+    content: "{{ ansible_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    validate: 'visudo -cf %s'
+  when: baseline_passwordless_sudo | bool

@@ -1,0 +1,8 @@
+---
+# Bastion / control node: search every internal zone so `ssh <shortname>` resolves for
+# apps-VLAN hosts (dc01/dc02/dc03), not just the mgt zone it lives on. Appended to the
+# systemd-resolved Domains= line by the baseline DNS task.
+baseline_dns_search_extra:
+  - dc01.devnetlabs.com
+  - dc02.devnetlabs.com
+  - dc03.devnetlabs.com
