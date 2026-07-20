@@ -150,10 +150,17 @@ schema_config:
       index: { prefix: index_, period: 24h }
 
 limits_config:
-  retention_period: 1440h            # 60 days
+  retention_period: 1440h            # 60 days (global default)
   reject_old_samples: true
   reject_old_samples_max_age: 168h   # drop lines older than 7d (raise to replay old archives)
   volume_enabled: true
+  # Segregated lab-OOB logs (PNETLab/EVE-NG, category="lab") are churny + ephemeral —
+  # keep them far shorter so lab noise never eats the 60-day budget. Needs the compactor
+  # (below) with retention_enabled to actually delete.
+  retention_stream:
+    - selector: '{category="lab"}'
+      priority: 1
+      period: 168h                   # 7 days for lab
 
 compactor:
   working_directory: /var/lib/loki/compactor

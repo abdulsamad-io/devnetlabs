@@ -22,7 +22,7 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | Dimension | Prefix | Allowed values |
 |-----------|--------|----------------|
 | **Location** (node) | *(none)* | `dc01` · `dc02` · `dc03` |
-| **Placement** (VLAN/zone) | `zone-` | `zone-mgt` · `zone-apps` · `zone-media` · `zone-nas` · `zone-pbs` |
+| **Placement** (VLAN/zone) | `zone-` | `zone-mgt` · `zone-apps` · `zone-media` · `zone-nas` · `zone-pbs` · `zone-oob` (lab OOB NIC) |
 | **Functionality** (tier) | `tier-` | `tier-mgmt` · `tier-dns` · `tier-ipam` · `tier-logging` · `tier-monitoring` · `tier-virt` · `tier-storage` · `tier-backup` · `tier-media` · `tier-edge` |
 | **Availability** | `av-` | `av-always-on` · `av-on-demand` · `av-dr` |
 | **Backup policy** | `bkp-` | `bkp-pbs` (vzdump→PBS) · `bkp-repl` (ZFS replication) · `bkp-none` |
@@ -55,7 +55,8 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | 1106 | `dnlprm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
 | 1107 | `dnlukm101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
 | 1108 | `dnlnfy101` | `dc01;zone-apps;tier-monitoring;av-always-on;bkp-pbs;ha-none` |
-| 1109 | `dnlpnt101` | `dc01;zone-apps;tier-virt;av-always-on;bkp-pbs;ha-none` |
+| 1109 | `dnlpnt101` | `dc01;zone-apps;zone-oob;tier-virt;av-always-on;bkp-pbs;ha-none` |
+| 1110 | `dnleve101` | `dc01;zone-apps;zone-oob;tier-virt;av-always-on;bkp-pbs;ha-none` |
 | 1201 | `dnlplx101` | `dc01;zone-media;tier-media;av-always-on;bkp-pbs;ha-none` |
 | 1301 | `dnlnas101` | `dc01;zone-nas;tier-storage;av-always-on;bkp-repl;ha-none` |
 | 1302 | `dnlpbs101` | `dc01;zone-nas;tier-backup;av-always-on;bkp-none;ha-none` |
@@ -68,8 +69,8 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 | 2001 | `dnldns201` | `dc02;zone-mgt;tier-dns;av-on-demand;bkp-pbs;ha-secondary` |
 | 2003 | `dnlgry201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs;ha-none` |
 | 2004 | `dnllog201` | `dc02;zone-mgt;tier-logging;av-on-demand;bkp-pbs;ha-standby` |
-| 2101 | `dnlpnt201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-pbs;ha-none` |
-| 2102 | `dnleve201` | `dc02;zone-apps;tier-virt;av-on-demand;bkp-pbs;ha-none` |
+| 2101 | `dnlpnt201` | `dc02;zone-apps;zone-oob;tier-virt;av-on-demand;bkp-pbs;ha-none` |
+| 2102 | `dnleve201` | `dc02;zone-apps;zone-oob;tier-virt;av-on-demand;bkp-pbs;ha-none` |
 | 2105 | `dnlgrf201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs;ha-none` |
 | 2106 | `dnlprm201` | `dc02;zone-apps;tier-monitoring;av-on-demand;bkp-pbs;ha-none` |
 
@@ -79,18 +80,20 @@ and [vmid-plan.md](vmid-plan.md) (which encode node/role/zone in the *name*; tag
 |------|----------|------|
 | 3401 | `dnlpbs301` | `dc03;zone-pbs;tier-backup;av-dr;bkp-none;ha-none` |
 
-> **Notes:** the PNETLab pair (`dnlpnt101` on dc01, `dnlpnt201` on dc02) is apps-only —
-> each lives on its node's `dcNN_apps` VLAN (no mgmt NIC on 1000). `bkp-none` on the PBS
-> guests is deliberate: PBS servers back up *others* (protect their datastore separately).
-> TrueNAS's data is on a passthrough disk → `bkp-repl` (ZFS replication), not vzdump.
+> **Notes:** the lab emulators (`dnlpnt101`/`dnleve101` on dc01, `dnlpnt201`/`dnleve201`
+> on dc02) are **dual-homed** — host mgmt/UI on `dcNN_apps` (`zone-apps`) **and** a NIC on
+> the lab OOB VLAN (`zone-oob`, VLAN 4001/4002) that carries the emulated devices' mgmt
+> plane. `bkp-none` on the PBS guests is deliberate: PBS servers back up *others* (protect
+> their datastore separately). TrueNAS's data is on a passthrough disk → `bkp-repl` (ZFS
+> replication), not vzdump.
 
 ## Register the tags + colors (datacenter)
 
 `/etc/pve/datacenter.cfg` — registered tags keep the list closed (no typos) and give each a
 colour in the UI:
 ```
-tag-style: ordering=config;shape=full;color-map=dc01:2ecc71,dc02:e67e22,dc03:95a5a6,zone-mgt:34495e,zone-apps:2980b9,zone-nas:16a085,tier-logging:3498db,tier-monitoring:9b59b6,tier-dns:1abc9c,tier-backup:7f8c8d,tier-virt:e74c3c,av-on-demand:f39c12,av-dr:c0392b,bkp-none:bdc3c7
-registered-tags: dc01;dc02;dc03;zone-mgt;zone-apps;zone-media;zone-nas;zone-pbs;tier-mgmt;tier-dns;tier-ipam;tier-logging;tier-monitoring;tier-virt;tier-storage;tier-backup;tier-media;tier-edge;av-always-on;av-on-demand;av-dr;bkp-pbs;bkp-repl;bkp-none;ha-none;ha-active;ha-standby;ha-primary;ha-secondary;template
+tag-style: ordering=config;shape=full;color-map=dc01:2ecc71,dc02:e67e22,dc03:95a5a6,zone-mgt:34495e,zone-apps:2980b9,zone-oob:8e44ad,zone-nas:16a085,tier-logging:3498db,tier-monitoring:9b59b6,tier-dns:1abc9c,tier-backup:7f8c8d,tier-virt:e74c3c,av-on-demand:f39c12,av-dr:c0392b,bkp-none:bdc3c7
+registered-tags: dc01;dc02;dc03;zone-mgt;zone-apps;zone-oob;zone-media;zone-nas;zone-pbs;tier-mgmt;tier-dns;tier-ipam;tier-logging;tier-monitoring;tier-virt;tier-storage;tier-backup;tier-media;tier-edge;av-always-on;av-on-demand;av-dr;bkp-pbs;bkp-repl;bkp-none;ha-none;ha-active;ha-standby;ha-primary;ha-secondary;template
 ```
 *(Colour map trimmed for brevity — extend to taste. `ordering=config` shows tags in the
 order set, not alphabetical.)*

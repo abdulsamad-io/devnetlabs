@@ -33,7 +33,7 @@ Grouped to match the `docs/` folder layout.
 ### Network (`docs/network/`)
 | Doc | Purpose |
 |-----|---------|
-| [Network & VLAN design](docs/network/network-vlan-design.md) | MikroTik core, VLANs, bridges, DHCP, port map |
+| [Network & VLAN design](docs/network/network-vlan-design.md) | MikroTik core, VLANs, bridges, DHCP, port map + lab OOB mgmt (4001/4002, scoped-isolation FW) |
 | [DHCP migration](docs/network/dhcp-migration.md) | Move DHCP MikroTik→Technitium (relay, scopes, break-glass) |
 
 ### Logging (`docs/logging/`)

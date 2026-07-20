@@ -226,6 +226,24 @@ sudo chown -R prometheus:prometheus /etc/prometheus/targets
 - **Dynamic source:** generate this JSON from **NetBox** (same pattern as the rsyslog
   `sources.json`, #33) once NetBox is the SoT — then adds/removes are automatic.
 
+**Lab OOB devices — a separate, segregated target file.** Devices emulated in PNETLab/EVE-NG
+are polled on their **OOB** IPs (`10.251.0.0/16` dc01 / `10.252.0.0/16` dc02) and tagged
+`env=lab` so lab churn stays out of production dashboards. Keep them in their own file:
+```bash
+sudo tee /etc/prometheus/targets/snmp_lab.json >/dev/null <<'EOF'
+[
+  { "targets": ["10.251.10.11"], "labels": { "env": "lab", "site": "dc01", "vendor": "cisco" } },
+  { "targets": ["10.252.10.11"], "labels": { "env": "lab", "site": "dc02", "vendor": "arista" } }
+]
+EOF
+```
+- **Reachability:** the poll is `dnlprm101` (10.110.10.72) / `dnlprm201` (10.120.10.72) →
+  OOB device on UDP/161, which the OOB isolation firewall explicitly permits
+  ([network-vlan-design.md](../network/network-vlan-design.md#lab-oob-management-networks-4001--4002)).
+- **dc02 gap:** `10.252` targets are only `up` when dc02 is powered on — expected.
+- Give lab devices **DHCP reservations** (or static OOB IPs) if you want stable targets;
+  otherwise treat them as ephemeral and add/remove per lab.
+
 Validate + start everything:
 ```bash
 sudo promtool check config /etc/prometheus/prometheus.yml     # must be SUCCESS

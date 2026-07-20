@@ -77,6 +77,19 @@ action(type="omhttp" server="dnllok101.dc01.devnetlabs.com" ... queue.type="link
   oldest queued messages; size it for your realistic max outage. The buffer lives on the
   active collector, so a failover starts a fresh buffer on the standby.
 
+## Lab OOB sources (segregated)
+
+Devices emulated in PNETLab/EVE-NG log **out-of-band** from VLAN 4001/4002
+(`10.251`/`10.252`) via the same VIP and HA collector — **no pipeline change**. They're
+kept separate because they're ephemeral and chatty:
+
+- **rsyslog** classifies the OOB subnets into a `lab/{dc01,dc02}` tree (by subnet, not
+  per-IP — [rsyslog-setup.md](rsyslog-setup.md) Part 4).
+- **Loki** then labels them `category="lab"` with **shorter retention** (7 d) so lab noise
+  doesn't eat the 60-day budget ([loki-setup.md](loki-setup.md) Part F).
+- **Graylog** should route `lab/*` to its own **stream/index** with its own rotation.
+- dc02 lab logs only arrive when dc02 is up (on-demand) — accepted gap.
+
 ## Retention (set it, or storage grows unbounded)
 
 - **Graylog/OpenSearch:** configure index rotation + retention (by size/time); single

@@ -7,7 +7,8 @@ Build **PNETLab** network-emulation. Two instances by design:
 | Node | **dc01** (GEEKOM i9, **always-on**) | dc02 (HPE ML150, **on-demand**) |
 | Use | **small / medium** labs | **medium / large** labs |
 | VMID | **1109** | 2101 |
-| VLAN / IP | **dc01_apps (1101)** — `10.110.10.60/24`, gw `10.110.10.1` | dc02_apps (1201) — `10.120.10.60/24`, gw `10.120.10.1` |
+| VLAN / IP (mgmt NIC) | **dc01_apps (1101)** — `10.110.10.60/24`, gw `10.110.10.1` | dc02_apps (1201) — `10.120.10.60/24`, gw `10.120.10.1` |
+| OOB NIC (lab mgmt plane) | **dc01_lab_oob (4001)** — 10.251.0.0/16 | dc02_lab_oob (4002) — 10.252.0.0/16 |
 | FQDN | `dnlpnt101.dc01.devnetlabs.com` | `dnlpnt201.dc02.devnetlabs.com` |
 | vCPU / RAM | **4 / 20 GB** | scale up (e.g. 6–8 / 32–48 GB) |
 | Data disk | **300 GB** → `/opt/unetlab` | larger (e.g. 500 GB+) |
@@ -23,7 +24,8 @@ Context: [lld.md](lld.md) · [vmid-plan.md](conventions/vmid-plan.md). Placement
 |------|-------|
 | Hostname | `dnlpnt101` · Role `pnt` · VMID **1109** (dc01) |
 | OS | PNETLab (Ubuntu-based) — latest ISO from <https://pnetlab.com> (OVA import is an alternative) |
-| VLAN / IP | **dc01_apps (1101)** — **`10.110.10.60/24`**, gw `10.110.10.1` |
+| VLAN / IP (mgmt) | **dc01_apps (1101)** — **`10.110.10.60/24`**, gw `10.110.10.1` |
+| OOB NIC | **dc01_lab_oob (4001)** — L2 uplink for the lab-device mgmt plane (no host IP) |
 | FQDN | `dnlpnt101.dc01.devnetlabs.com` (apps VLAN → **dc01** zone) |
 | CPU | **`host`** — required for nested KVM (⚠️ not `x86-64-v2-AES`) |
 | vCPU / RAM | **4 vCPU** / **20 GB** (`--balloon 0`) |
@@ -55,6 +57,7 @@ qm create 1109 --name dnlpnt101 --machine q35 --bios seabios \
   --cpu host --cores 4 --sockets 1 --memory 20480 --balloon 0 \
   --scsihw virtio-scsi-single --ostype l26 --onboot 1 \
   --net0 virtio,bridge=vmbr0,tag=1101
+qm set 1109 --net1 virtio,bridge=vmbr0,tag=4001         # OOB NIC -> lab-device mgmt plane (VLAN 4001)
 qm set 1109 --scsi0 local-lvm:40,discard=on,ssd=1      # OS disk
 qm set 1109 --scsi1 local-lvm:300,discard=on,ssd=1     # -> /opt/unetlab (images + labs)
 qm set 1109 --ide2 local:iso/PNETLab_<ver>.iso,media=cdrom   # <-- the ISO you downloaded
@@ -62,8 +65,10 @@ qm set 1109 --boot order='ide2;scsi0'
 qm start 1109
 ```
 - `--cpu host` + `--balloon 0` (nested guests need real, pinned RAM).
-- **dc02 variant (`dnlpnt201`):** VMID `2101`, `--name dnlpnt201`, `tag=1201`, larger RAM/disk.
-- Lab-uplink NIC (bridge labs to the real net) later: `qm set 1109 --net1 virtio,bridge=vmbr0,tag=1101`.
+- **`net0`** = host mgmt/UI on dc01_apps; **`net1`** = the **OOB uplink** on `dc01_lab_oob`
+  (VLAN 4001). `net1` carries no host IP — it's an L2 trunk into a PNETLab **cloud** (Part F).
+- **dc02 variant (`dnlpnt201`):** VMID `2101`, `--name dnlpnt201`, `net0 tag=1201`,
+  **`net1 tag=4002`**, larger RAM/disk.
 > ⚠️ **Thin-pool headroom:** a 300 GB thin disk over-commits — check the node first with
 > `lvs -o name,lv_size,data_percent pve/data`; images can fill it. Use a larger/dedicated
 > storage for `scsi1` if space is tight (esp. dc02's larger disk).
@@ -83,10 +88,12 @@ qm set 1109 --ide2 none,media=cdrom && qm set 1109 --boot order='scsi0' && qm re
 
 PNETLab's mgmt interface is **`pnet0`**. Static IP on dc01_apps:
 ```
-# /etc/netplan/01-net.yaml (pnet0 bridges ens18)
+# /etc/netplan/01-net.yaml (pnet0 = mgmt over ens18; ens19 = OOB, no host IP)
 network:
   version: 2
-  ethernets: { ens18: {} }
+  ethernets:
+    ens18: {}
+    ens19: {}                              # OOB NIC (VLAN 4001) — left unconfigured; PNETLab bridges it as pnet1
   bridges:
     pnet0:
       interfaces: [ens18]
@@ -99,9 +106,13 @@ sudo netplan apply
 sudo hostnamectl set-hostname dnlpnt101
 sudo timedatectl set-timezone Europe/Amsterdam
 ```
-> `pnet0` = management; `pnet1+` map to extra NICs for lab-to-real-network "cloud" bridges.
-> **Check:** `ip -br a` shows `10.110.10.60` on `pnet0`. (dc02 variant: `10.120.10.60`,
-> `search: [dc02.devnetlabs.com]`.)
+> `pnet0` = **host management** (dc01_apps); `pnet1+` are the lab "cloud" bridges. Give the
+> **OOB NIC (`ens19`, VLAN 4001) no host IP** — it's an L2 uplink; PNETLab maps it to a
+> **cloud** (`pnet1`, Part F) so emulated devices' mgmt ports land on the OOB segment and
+> DHCP from Technitium (relayed). **Confirm the NIC order** (`ip -br l`) so `ens18`=net0(apps)
+> and `ens19`=net1(OOB) — swap if the kernel enumerated them the other way.
+> **Check:** `ip -br a` shows `10.110.10.60` on `pnet0`, and **no IP** on `ens19`.
+> (dc02 variant: mgmt `10.120.10.60` / `search: [dc02.devnetlabs.com]`, OOB NIC on VLAN 4002.)
 
 ## Part E — Move the data store to the 300 GB volume
 
@@ -131,8 +142,34 @@ sudo reboot
 
 ## Part G — DNS record
 
-Add `dnlpnt101 → 10.110.10.60` in the **`dc01.devnetlabs.com`** zone (dc02 variant:
-`dnlpnt201 → 10.120.10.60` in `dc02.devnetlabs.com`).
+Add `dnlpnt101 → 10.110.10.60` (the **mgmt** NIC) in the **`dc01.devnetlabs.com`** zone
+(dc02 variant: `dnlpnt201 → 10.120.10.60` in `dc02.devnetlabs.com`). The OOB NIC gets no
+DNS — lab devices on it are ephemeral and DHCP from Technitium without auto-registration.
+
+## Part H — Lab OOB management plane (syslog + SNMP source)
+
+The OOB NIC (`net1`, VLAN 4001) is how emulated devices are managed, logged, and polled —
+**out of band** from the lab data paths.
+
+1. **Expose the OOB NIC as a cloud in PNETLab.** In the lab, add a **Network** of type
+   **"Cloud"/bridge** mapped to the interface backing `net1` (PNETLab labels the extra NICs
+   `pnet1..9`; `net1` → **`pnet1`**). Attach each device's **management port** to that cloud.
+2. **Address + DHCP.** The device's mgmt port now sits on VLAN 4001 → it gets a
+   `10.251.0.0/16` lease from Technitium (relayed by the MikroTik — see
+   [network-vlan-design.md](network/network-vlan-design.md#lab-oob-management-networks-4001--4002)).
+   Static addressing is fine too (outside the DHCP range).
+3. **Point telemetry at the OOB source.** On each device, **source syslog and SNMP from the
+   OOB (mgmt) interface** so the collectors/poller see a `10.251`/`10.252` address:
+   - **syslog** → VIP `172.16.10.70:514`, sourced from the OOB IP.
+   - **SNMP** → allow pollers `10.110.10.72` + `10.120.10.72`, agent on the OOB IP.
+   Per-vendor CLI: [log-source-onboarding.md](logging/log-source-onboarding.md) ·
+   [snmp-source-onboarding.md](monitoring/snmp-source-onboarding.md).
+
+> **Why this matters for observability:** lab telemetry rides the **existing** stack — no
+> redesign. Because the OOB ranges are known (`10.251`/`10.252`), rsyslog classifies them
+> into a **segregated `lab/` tree** (Loki `category="lab"`, shorter retention; a Graylog lab
+> stream) and Prometheus tags them **`env=lab`** — keeping churny lab logs/metrics out of
+> production dashboards and retention. The isolation firewall permits exactly these flows.
 
 ---
 
@@ -144,6 +181,9 @@ Add `dnlpnt101 → 10.110.10.60` in the **`dc01.devnetlabs.com`** zone (dc02 var
 - [ ] Web UI loads at `http://10.110.10.60/`; login works (password changed).
 - [ ] A 2-node test lab **starts and the nodes boot** (nested KVM end-to-end).
 - [ ] `20 GB` RAM + `4 vCPU` present (`free -g`, `nproc`), balloon off.
+- [ ] **OOB works:** a lab device on the `pnet1` cloud gets a `10.251` lease, its syslog
+      reaches the VIP (lands in `lab/`), and `dnlprm101` can `snmpwalk` its OOB IP — but it
+      **cannot** reach an infra host (isolation holds).
 
 **🧪 End-to-end test:**
 ```bash

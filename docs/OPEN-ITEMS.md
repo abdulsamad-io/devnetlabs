@@ -23,6 +23,12 @@ human-readable index; the issues hold the working detail.
 - [ ] **OSPF** — fix the duplicate `ospf-instance-1` on the MikroTik — [#20]
 - [ ] **VM 202 migration** — eject ISOs, verify target/direction, common CPU baseline (`x86-64-v2-AES`) or offline — [#21]
 - [ ] **lab_lan DHCP → Technitium** — scope + relay + disable local server — [#26]
+- [ ] **Lab OOB mgmt networks (4001/4002)** — build the MikroTik SVIs + scoped-isolation
+  firewall + DHCP relays, the Technitium scopes, and dual-home the emulators
+  (`dnlpnt101`/`dnleve101` on dc01, `dnlpnt201`/`dnleve201` on dc02); onboard lab devices'
+  syslog/SNMP from OOB (segregated `lab/` tree + `env=lab`). See
+  [network-vlan-design.md](network/network-vlan-design.md#lab-oob-management-networks-4001--4002)
+  + [pnetlab-setup.md](pnetlab-setup.md) Part H.
 - [ ] **`dnldns201`** — second Technitium (de-SPOF DNS + DHCP; secondary zones + split DHCP) — [#27]
 - [ ] **Build the logging tier** — keepalived VIP + rsyslog collector + Loki (dc01) + Graylog (dc02) — [#30]
 - [ ] **nxlog on Windows hosts** — Event Log → syslog to the VIP (`compute/windows`); depends on [#30] — [#38]

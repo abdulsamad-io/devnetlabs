@@ -35,6 +35,7 @@ in `/etc/rsyslog.d/devnetlabs-sources.json`, then reload: `sudo pkill -HUP rsysl
 | Linux / Proxmox | `compute/linux` |
 | Windows | `compute/windows` |
 | TrueNAS | `storage/truenas` |
+| **Lab devices via OOB** (PNETLab/EVE-NG) | **`lab/dc01`** (10.251/16) · **`lab/dc02`** (10.252/16) — by **subnet**, not `sources.json` |
 
 ---
 
@@ -175,6 +176,27 @@ UI: **System Settings → Advanced → Syslog** → Syslog Server `172.16.10.70:
 transport TCP/UDP, and set the Syslog Level. (Classify `storage/truenas`.)
 
 ---
+
+## Lab devices (PNETLab / EVE-NG via the OOB network)
+
+Devices emulated inside the lab platforms are managed **out-of-band** on VLAN 4001
+(`10.251.0.0/16`, dc01) / VLAN 4002 (`10.252.0.0/16`, dc02) — see
+[network-vlan-design.md](../network/network-vlan-design.md#lab-oob-management-networks-4001--4002)
+and [pnetlab-setup.md](../pnetlab-setup.md) Part H.
+
+- **Config is identical to the per-vendor sections above** (Cisco, Juniper, ASA, …) —
+  point syslog at the VIP `172.16.10.70:514` — with **one difference: pin the syslog
+  `source-interface`/`source-address` to the device's OOB (mgmt) IP** so the collector sees
+  a `10.251`/`10.252` address.
+- **No `sources.json` entry.** Lab devices are ephemeral (rebuilt constantly), so instead of
+  per-IP mapping they're classified **by subnet** in the ruleset ([rsyslog-setup.md](rsyslog-setup.md)
+  Part 4): `10.251.*` → `lab/dc01`, `10.252.*` → `lab/dc02`. In Loki they carry
+  `category="lab"` (segregated, shorter retention); in Graylog, route them to a lab stream.
+- **dc02 (10.252) only reaches the VIP when dc02 is powered on** — expected (on-demand node).
+
+> **Check:** generate an event on a lab device, then on the active collector
+> `sudo tail -f /var/log/devnetlabs_logs/lab/dc01/dc01-$(date +%F).log` — the line appears
+> with the device's `10.251.x.x` source IP. (Nothing in `others/` for lab sources.)
 
 ## Anything else
 Same pattern: point the device's syslog at `172.16.10.70:514` (TCP preferred, pinned
