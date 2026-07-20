@@ -21,7 +21,7 @@
       # Managed by the baseline role — DevNetLabs resolvers + search domain.
       [Resolve]
       DNS={{ baseline_dns_servers | join(' ') }}
-      Domains={{ baseline_dns_search }}
+      Domains={{ ([baseline_dns_search] + baseline_dns_search_extra) | join(' ') }}
   notify: restart systemd-resolved
 
 - name: Ensure systemd-resolved is running

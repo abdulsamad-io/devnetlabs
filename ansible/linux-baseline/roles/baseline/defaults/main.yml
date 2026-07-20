@@ -21,6 +21,9 @@ baseline_dns_servers:
   - 172.16.10.53                                   # dnldns101 (Technitium #1)
   - 172.16.10.54                                   # dnldns201 (Technitium #2)
 baseline_dns_search: mgt.devnetlabs.com            # OVERRIDE per zone group (dcNN.*)
+# Extra search domains appended to Domains= — e.g. the bastion searches every zone so
+# `ssh <shortname>` works for apps-VLAN hosts. Set per-host in host_vars.
+baseline_dns_search_extra: []
 
 # --- 4. SSH hardening ------------------------------------------------------
 baseline_manage_ssh: true
@@ -62,6 +65,11 @@ baseline_manage_users: true
 #   baseline_admin_users:
 #     - { name: alice, key: "ssh-ed25519 AAAA... alice", groups: "sudo,sshusers" }
 baseline_admin_users: []
+# Passwordless sudo for the ansible user via /etc/sudoers.d/90-ansible. Default ON because
+# this fleet's custom sudo prompt breaks Ansible's become-password (`-K`) handshake, so
+# become only works passwordless. First run on a NEW host still needs a manual bootstrap
+# of the drop-in (writing it needs sudo); the role keeps it after that. Set false to skip.
+baseline_passwordless_sudo: true
 
 # --- 8. Package hygiene ----------------------------------------------------
 baseline_manage_packages: true
