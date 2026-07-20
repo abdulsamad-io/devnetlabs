@@ -20,8 +20,11 @@
 
 all:
   vars:
-    # --- how Ansible reaches every host (SSH, key-only — bootstrap the key first
-    #     via docs/bastion-setup.md). Override per host if a box differs. ---
+    # --- how Ansible reaches every host (SSH, key-only). ---
+    # IMPORTANT: this private key must exist ON THE CONTROL NODE (the box you run
+    # ansible-playbook from), and its PUBLIC half must be in each target's
+    # authorized_keys. If your control node is the bastion, generate a dedicated
+    # control key there and distribute it — see README "Prerequisites".
     ansible_user: abdoolsamad
     ansible_ssh_private_key_file: ~/.ssh/id_ed25519_devnetlabs
     ansible_python_interpreter: /usr/bin/python3
@@ -34,7 +37,10 @@ all:
           vars:
             baseline_dns_search: mgt.devnetlabs.com
           hosts:
-            dnladm101: { ansible_host: 172.16.10.2 }    # bastion / jump
+            # bastion. When you run ansible FROM the bastion it's the control node,
+            # so target it locally (no SSH-to-self). Drop `ansible_connection: local`
+            # if you run from a different control node.
+            dnladm101: { ansible_host: 172.16.10.2, ansible_connection: local }
             dnllog101: { ansible_host: 172.16.10.71 }   # rsyslog collector (dc01)
             dnllog201: { ansible_host: 172.16.10.72 }   # rsyslog collector (dc02)
             dnlnbx101: { ansible_host: 172.16.10.50 }   # NetBox
@@ -48,9 +54,9 @@ all:
           hosts:
             dnllok101: { ansible_host: 10.110.10.70 }   # Loki
             dnlgrf101: { ansible_host: 10.110.10.71 }   # Grafana
-            dnlprm101: { ansible_host: 10.110.10.72 }   # Prometheus
             dnlukm101: { ansible_host: 10.110.10.53 }   # Uptime Kuma
-            dnlnfy101: { ansible_host: 10.110.10.74 }   # ntfy
+            # dnlprm101: { ansible_host: 10.110.10.72 } # Prometheus — NOT BUILT YET
+            # dnlnfy101: { ansible_host: 10.110.10.74 } # ntfy — NOT BUILT YET
             # dnlpnt101: { ansible_host: 10.110.10.60 } # PNETLab (mgmt NIC)
 
         zone_dc02:                      # dc02 per-node VLANs (apps)

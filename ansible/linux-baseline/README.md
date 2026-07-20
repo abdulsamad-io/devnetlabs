@@ -35,14 +35,30 @@ group/host in the inventory or `host_vars/`.
 
 ## Prerequisites
 
-- Key-based SSH to each host already works (bootstrap via
-  [../../docs/bastion-setup.md](../../docs/bastion-setup.md)) — the login user + key are in
-  `inventory.yml` (`all.vars`).
 - Install the collections once:
   ```bash
   cd ansible/linux-baseline
   ansible-galaxy collection install -r requirements.yml
   ```
+- **A control-node SSH key whose public half is on every target.** The key in
+  `inventory.yml` (`all.vars.ansible_ssh_private_key_file`) must exist **on the box you run
+  `ansible-playbook` from** — not just on your laptop. Your personal `id_ed25519_devnetlabs`
+  private key lives on your Windows client (per [bastion-setup.md](../../docs/bastion-setup.md));
+  the bastion only holds its *public* half. So if the **bastion is your control node**,
+  give it its own key and push the public half to each target (password auth still works
+  until the baseline disables it):
+  ```bash
+  # on the bastion (control node):
+  ssh-keygen -t ed25519 -a 100 -f ~/.ssh/id_ed25519_devnetlabs -C "ansible@dnladm101"
+  for h in 172.16.10.71 172.16.10.72 172.16.10.50 10.110.10.70 10.110.10.71 10.110.10.53; do
+    ssh-copy-id -i ~/.ssh/id_ed25519_devnetlabs.pub abdoolsamad@"$h"
+  done
+  ```
+  The bastion targets itself via `ansible_connection: local` (set in the inventory), so it
+  needs no key to itself. *(Alternative: SSH into the bastion with agent forwarding
+  `ssh -A` and drop `ansible_ssh_private_key_file` so Ansible uses your forwarded agent.)*
+- **Only list built, powered-on hosts** in `inventory.yml`. Unbuilt hosts (e.g. Prometheus,
+  ntfy) are commented out — uncomment them once they exist, or a run fails `UNREACHABLE`.
 
 ## Usage
 
