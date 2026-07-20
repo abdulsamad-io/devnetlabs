@@ -63,8 +63,8 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 
 | Port | Role | Tagged / Untagged |
 |------|------|-------------------|
-| `ether1_dc01` | Trunk → dc01 | tagged 1000, 1101, 1102, 1103 |
-| `ether2_dc02` | Trunk → dc02 | tagged 1000, 1201 |
+| `ether1_dc01` | Trunk → dc01 | tagged 1000, 1101, 1102, 1103, 4001 |
+| `ether2_dc02` | Trunk → dc02 | tagged 1000, 1201, 4002 |
 | `ether3_dc03` | Trunk → dc03 | tagged 1000, 1301 |
 | `ether4_igw` | WAN uplink | DHCP client, double-NAT behind home router, MTU 1598 |
 | `ether5_mgt` | Admin (direct cable) | untagged, `bridge_lab_lan` (PVID 1) |
@@ -82,6 +82,8 @@ Address legend: **`STAT`** = static, **`RSV`** = DHCP reservation (to be created
 | 1103 | `dc01_nas` | 10.110.30.0/24 | 10.110.30.1 | dc01 |
 | 1201 | `dc02_apps` | 10.120.10.0/24 | 10.120.10.1 | dc02 |
 | 1301 | `dc03_pbs` | 10.130.10.0/24 | 10.130.10.1 | dc03 |
+| 4001 | `dc01_lab_oob` | 10.251.0.0/16 | 10.251.0.1 | dc01 — lab-node OOB mgmt (isolated) |
+| 4002 | `dc02_lab_oob` | 10.252.0.0/16 | 10.252.0.1 | dc02 — lab-node OOB mgmt (isolated) |
 | 1 (untagged) | `lab_lan` | 172.16.254.0/24 | 172.16.254.1 | WiFi + ether5, flat L2 |
 
 ---
@@ -121,6 +123,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | dc01_apps (1101) | 10.110.10.0/24 | `dnllok101` (Loki, .70), `dnlgrf101` (Grafana, .71), `dnlprm101` (Prometheus + snmp_exporter, .72), `dnlukm101` (Uptime Kuma, .53), `dnlnfy101` (ntfy, .74), `dnlpnt101` (PNETLab, .60 — small/med, always-on) |
 | dc01_media (1102) | 10.110.20.0/24 | `dnlplx101` (Plex / media transcode) |
 | dc01_nas (1103) | 10.110.30.0/24 | `dnlnas101` (TrueNAS — DC S4500 passthrough), `dnlpbs101` (local PBS, M.2) |
+| dc01_lab_oob (4001) | 10.251.0.0/16 | OOB NIC of `dnlpnt101` + `dnleve101` (planned) — lab-device mgmt plane (isolated) |
 
 ### 6.2 dc02 — HPE ML150 G9 (on-demand, heavy/nested-virt)
 
@@ -128,6 +131,7 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | `dnldns201` (Technitium DNS #2), `dnllog201` (rsyslog, HA standby), `dnlgry201` (Graylog, on-demand) |
 | dc02_apps (1201) | 10.120.10.0/24 | `dnlpnt201` (PNETLab, .60 — medium/large, on-demand), `dnleve201` (EVE-NG), `dnlgrf201` (Grafana, .71), `dnlprm201` (Prometheus + snmp_exporter, .72) |
+| dc02_lab_oob (4002) | 10.252.0.0/16 | OOB NIC of `dnlpnt201` + `dnleve201` — lab-device mgmt plane (isolated) |
 
 > **Observability is a per-DC stack** — `grf`/`prm` run on **both** dc01 and dc02, each in
 > its own apps VLAN. **Both Prometheus servers scrape the full fleet across both DCs**
@@ -145,6 +149,32 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 |-------------|--------|--------|
 | shared_mgt (1000) | 172.16.10.0/24 | *(reserved: VMIDs 3001–3049)* |
 | dc03_pbs (1301) | 10.130.10.0/24 | `dnlpbs301` (PBS cross-node DR target) |
+
+### 6.4 Lab OOB management plane (VLAN 4001 / 4002)
+
+An out-of-band management VLAN per node for the devices **emulated inside** PNETLab/EVE-NG
+(not the emulator hosts themselves — those keep mgmt on the apps VLAN). Each emulator host
+is **dual-homed**: NIC 0 on its `dcNN_apps` VLAN (host mgmt/UI), NIC 1 on `dcNN_lab_oob`,
+which it exposes to labs as a PNETLab **cloud** (`pnet1`). A lab device's mgmt port on that
+cloud lands on the OOB L2 segment → DHCP lease (relayed to Technitium) → uses that OOB IP
+as its **syslog + SNMP source**.
+
+| | dc01 | dc02 |
+|---|------|------|
+| VLAN / subnet | 4001 / 10.251.0.0/16 (gw .0.1) | 4002 / 10.252.0.0/16 (gw .0.1) |
+| Hosts | `dnlpnt101`, `dnleve101` (planned) | `dnlpnt201`, `dnleve201` |
+| DHCP | relay → Technitium `172.16.10.53` (no auto-DNS — ephemeral) | same |
+
+- **Isolated** (unlike the open infra VLANs): the MikroTik permits OOB→(DNS/NTP/internet)
+  + OOB→syslog VIP `172.16.10.70` + apps→OOB SNMP `161`, and **drops everything else**
+  to/from OOB. Rules in
+  [network-vlan-design.md](network/network-vlan-design.md#lab-oob-management-networks-4001--4002).
+- **Observability routing (why the stack needs no redesign):** lab telemetry rides the
+  *existing* pipeline — syslog to the VIP, SNMP polled by `dnlprm101`/`dnlprm201`. Only the
+  edges change: rsyslog classifies the `10.251/10.252` ranges into a segregated `lab/`
+  tree (Loki `category="lab"`, shorter retention), Graylog gets a lab stream, and Prometheus
+  gets `env=lab` targets. dc02 OOB (10.252) is only reachable when dc02 is powered on — the
+  same accepted gap as `dnlprm201`.
 
 ---
 
@@ -165,7 +195,8 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | 1101 | 10.110.10.72 (STAT) |
 | 1107 | `dnlukm101` | Uptime Kuma (availability) | VM | 1101 | 10.110.10.53 (STAT) |
 | 1108 | `dnlnfy101` | ntfy (notifications) | VM | 1101 | 10.110.10.74 (STAT) |
-| 1109 | `dnlpnt101` | PNETLab (small/med labs, always-on) | VM | 1101 | 10.110.10.60 (RSV) |
+| 1109 | `dnlpnt101` | PNETLab (small/med labs, always-on) | VM | 1101 **+ 4001 (OOB)** | 10.110.10.60 (RSV) + OOB DHCP |
+| 1110 | `dnleve101` | EVE-NG (planned) | VM | 1101 **+ 4001 (OOB)** | RSV/TBD + OOB DHCP |
 | 1201 | `dnlplx101` | Plex / media | VM | 1102 | RSV/TBD |
 | 1301 | `dnlnas101` | TrueNAS | VM | 1103 | RSV/TBD |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | 1103 | RSV/TBD |
@@ -178,8 +209,8 @@ NICs attach to a VNet. Host management for every node is on VLAN 1000 via `vmbrX
 | 2001 | `dnldns201` | Technitium DNS #2 | VM | 1000 | 172.16.10.54 (RSV) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | 1000 | RSV/TBD |
 | 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | 1000 | 172.16.10.72 (STAT) |
-| 2101 | `dnlpnt201` | PNETLab (medium/large labs, on-demand) | VM | 1201 | 10.120.10.60 (RSV) |
-| 2102 | `dnleve201` | EVE-NG | VM | 1201 | RSV/TBD |
+| 2101 | `dnlpnt201` | PNETLab (medium/large labs, on-demand) | VM | 1201 **+ 4002 (OOB)** | 10.120.10.60 (RSV) + OOB DHCP |
+| 2102 | `dnleve201` | EVE-NG | VM | 1201 **+ 4002 (OOB)** | RSV/TBD + OOB DHCP |
 | 2105 | `dnlgrf201` | Grafana | VM | 1201 | 10.120.10.71 (STAT) |
 | 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | 1201 | 10.120.10.72 (STAT) |
 

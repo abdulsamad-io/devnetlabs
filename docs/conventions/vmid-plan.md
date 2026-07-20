@@ -44,7 +44,8 @@ Scheme: **`NZSS`** (4 digits).
 | 1106 | `dnlprm101` | Prometheus (+ snmp_exporter) | VM | apps (1101) |
 | 1107 | `dnlukm101` | Uptime Kuma (availability) | VM | apps (1101) |
 | 1108 | `dnlnfy101` | ntfy (notifications) | VM | apps (1101) |
-| 1109 | `dnlpnt101` | PNETLab (small/med labs, always-on) | VM | apps (1101) |
+| 1109 | `dnlpnt101` | PNETLab (small/med labs, always-on) | VM | apps (1101) + lab_oob (4001) |
+| 1110 | `dnleve101` | EVE-NG (planned) | VM | apps (1101) + lab_oob (4001) |
 | 1201 | `dnlplx101` | Plex / media | VM | media (1102) |
 | 1301 | `dnlnas101` | TrueNAS | VM | nas (1103) |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | nas (1103) |
@@ -58,8 +59,8 @@ Scheme: **`NZSS`** (4 digits).
 | 2001 | `dnldns201` | Technitium DNS #2 (.54) | VM | mgmt (1000) |
 | 2004 | `dnllog201` | rsyslog collector (HA standby) | VM | mgmt (1000) |
 | 2003 | `dnlgry201` | Graylog (OpenSearch, on-demand) | VM | mgmt (1000) |
-| 2101 | `dnlpnt201` | PNETLab (medium/large labs, on-demand) | VM | apps (1201) |
-| 2102 | `dnleve201` | EVE-NG | VM | apps (1201) |
+| 2101 | `dnlpnt201` | PNETLab (medium/large labs, on-demand) | VM | apps (1201) + lab_oob (4002) |
+| 2102 | `dnleve201` | EVE-NG | VM | apps (1201) + lab_oob (4002) |
 | 2105 | `dnlgrf201` | Grafana | VM | apps (1201) |
 | 2106 | `dnlprm201` | Prometheus (+ snmp_exporter) | VM | apps (1201) |
 

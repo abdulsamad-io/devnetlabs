@@ -29,6 +29,7 @@ One combined dated file per vendor (no per-host files — ephemeral-friendly; th
 ```
 network/{cisco,juniper,arista,mikrotik}     security/{asa,ftd,checkpoint,fortigate,panos}
 compute/{linux,windows}                     storage/{truenas}          others/
+lab/{dc01,dc02}   ← OOB-sourced emulated devices (10.251/10.252), segregated — see Part 4
 ```
 
 ---
@@ -86,7 +87,14 @@ template(name="line_ip" type="string"
 
 ruleset(name="devnetlabs_collect") {
     set $.path = lookup("srcmap", $fromhost-ip);              # "security/asa" | "others"
-    set $.leaf = re_extract($.path, "([^/]+)\$", 0, 1, "others");  # "asa" | "others"  (\$ = escaped end-anchor)
+
+    # Lab OOB sources (VLAN 4001/4002) are ephemeral — classify by SUBNET, not per-IP.
+    # The string lookup table can't range-match, so override by prefix here. Keeps churny
+    # lab logs in their own tree -> Loki label category="lab" (segregated + short retention).
+    if ($fromhost-ip startswith "10.251.") then { set $.path = "lab/dc01"; }
+    else if ($fromhost-ip startswith "10.252.") then { set $.path = "lab/dc02"; }
+
+    set $.leaf = re_extract($.path, "([^/]+)\$", 0, 1, "others");  # "asa" | "dc01" | "others"  (\$ = escaped end-anchor)
 
     # (1) ARCHIVE — write to the vendor tree (group 'adm' so the Alloy user can read it)
     action(type="omfile" dynaFile="devnetlabs_dynafile" template="line_ip"

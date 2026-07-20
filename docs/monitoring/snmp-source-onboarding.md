@@ -173,6 +173,24 @@ username + auth/priv. Restrict to the poller IPs at the firewall.
 
 ---
 
+## Lab devices (PNETLab / EVE-NG via the OOB network)
+
+Emulated devices are polled on their **OOB** management IP (VLAN 4001 `10.251.0.0/16` /
+VLAN 4002 `10.252.0.0/16`; see [pnetlab-setup.md](../pnetlab-setup.md) Part H).
+
+- **Device SNMP config is identical to the per-vendor sections above** — just bind the
+  agent to / restrict the ACL for the **OOB (mgmt) IP**, and still permit the two pollers
+  `10.110.10.72` + `10.120.10.72`.
+- **Collector side:** add lab devices to the **separate** `snmp_lab.json` with an `env=lab`
+  label (not the main `snmp_devices.json`) — see [prometheus-setup.md](prometheus-setup.md)
+  Part G. Reuse the same `auths:` (`lab_v2`/`lab_v3`).
+- **Firewall:** the poll (`apps → OOB`, UDP/161) is explicitly allowed by the OOB isolation
+  rules; everything else to/from OOB is dropped
+  ([network-vlan-design.md](../network/network-vlan-design.md#lab-oob-management-networks-4001--4002)).
+- **dc02 gap:** `10.252` devices are only reachable/`up` when dc02 is powered on — expected.
+
+---
+
 ## Collector side — `snmp_exporter` auths + Prometheus target
 
 **1. Define the auth(s)** in `/etc/snmp_exporter/snmp.yml` on **both** `dnlprm101` and

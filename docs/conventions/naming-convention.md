@@ -146,6 +146,7 @@ split-horizon (split-brain) DNS:
 | `dnlukm101` | 1107 |
 | `dnlnfy101` | 1108 |
 | `dnlpnt101` | 1109 |
+| `dnleve101` | 1110 |
 | `dnlplx101` | 1201 |
 | `dnlnas101` | 1301 |
 | `dnlpbs101` | 1302 |

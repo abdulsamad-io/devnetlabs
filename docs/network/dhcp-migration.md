@@ -22,6 +22,7 @@ picks the right scope.
 | VLAN 1000 (172.16.10.0/24) | **Direct** (Technitium is attached here) | ✅ done |
 | dc01_apps 1101 / media 1102 / nas 1103 | Relay | ✅ done |
 | dc02_apps 1201, dc03_pbs 1301 | Relay | ✅ done |
+| dc01_lab_oob 4001 (10.251.0.0/16) / dc02_lab_oob 4002 (10.252.0.0/16) | Relay | ⬜ pending (new OOB nets) |
 | lab_lan (172.16.254.0/24) | Relay | ⬜ pending |
 
 ---
@@ -72,9 +73,13 @@ add a relay pointing at Technitium, with `local-address` = that subnet's SVI:
 /ip dhcp-relay add name=relay_1103    interface=vlan_dc01_truenas dhcp-server=172.16.10.53 local-address=10.110.30.1 disabled=no
 /ip dhcp-relay add name=relay_1201    interface=vlan_dc02_apps    dhcp-server=172.16.10.53 local-address=10.120.10.1 disabled=no
 /ip dhcp-relay add name=relay_1301    interface=vlan_dc03_pbs     dhcp-server=172.16.10.53 local-address=10.130.10.1 disabled=no
+/ip dhcp-relay add name=relay_4001    interface=vlan_dc01_lab_oob dhcp-server=172.16.10.53 local-address=10.251.0.1  disabled=no
+/ip dhcp-relay add name=relay_4002    interface=vlan_dc02_lab_oob dhcp-server=172.16.10.53 local-address=10.252.0.1  disabled=no
 ```
 
-*(Only add relays for the subnets you're cutting over in this pass.)*
+*(Only add relays for the subnets you're cutting over in this pass. The OOB VLANs
+`4001`/`4002` are DHCP-relay-only — they never had a MikroTik server to disable; see
+[network-vlan-design.md](network-vlan-design.md#lab-oob-management-networks-4001--4002).)*
 
 ---
 
@@ -188,6 +193,18 @@ is instant and lossless.
   ```
   /ip dhcp-relay add name=relay_lablan interface=bridge_lab_lan dhcp-server=172.16.10.53 local-address=172.16.254.1 disabled=no
   /ip dhcp-server disable [find interface=bridge_lab_lan]
+  ```
+- ⬜ **Pending — lab OOB (4001/4002)** — new networks, relay-only from day one (no local
+  server to disable). Build the Technitium scopes, then add the relays:
+  - `vlan4001-dc01_lab_oob`: network `10.251.0.0`/`255.255.0.0`, range e.g.
+    `10.251.10.10–10.251.10.250`, router `10.251.0.1`, DNS `172.16.10.53`. Leave the scope
+    **Domain blank** (lab devices are ephemeral — don't pollute the node zone with churny
+    A/PTR; classify their telemetry by subnet instead — see the logging/monitoring docs).
+  - `vlan4002-dc02_lab_oob`: network `10.252.0.0`/`255.255.0.0`, range
+    `10.252.10.10–10.252.10.250`, router `10.252.0.1`, DNS `172.16.10.53`.
+  ```
+  /ip dhcp-relay add name=relay_4001 interface=vlan_dc01_lab_oob dhcp-server=172.16.10.53 local-address=10.251.0.1 disabled=no
+  /ip dhcp-relay add name=relay_4002 interface=vlan_dc02_lab_oob dhcp-server=172.16.10.53 local-address=10.252.0.1 disabled=no
   ```
 - ⬜ **Prereq still recommended:** stand up **`dnldns201`** so DNS+DHCP isn't
   single-homed on `dnldns101` now that both run there.
