@@ -3,7 +3,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "~> 0.66" # check registry.terraform.io/providers/bpg/proxmox for the current release
+      version = "~> 0.111" # latest 0.111.1 (Jul 2026); allows 0.111.x. Check the registry for newer.
     }
   }
 }
