@@ -16,7 +16,7 @@
 # ============================================================================
 
 defaults:
-  template_vmid: 1902                 # tmpl-ubuntu2404 (must be cloud-init-ready)
+  template_vmid: 1902                 # tmpl-ubuntu2604 (Ubuntu 26.04 LTS, must be cloud-init-ready)
   cores: 2
   sockets: 1
   cpu_type: x86-64-v2-AES

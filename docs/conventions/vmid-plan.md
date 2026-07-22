@@ -50,7 +50,7 @@ Scheme: **`NZSS`** (4 digits).
 | 1301 | `dnlnas101` | TrueNAS | VM | nas (1103) |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | nas (1103) |
 | 1901 | — | Debian 12 template | tmpl | templates |
-| 1902 | — | Ubuntu 24.04 template | tmpl | templates |
+| 1902 | `tmpl-ubuntu2604` | Ubuntu 26.04 LTS template | tmpl | templates |
 
 ### dc02 — HPE ML150 G9 (on-demand, heavy/nested-virt)
 
