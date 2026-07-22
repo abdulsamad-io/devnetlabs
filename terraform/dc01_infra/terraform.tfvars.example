@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars and edit. Keep the API TOKEN out of this file — pass it via env:
+#   export TF_VAR_pve_api_token='terraform@pve!tf=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+
+pve_endpoint = "https://172.16.10.9:8006/"   # dc01 PVE API (dc01 mgmt IP)
+pve_insecure = true                          # self-signed PVE cert
+pve_ssh_user = "root"                        # bpg uploads cloud-init snippets over SSH
+node_name    = "dc01"
+
+ci_user = "abdoolsamad"
+ci_ssh_keys = [
+  # public keys injected into every VM via cloud-init (safe to commit here or keep in tfvars):
+  # "ssh-ed25519 AAAA... ansible@dnladm101",   # the bastion control key
+  # "ssh-ed25519 AAAA... abdulsamad@laptop",
+]

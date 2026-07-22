@@ -1,0 +1,116 @@
+# ============================================================================
+# dc01 VM inventory — the single place to add / remove / resize guests.
+# Terraform (main.tf) yamldecode()s this and loops the ../modules/proxmox_vm module.
+# Tags follow docs/conventions/tagging-plan.md; VMIDs follow conventions/vmid-plan.md.
+#
+# VLAN cheatsheet (see docs/lld.md):
+#   1000 shared_mgt  gw 172.16.10.1   search mgt.devnetlabs.com
+#   1101 dc01_apps   gw 10.110.10.1   search dc01.devnetlabs.com
+#   1102 dc01_media  gw 10.110.20.1   search dc01.devnetlabs.com
+#   1103 dc01_nas    gw 10.110.30.1   search dc01.devnetlabs.com
+#
+# ⚠️  ALREADY-BUILT VMs (dnladm101, dnlnbx101, dnllog101, dnldns101, dnllok101,
+#     dnlgrf101, dnlukm101) must be `terraform import`ed before apply, or TF will try to
+#     create a duplicate VMID. New guests (dnllbr101, dnlctl101, dnlprm101, dnlnfy101,
+#     dnlplx101) apply directly. See README.
+# ============================================================================
+
+defaults:
+  template_vmid: 1902                 # tmpl-ubuntu2404 (must be cloud-init-ready)
+  cores: 2
+  sockets: 1
+  cpu_type: x86-64-v2-AES
+  memory_mb: 4096
+  dns_servers: [172.16.10.53, 172.16.10.54]
+
+vms:
+  # ---- mgmt VLAN 1000 -------------------------------------------------------
+  - name: dnladm101
+    vmid: 1002
+    memory_mb: 2048
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1000, ip: "172.16.10.2/24", gateway: "172.16.10.1", search: mgt.devnetlabs.com }]
+    tags: [dc01, zone-mgt, tier-mgmt, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnllbr101                    # LibreNMS (not built yet)
+    vmid: 1001
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1000, ip: "dhcp", search: mgt.devnetlabs.com }]
+    tags: [dc01, zone-mgt, tier-monitoring, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnlnbx101                    # NetBox
+    vmid: 1003
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1000, ip: "172.16.10.50/24", gateway: "172.16.10.1", search: mgt.devnetlabs.com }]
+    tags: [dc01, zone-mgt, tier-ipam, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnllog101                    # rsyslog collector (HA active)
+    vmid: 1004
+    disks: [{ interface: scsi0, size: 16 }, { interface: scsi1, size: 32 }]
+    networks: [{ vlan: 1000, ip: "172.16.10.71/24", gateway: "172.16.10.1", search: mgt.devnetlabs.com }]
+    tags: [dc01, zone-mgt, tier-logging, av-always-on, bkp-pbs, ha-active]
+
+  - name: dnldns101                    # Technitium DNS #1
+    vmid: 1005
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1000, ip: "172.16.10.53/24", gateway: "172.16.10.1", search: mgt.devnetlabs.com }]
+    tags: [dc01, zone-mgt, tier-dns, av-always-on, bkp-pbs, ha-primary]
+
+  - name: dnlctl101                    # Cloudflare tunnel (not built yet)
+    vmid: 1006
+    cores: 1
+    memory_mb: 1024
+    disks: [{ interface: scsi0, size: 16 }]
+    networks: [{ vlan: 1000, ip: "dhcp", search: mgt.devnetlabs.com }]
+    tags: [dc01, zone-mgt, tier-edge, av-always-on, bkp-pbs, ha-none]
+
+  # ---- dc01_apps VLAN 1101 --------------------------------------------------
+  - name: dnllok101                    # Loki
+    vmid: 1104
+    disks: [{ interface: scsi0, size: 16 }, { interface: scsi1, size: 32 }]
+    networks: [{ vlan: 1101, ip: "10.110.10.70/24", gateway: "10.110.10.1", search: dc01.devnetlabs.com }]
+    tags: [dc01, zone-apps, tier-logging, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnlgrf101                    # Grafana
+    vmid: 1105
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1101, ip: "10.110.10.71/24", gateway: "10.110.10.1", search: dc01.devnetlabs.com }]
+    tags: [dc01, zone-apps, tier-monitoring, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnlprm101                    # Prometheus + snmp_exporter (not built yet)
+    vmid: 1106
+    disks: [{ interface: scsi0, size: 16 }, { interface: scsi1, size: 32 }]
+    networks: [{ vlan: 1101, ip: "10.110.10.72/24", gateway: "10.110.10.1", search: dc01.devnetlabs.com }]
+    tags: [dc01, zone-apps, tier-monitoring, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnlukm101                    # Uptime Kuma (Docker host)
+    vmid: 1107
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1101, ip: "10.110.10.53/24", gateway: "10.110.10.1", search: dc01.devnetlabs.com }]
+    tags: [dc01, zone-apps, tier-monitoring, av-always-on, bkp-pbs, ha-none]
+
+  - name: dnlnfy101                    # ntfy (not built yet)
+    vmid: 1108
+    cores: 1
+    memory_mb: 2048
+    disks: [{ interface: scsi0, size: 16 }]
+    networks: [{ vlan: 1101, ip: "10.110.10.74/24", gateway: "10.110.10.1", search: dc01.devnetlabs.com }]
+    tags: [dc01, zone-apps, tier-monitoring, av-always-on, bkp-pbs, ha-none]
+
+  # ---- dc01_media VLAN 1102 -------------------------------------------------
+  - name: dnlplx101                    # Plex (not built yet)
+    vmid: 1201
+    cores: 4
+    disks: [{ interface: scsi0, size: 32 }]
+    networks: [{ vlan: 1102, ip: "dhcp", search: dc01.devnetlabs.com }]
+    tags: [dc01, zone-media, tier-media, av-always-on, bkp-pbs, ha-none]
+
+# ============================================================================
+# NOT clone-managed here (appliance / non-Ubuntu / passthrough) — provision per their
+# runbooks. Listed for completeness; a future ISO-mode module variant could cover them:
+#   dnlpnt101 (1109) PNETLab   — appliance ISO, cpu_type host, 40+300 GB, apps+lab_oob(4001)
+#   dnleve101 (1110) EVE-NG    — appliance ISO, apps+lab_oob(4001)
+#   dnlnas101 (1301) TrueNAS   — own OS + DC S4500 passthrough (bkp-repl)
+#   dnlpbs101 (1302) PBS       — backup appliance on M.2 (bkp-none)
+#   1901/1902 templates        — the clone SOURCES, not managed by this config
+# ============================================================================

@@ -1,0 +1,12 @@
+# Terraform — applies to all subfolders (technitium, dc01_infra, …)
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+crash.*.log
+# tfvars may hold secrets (tokens, keys)
+terraform.tfvars
+*.auto.tfvars
+override.tf
+override.tf.json
+# keep .terraform.lock.hcl COMMITTED (pins provider versions) — do not ignore it
