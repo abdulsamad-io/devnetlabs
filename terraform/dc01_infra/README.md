@@ -25,9 +25,10 @@ VMIDs from [vmid-plan.md](../../docs/conventions/vmid-plan.md).
 
 ## Prerequisites
 
-- **A cloud-init-ready template** on dc01 (default `template_vmid: 1902` = `tmpl-ubuntu2404`):
-  the `qemu-guest-agent` + `cloud-init` packages installed, then converted to a template.
-  Without cloud-init in the image, IP/user/key injection won't apply.
+- **A cloud-init-ready template** on dc01 (default `template_vmid: 1902` = `tmpl-ubuntu2604`,
+  Ubuntu 26.04 LTS): built from the Ubuntu cloud image with `qemu-guest-agent` present.
+  Without cloud-init in the image, IP/user/key injection won't apply. Build steps:
+  [../../docs/proxmox-cloud-init-template.md](../../docs/proxmox-cloud-init-template.md).
 - **A PVE API token** with VM.* perms. Provide via env (never in tfvars):
   ```bash
   export TF_VAR_pve_api_token='terraform@pve!tf=<uuid>'

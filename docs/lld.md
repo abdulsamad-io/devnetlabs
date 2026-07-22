@@ -200,7 +200,7 @@ as its **syslog + SNMP source**.
 | 1201 | `dnlplx101` | Plex / media | VM | 1102 | RSV/TBD |
 | 1301 | `dnlnas101` | TrueNAS | VM | 1103 | RSV/TBD |
 | 1302 | `dnlpbs101` | PBS (local, M.2) | VM | 1103 | RSV/TBD |
-| 1901/1902 | — | Debian12 / Ubuntu24.04 templates | tmpl | — | — |
+| 1901/1902 | — | Debian12 / Ubuntu 26.04 LTS templates | tmpl | — | — |
 
 ### 7.2 dc02 — HPE ML150 G9 (on-demand)
 

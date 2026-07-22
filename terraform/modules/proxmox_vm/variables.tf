@@ -18,7 +18,7 @@ variable "node_name" {
 
 variable "template_vmid" {
   type        = number
-  description = "VMID of the cloud-init-ready template to full-clone (e.g. 1902 = tmpl-ubuntu2404)."
+  description = "VMID of the cloud-init-ready template to full-clone (e.g. 1902 = tmpl-ubuntu2604)."
 }
 
 variable "description" {
