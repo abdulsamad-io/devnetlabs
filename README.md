@@ -72,9 +72,13 @@ Grouped to match the `docs/` folder layout.
 |------|---------|
 | [`ansible/technitium/`](ansible/technitium/README.md) | Technitium DNS + DHCP across `dnldns101`/`dnldns201` from one source (**preferred**) |
 | [`ansible/linux-baseline/`](ansible/linux-baseline/README.md) | Reusable Linux baseline across all guests (DNS/chrony/SSH/ufw/unattended-upgrades + opt-in hardening) |
+| [`terraform/dc01_infra/`](terraform/dc01_infra/README.md) | dc01 VM provisioning from a `vms.yaml` inventory — clone + cloud-init via `bpg/proxmox`, tags per the tagging plan |
+| [`terraform/modules/proxmox_vm/`](terraform/modules/proxmox_vm/) | Reusable Proxmox-VM Terraform module (used by `dc01_infra`; reuse for dc02/dc03) |
 | [`terraform/technitium/`](terraform/technitium/README.md) | Terraform equivalent of the Technitium setup (via `terracurl`) |
 
-More to come (e.g. Terraform for the Cloudflare tunnel).
+> **Two layers:** Terraform provisions the VM shell + cloud-init identity; the Ansible
+> Linux baseline does the in-guest config afterwards. More to come (e.g. dc02/dc03 infra,
+> Cloudflare tunnel).
 
 ## Open items
 
